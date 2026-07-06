@@ -1,0 +1,20 @@
+.accordion-header {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  text-align: left; /* Left-justify header text */
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.accordion-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out; /* Smooth transition */
+  text-align: left; /* Left-justify body text */
+}
+
+.accordion-panel.open {
+  max-height: 2000px; /* Large enough to fit any content */
+}

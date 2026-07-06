@@ -1,0 +1,43 @@
+.accordion-header {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  text-align: left; /* Left-justify header text */
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.accordion-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out; /* Smooth transition */
+  text-align: left; /* Left-justify body text */
+}
+
+.accordion-panel.open {
+  max-height: 2000px; /* Large enough to fit any content */
+}
+
+.polls-page {
+  text-align: left; /* Ensure all content is left-aligned */
+  padding: 20px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.vote-btn, .cons-btn {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.cons-btn:disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  border: 1px solid #ccc;
+}

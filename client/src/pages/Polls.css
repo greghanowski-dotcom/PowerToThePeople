@@ -1,18 +1,24 @@
 .accordion-header {
   width: 100%;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  text-align: left; /* Left-justify header text */
+  padding: 8px 15px; 
+  background: #f8f9fa;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  font-size: 0.95rem; 
   font-weight: bold;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
 }
 
-.accordion-panel {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-out; /* Smooth transition */
-  text-align: left; /* Left-justify body text */
+.accordion-content {
+  padding: 15px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .accordion-panel.open {

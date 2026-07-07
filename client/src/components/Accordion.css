@@ -4,6 +4,7 @@
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
   text-align: left; /* Left-justify header text */
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
 }

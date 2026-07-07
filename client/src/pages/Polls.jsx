@@ -6,7 +6,7 @@ import './Polls.css';
 const politicalIssues = [
   { id: 2, title: "Carbon Tax on Imports", desc: "Should the country enact tariff penalties on heavy industrial goods imported from nations failing to meet standard climate benchmarks?", for: "Protects native manufacturing clean-tech investments and incentivizes polluting nations to clean up their supply chains.", against: "Likely to drive up consumer prices on everyday items and risk starting global trade retaliations or economic wars.", type: "likert" },
   { id: 3, title: "Federal Term Limits", desc: "Should constitutional rules limit supreme court judges and federal congress members to structured term ceilings rather than lifetime appointments?", for: "Encourages systemic legislative turnover, dampens long-term corruption, and introduces modern, generational viewpoints.", against: "Loses essential historical legislative experience and amplifies reliance on unelected backroom corporate lobbyists.", type: "likert" },
-  // ... (rest of your issues)
+  { id: 4, title: "Campaign Finance Reform", desc: "Should the government implement stricter regulations on campaign contributions and expenditures?", for: "Encourages systemic legislative turnover, dampens long-term corruption, and introduces modern, generational viewpoints.", against: "Loses essential historical legislative experience and amplifies reliance on unelected backroom corporate lobbyists.", type: "likert" },
 ];
 
 const Polls = () => {

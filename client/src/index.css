@@ -55,6 +55,7 @@ body {
 }
 
 .polls-page, 
+.ideas-page,
 .content-area, 
 .accordion-panel {
   text-align: left;
@@ -124,7 +125,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 1rem 1rem;
   background-color: #007bff;
   color: white;
   font-weight: bold;

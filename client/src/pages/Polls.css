@@ -1,6 +1,5 @@
 .accordion-header {
   width: 100%;
-  padding: 8px 15px; 
   background: #f8f9fa;
   border: none;
   border-bottom: 1px solid #ddd;
@@ -23,11 +22,6 @@
 
 .accordion-panel.open {
   max-height: 2000px; /* Large enough to fit any content */
-}
-
-.polls-page {
-  text-align: left; /* Ensure all content is left-aligned */
-  padding: 20px;
 }
 
 .button-group {

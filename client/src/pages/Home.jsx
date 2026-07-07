@@ -3,7 +3,7 @@ import React from 'react';
 
 const Home = () => {
     return (
-        <div style={{ textAlign: 'left', padding: '20px' }}>
+        <div style={{ textAlign: 'left', paddingLeft: '20px', paddingRight: '20px' }}>
             <div className="system-explanation">
                 <h3>Our Mission</h3>
                 <p>

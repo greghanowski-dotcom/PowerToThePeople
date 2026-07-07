@@ -1,19 +1,34 @@
 import { useState } from 'react';
 import './Accordion.css';
 
-export const Accordion = ({ title, children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Accordion({ items, renderContent }) {
+  // Keeps track of the index of the currently open panel
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggle = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
   return (
-    <div className="accordion-item">
-      <button className="accordion-header" onClick={() => setIsOpen(!isOpen)}>
-        {title}
-      </button>
-      <div className={`accordion-panel ${isOpen ? 'open' : ''}`}>
-        <div className="panel-content" style={{ padding: '1rem' }}>
-          {children}
+    <div className="accordion">
+      {items.map((item, idx) => (
+        <div key={idx} className="accordion-item">
+          <button 
+            className="accordion-header" 
+            onClick={() => toggle(idx)}
+          >
+            {item.title} 
+            <span>{openIndex === idx ? '−' : '+'}</span>
+          </button>
+          
+          {openIndex === idx && (
+            <div className="accordion-content">
+              {/* This executes the logic passed from the parent (e.g., Ideas.jsx) */}
+              {renderContent(item)}
+            </div>
+          )}
         </div>
-      </div>
+      ))}
     </div>
   );
-};
+}

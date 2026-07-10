@@ -182,3 +182,15 @@
     border-right-color: var(--border);
   }
 }
+
+/* This ensures the document doesn't mess up your header/footer */
+.imported-doc-content p {
+  line-height: 1.6;
+  font-size: 1rem;
+  color: #333;
+}
+
+.imported-doc-content h1 {
+  font-size: 1.5rem;
+  margin-top: 20px;
+}

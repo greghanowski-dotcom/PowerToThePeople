@@ -1,38 +1,28 @@
-import { useState } from 'react';
-import Accordion from '../components/Accordion';
-import './Ideas.css';
-
-const ideasData = [
-    {
-        title: 'Budget Deficit & National Debt',
-        panelContent: [
-            { id: 5, title: 'Spending Reform', details: 'Conducting comprehensive audits to reduce inefficient government spending.' }
-        ]
-    },
-    {
-        title: 'Climate Change',
-        panelContent: [
-            { id: 1, title: 'Carbon Tax', details: 'Implementing a tax on carbon emissions to incentivize clean energy.' },
-            { id: 2, title: 'Renewable Subsidies', details: 'Expanding funding for solar and wind infrastructure projects.' }
-        ]
-    },
-    {
-        title: 'Healthcare',
-        panelContent: [
-            { id: 3, title: 'Public Option', details: 'Creating a government-run insurance plan to compete with private providers.' }
-        ]
-    },
-    {
-        title: 'Wealth Inequality',
-        panelContent: [
-            { id: 4, title: 'Wealth Tax', details: 'Levying a tax on high-net-worth individuals to reduce economic disparity.' }
-        ]
-    },
-];
+import { useState, useEffect } from 'react';
+import Accordion from '../components/Accordion'; 
+import HtmlDocViewer from '../components/HtmlDocViewer'; 
 
 export default function Ideas() {
+    const [docs, setDocs] = useState([]); // Will hold the manifest
     const [modalData, setModalData] = useState(null);
     const [votes, setVotes] = useState({});
+
+    // Load the manifest file on startup
+useEffect(() => {
+    fetch('/html-docs/manifest.json')
+        .then(async (res) => {
+            const text = await res.text(); // Get raw text first
+            console.log("Raw Response from fetch:", text); // Check the console!
+            
+            try {
+                const data = JSON.parse(text);
+                setDocs(data);
+            } catch (e) {
+                console.error("Failed to parse JSON. Is the file empty or formatted wrong?");
+            }
+        })
+        .catch(err => console.error("Fetch error:", err));
+}, []);
 
     const handleVote = (id, type) => {
         if (votes[id]?.hasVoted) return;
@@ -56,17 +46,16 @@ export default function Ideas() {
 
     return (
         <div>
+            {/* The Accordion now maps the dynamic 'docs' array from manifest.json */}
             <Accordion
-                items={ideasData}
+                items={docs} 
                 renderContent={(item) => (
-                    item.panelContent.map(sol => (
-                        <div key={sol.id} className="solution-row">
-                            <span>{sol.title}</span>
-                            <button onClick={() => setModalData({ ...sol, votes: votes[sol.id] || { up: 0, down: 0, hasVoted: false } })}>
-                                Details
-                            </button>
-                        </div>
-                    ))
+                    <div className="solution-row">
+                        <span>{item.title}</span>
+                        <button onClick={() => setModalData({ ...item, votes: votes[item.id] || { up: 0, down: 0, hasVoted: false } })}>
+                            Details
+                        </button>
+                    </div>
                 )}
             />
 
@@ -75,7 +64,12 @@ export default function Ideas() {
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <button className="close-btn" onClick={() => setModalData(null)}>✕</button>
                         <h3>{modalData.title}</h3>
-                        <p>{modalData.details}</p>
+                        
+                        {/* THE DYNAMIC PART: Instead of p tag, we load the HTML file */}
+                        <div className="doc-wrapper">
+                            <HtmlDocViewer fileName={modalData.id} />
+                        </div>
+                        
                         <hr />
                         <div className="vote-group">
                             <button disabled={modalData.votes?.hasVoted} onClick={() => handleVote(modalData.id, 'up')}>

@@ -6,6 +6,7 @@ import Polls from './pages/Polls';
 import Ideas from './pages/Ideas';
 import News from './pages/News';
 import About from './pages/About';
+import DynamicContentPage from './pages/DynamicContentPage';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -27,6 +28,7 @@ function App() {
           <Route path="/ideas" element={<Ideas />} />
           <Route path="/news" element={<News />} />
           <Route path="/about" element={<About />} />
+          <Route path="/details/:slug" element={<DynamicContentPage />} />
         </Routes>
       </main>
     </div>

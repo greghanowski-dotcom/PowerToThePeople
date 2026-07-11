@@ -1,12 +1,44 @@
 [
   {
-    "id": "trump",
-    "title": "trump",
-    "url": "/html-docs/trump.html"
+    "id": "Government Price Controls on Pharmaceuticals",
+    "title": "Government Price Controls on Pharmaceuticals",
+    "category": "Healthcare",
+    "url": "/html-docs/Healthcare/Government Price Controls on Pharmaceuticals.html"
   },
   {
-    "id": "WarrenBuffetPlanToFixBudgetDeficit",
-    "title": "Fiscal Responsibility and Congressional Accountability Act",
-    "url": "/html-docs/WarrenBuffetPlanToFixBudgetDeficit.html"
+    "id": "Increase Doctor Supply",
+    "title": "Increase Doctor Supply",
+    "category": "Healthcare",
+    "url": "/html-docs/Healthcare/Increase Doctor Supply.html"
+  },
+  {
+    "id": "Reduce Administrative Costs",
+    "title": "Reduce Administrative Costs",
+    "category": "Healthcare",
+    "url": "/html-docs/Healthcare/Reduce Administrative Costs.html"
+  },
+  {
+    "id": "Reduce Malpractice Insurance",
+    "title": "Reduce Malpractice Insurance",
+    "category": "Healthcare",
+    "url": "/html-docs/Healthcare/Reduce Malpractice Insurance.html"
+  },
+  {
+    "id": "Single-Payer Negotiation Leverage",
+    "title": "Single Payer Negotiation Leverage",
+    "category": "Healthcare",
+    "url": "/html-docs/Healthcare/Single-Payer Negotiation Leverage.html"
+  },
+  {
+    "id": "Subsidized Doctor Education",
+    "title": "Subsidized Doctor Education",
+    "category": "Healthcare",
+    "url": "/html-docs/Healthcare/Subsidized Doctor Education.html"
+  },
+  {
+    "id": "Warren Buffet Idea To Fix Budget Deficit",
+    "title": "Warren Buffet Idea To Fix Budget Deficit",
+    "category": "National Debt",
+    "url": "/html-docs/National Debt/Warren Buffet Idea To Fix Budget Deficit.html"
   }
 ]

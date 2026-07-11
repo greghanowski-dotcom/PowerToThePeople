@@ -30,43 +30,59 @@
 }
 
 .solution-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between; /* Pushes the button to the far right */
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
 }
 
 .modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure this is the top layer */
 }
 
 .modal {
-  position: relative; /* Allows close button positioning */
-  background: white;
-  padding: 30px;
-  width: 400px;
-  border-radius: 8px;
+    position: relative; /* This is crucial: sets the container for the absolute button */
+    background: white;
+    padding: 30px 20px 20px 20px; /* Extra padding on top for the button */
+    border-radius: 8px;    background: white; /* Crucial: hide everything behind the modal */
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;  /* Limits modal height */
+    overflow-y: auto;  /* Allows scrolling inside the modal */
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 1001;     /* Higher than the overlay */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
 .close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+}
+
+.close-btn:hover {
+    color: #ff0000;
 }
 
 .vote-group {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 10px;
   margin-top: 15px;
 }
 

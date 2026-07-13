@@ -17,6 +17,28 @@ import PreferencesModal from './components/modals/PreferencesModal';
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'profile', 'discussion', etc.
+  const [openPanels, setOpenPanels] = useState([]);
+  const [keepAccordionsOpen, setKeepAccordionsOpen] = useState(false); // This will be controlled by PreferencesModal
+  const [preferences, setPreferences] = useState({
+    keepAccordionsOpen: true,
+    notifications: true
+  });
+
+  const togglePanel = (panelId) => {
+    if (keepAccordionsOpen) {
+      // Multi-open logic
+      setOpenPanels(prev =>
+        prev.includes(panelId)
+          ? prev.filter(id => id !== panelId)
+          : [...prev, panelId]
+      );
+    } else {
+      // Single-open logic
+      setOpenPanels(prev =>
+        prev.includes(panelId) ? [] : [panelId]
+      );
+    }
+  };
 
   return (
     <div className="app-container">
@@ -30,7 +52,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/polls" element={<Polls />} />
-          <Route path="/ideas" element={<Ideas />} />
+          <Route path="/ideas" element={<Ideas keepAccordionsOpen={preferences.keepAccordionsOpen} />} />
           <Route path="/news" element={<News />} />
           <Route path="/about" element={<About />} />
           <Route path="/details/:slug" element={<DynamicContentPage />} />
@@ -42,7 +64,13 @@ export default function App() {
       {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
       {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
       {activeModal === 'account' && <AccountModal onClose={() => setActiveModal(null)} />}
-      {activeModal === 'preferences' && <PreferencesModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'preferences' && (
+        <PreferencesModal
+          prefs={preferences}
+          setPrefs={setPreferences}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
       {activeModal === 'discussion' && (
         <DiscussionModal
           onClose={() => setActiveModal(null)}

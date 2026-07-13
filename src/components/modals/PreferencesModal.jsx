@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import './Preferences.css';
 
-export default function PreferencesModal({ onClose }) {
-  // In a real app, these values would likely come from a context or global state
+export default function PreferencesModal({ prefs, setPrefs, onClose }) {
+  const handleToggle = (name) => {
+    setPrefs((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
+  /*
   const [prefs, setPrefs] = useState({
-    keepAccordionsOpen: false,
+    keepAccordionsOpen: true,
     notifications: true,
   });
 
   const handleToggle = (name) => {
     setPrefs((prev) => ({ ...prev, [name]: !prev[name] }));
   };
-
+*/
   const handleSave = () => {
     console.log('Saving preferences:', prefs);
     onClose();

@@ -3,7 +3,7 @@ import Accordion from '../components/Accordion';
 import HtmlDocViewer from '../components/HtmlDocViewer';
 import './Ideas.css';
 
-export default function Ideas() {
+export default function Ideas({ keepAccordionsOpen }) {
     const [groupedDocs, setGroupedDocs] = useState({}); // Stores data grouped by category
     const [modalData, setModalData] = useState(null);
     const [votes, setVotes] = useState({});
@@ -62,6 +62,7 @@ export default function Ideas() {
                         </div>
                     ))
                 )}
+                keepOpen={keepAccordionsOpen}
             />
 
             {modalData && (

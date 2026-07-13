@@ -1,0 +1,21 @@
+.preference-row {
+    display: flex;
+    align-items: center; /* Vertically centers the box and label */
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 16px; /* Adds space between the checkbox and the label */
+}
+
+.preference-row label {
+    margin: 0;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+}
+
+.preference-row input[type="checkbox"] {
+    width: 24px;  /* Increased size */
+    height: 24px; /* Increased size */
+    cursor: pointer;
+    accent-color: #2563eb; /* Optional: Sets the color of the checked box */
+}

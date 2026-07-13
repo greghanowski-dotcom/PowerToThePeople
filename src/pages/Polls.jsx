@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Accordion from '../components/Accordion';
-import { VoteModal } from '../components/VoteModal';
+import VoteModal from '../components/modals/VoteModal';
 import './Polls.css';
 
 const pollsData = [

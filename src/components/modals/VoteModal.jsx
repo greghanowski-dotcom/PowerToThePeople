@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './VoteModal.css';
 
-export const VoteModal = ({ issue, mode, onClose, onSubmit }) => {
+export default function VoteModal({ issue, mode, onClose, onSubmit }) {
   const [selectedChoice, setSelectedChoice] = useState('');
 
   if (!issue) return null;
@@ -9,8 +9,8 @@ export const VoteModal = ({ issue, mode, onClose, onSubmit }) => {
   const stats = { 'Strongly Agree': '45%', 'Somewhat Agree': '20%', 'Neutral': '15%', 'Somewhat Disagree': '10%', 'Strongly Disagree': '10%' };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
         {/* X Close Button */}
         <button className="close-x-btn" onClick={onClose}>&times;</button>
 

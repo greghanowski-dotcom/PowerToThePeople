@@ -7,20 +7,25 @@ import Ideas from './pages/Ideas';
 import News from './pages/News';
 import About from './pages/About';
 import DynamicContentPage from './pages/DynamicContentPage';
+import DiscussionModal from './components/modals/DiscussionModal';
+import ConsensusModal from './components/modals/ConsensusModal';
+import ProfileModal from './components/modals/ProfileModal';
+import VoteModal from './components/modals/VoteModal';
+import AccountModal from './components/modals/AccountModal';
+import PreferencesModal from './components/modals/PreferencesModal';
 
-function App() {
+export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // 'profile', 'discussion', etc.
 
   return (
     <div className="app-container">
-      {/* Note: Remove currentPage and setCurrentPage from Header props 
-         because you are now using the Router's URL to manage state.
-      */}
       <Header
         isLoggedIn={isLoggedIn}
         setIsLoggedIn={setIsLoggedIn}
+        openModal={setActiveModal}
       />
-      
+
       <main className="content-area">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -31,8 +36,21 @@ function App() {
           <Route path="/details/:slug" element={<DynamicContentPage />} />
         </Routes>
       </main>
+
+      {/* Modal Manager */}
+      {activeModal === 'profile' && <ProfileModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'account' && <AccountModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'preferences' && <PreferencesModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'discussion' && (
+        <DiscussionModal
+          onClose={() => setActiveModal(null)}
+          title="Universal Basic Income"
+          argsFor="Provides a safety net, reduces poverty, and encourages entrepreneurship."
+          argsAgainst="May lead to inflation, reduce work incentives, and is expensive to fund."
+        />
+      )}
     </div>
   );
 }
-
-export default App;

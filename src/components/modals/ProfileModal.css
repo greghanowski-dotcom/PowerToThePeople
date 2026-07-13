@@ -1,0 +1,135 @@
+/* Modal Container */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.form-group {
+    display: grid;
+    grid-template-columns: 140px 1fr; 
+    align-items: center;            
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+/* Make the disabled "placeholder" option look grey/light */
+.form-group select:invalid {
+    color: #94a3b8;
+    /* Lighter grey for placeholder state */
+}
+
+/* Also target the placeholder text in standard inputs */
+.form-group input::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+    /* Ensures browsers don't override the lightness */
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+/* Labels: Dark and bold */
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b; /* Dark */
+    margin-bottom: 8px;
+}
+
+/* Input placeholders: Grey */
+.form-group input::placeholder {
+    color: #94a3b8; /* Grey */
+    opacity: 1;
+}
+
+/* Select: Grey when "placeholder" option is selected, Dark when actual value is selected */
+.form-group select {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #1e293b; /* Default text is dark */
+}
+
+/* When the select value is the empty string, make the text grey */
+.form-group select:has(option[value=""]:checked) {
+    color: #94a3b8; /* Grey placeholder state */
+}
+/* Ensure label and input have identical font sizes */
+.form-group label, 
+.form-group input, 
+.form-group select {
+    font-size: 1rem; /* Same size */
+    font-weight: 500;
+}
+
+/* Label: Dark */
+.form-group label {
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Inputs/Select: Default dark, grey when placeholder */
+.form-group input, .form-group select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: #1e293b;
+}
+
+/* Grey placeholder logic */
+.form-group input::placeholder, 
+.form-group select:has(option[value=""]:checked) {
+    color: #94a3b8;
+}
+
+/* Button Styling */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn-save {
+    background: #2563eb;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-close {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+
+

@@ -24,6 +24,7 @@ export default function App() {
     notifications: true
   });
 
+  console.log("App.jsx", { isLoggedIn, activeModal, openPanels, keepAccordionsOpen, preferences });
   const togglePanel = (panelId) => {
     if (keepAccordionsOpen) {
       // Multi-open logic
@@ -60,23 +61,24 @@ export default function App() {
       </main>
 
       {/* Modal Manager */}
-      {activeModal === 'profile' && <ProfileModal onClose={() => setActiveModal(null)} />}
+      {activeModal === 'profile' && (
+        <ProfileModal
+          onClose={() => setActiveModal(null)}
+        />
+      )}
+
+      {activeModal === 'account' && (
+        <AccountModal
+          onClose={() => setActiveModal(null)}
+        />
+      )}
       {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
       {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
-      {activeModal === 'account' && <AccountModal onClose={() => setActiveModal(null)} />}
       {activeModal === 'preferences' && (
         <PreferencesModal
           prefs={preferences}
           setPrefs={setPreferences}
           onClose={() => setActiveModal(null)}
-        />
-      )}
-      {activeModal === 'discussion' && (
-        <DiscussionModal
-          onClose={() => setActiveModal(null)}
-          title="Universal Basic Income"
-          argsFor="Provides a safety net, reduces poverty, and encourages entrepreneurship."
-          argsAgainst="May lead to inflation, reduce work incentives, and is expensive to fund."
         />
       )}
     </div>

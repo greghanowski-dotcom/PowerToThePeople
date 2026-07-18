@@ -5,9 +5,9 @@ import App from './App.jsx';
 import './index.css'; // Global styles are imported here
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+
     <BrowserRouter> {/* Wrap App here */}
       <App />
     </BrowserRouter>
-  </React.StrictMode>
+
 );

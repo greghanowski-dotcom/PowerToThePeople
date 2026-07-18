@@ -27,8 +27,8 @@ export default function AccountModal({ onClose }) {
         </div>
 
         <div className="modal-buttons">
-          <button className="btn-close" onClick={onClose}>Cancel</button>
           <button className="btn-save">Update Account</button>
+          <button className="btn-close" onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>

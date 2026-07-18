@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "server": "nodemon server/server.js",
+    "client": "vite --port 3000",
+    "dev": "concurrently \"npm run server\" \"npm run client\" --names \"BACKEND,FRONTEND\" --prefix-colors \"blue,green\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

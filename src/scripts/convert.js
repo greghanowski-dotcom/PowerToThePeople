@@ -20,8 +20,6 @@ if (!fs.existsSync(outputFolder)) {
     fs.mkdirSync(outputFolder, { recursive: true });
 }
 
-// ... (keep your imports the same)
-
 function updateManifest() {
     try {
         let manifest = [];
@@ -53,6 +51,10 @@ function updateManifest() {
     }
 }
 
+var options = {
+    ignoreEmptyParagraphs: false // Preserves blank paragraphs as <p></p>
+};
+
 // Watch recursively! 
 const watcher = chokidar.watch(watchFolder, {
     // This regex ignores dotfiles and files starting with ~$
@@ -66,7 +68,7 @@ watcher.on('all', async (event, filePath) => {
 
     // 1. Ignore temporary Word lock files (starting with ~$)
     if (fileName.startsWith('~$')) {
-        return; 
+        return;
     }
 
     // 2. Only process if it's a .docx file and is an actual change or new file
@@ -80,9 +82,9 @@ watcher.on('all', async (event, filePath) => {
             }
 
             const outputFilename = path.basename(filePath, ".docx") + ".html";
-            
+
             // Mammoth conversion
-            const result = await mammoth.convertToHtml({ path: filePath });
+            const result = await mammoth.convertToHtml({ path: filePath }, options);
             fs.writeFileSync(path.join(targetDir, outputFilename), result.value);
 
             updateManifest();

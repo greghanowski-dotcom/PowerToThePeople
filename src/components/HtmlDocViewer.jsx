@@ -7,7 +7,7 @@ export default function HtmlDocViewer({ url }) {
 
     useEffect(() => {
         if (!url) return;
-        
+
         setLoading(true);
         // Fetch the file using the full path passed from Ideas.jsx
         fetch(url)
@@ -24,19 +24,16 @@ export default function HtmlDocViewer({ url }) {
                 setContent("<div>Sorry, this document could not be found at: " + url + "</div>");
                 setLoading(false);
             });
-    }, [url]); 
+    }, [url]);
 
     if (loading) return <div>Loading document...</div>;
+    // Replace empty paragraph tags with a line break
+    const html = content.replace(/<p><\/p>/g, '<br>');
+    console.log("Fetched document:", html);
 
-return (
-        <div 
-            className="imported-doc-content" 
-            style={{ 
-                width: '100%', 
-                wordWrap: 'break-word', 
-                overflow: 'hidden' 
-            }}
-            dangerouslySetInnerHTML={{ __html: content }} 
+    return (
+        <div
+            dangerouslySetInnerHTML={{ __html: html }}
         />
     );
 }

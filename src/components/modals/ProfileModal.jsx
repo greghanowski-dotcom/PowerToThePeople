@@ -61,6 +61,16 @@ export default function ProfileModal({ onClose }) {
           </div>
 
           <div className="form-group">
+            <label>Password</label>
+            <input type="password" name="password" value={formData.password} placeholder="••••••••" onChange={handleChange} required />
+          </div>
+
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input type="tel" name="phone" value={formData.phone} placeholder="(123) 456-7890" onChange={handleChange} />
+          </div>
+
+          <div className="form-group">
             <label>Gender</label>
             <select name="gender" value={formData.gender} onChange={handleChange}>
               <option value="">Select Gender</option>
@@ -96,8 +106,8 @@ export default function ProfileModal({ onClose }) {
           </div>
 
           <div className="modal-buttons" style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
-            <button type="button" className="btn-close" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn-save">Save Changes</button>
+            <button type="button" className="btn-close" onClick={onClose}>Cancel</button>
           </div>
 
         </form>

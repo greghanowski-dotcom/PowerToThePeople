@@ -5,6 +5,48 @@ import './Header.css';
 const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // FIXED: Dynamic login event handler connected to port 5000
+  const handleSignInClick = async () => {
+    const enteredEmail = prompt("Please enter your email address to Sign In:");
+    if (!enteredEmail) return;
+
+    try {
+      // FIXED: Preserving your exact required full URL structure using backticks
+      const response = await fetch(`http://127.0.0.1:5000/api/get_user/${encodeURIComponent(enteredEmail.trim())}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        // Since server.js now safely outputs rows[0], data IS your single user object record!
+        sessionStorage.setItem('currentUserId', data.id);
+        sessionStorage.setItem('currentUserEmail', data.email);
+        sessionStorage.setItem('currentUserGender', data.gender || '');
+        sessionStorage.setItem('currentUserAge', data.age || '');
+        sessionStorage.setItem('currentUserParty', data.party_affiliation || '');
+        sessionStorage.setItem('currentUserZip', data.zip_code || '');
+
+        const votingRecordStr = typeof data.voting_record === 'string'
+          ? data.voting_record
+          : JSON.stringify(data.voting_record || []);
+        sessionStorage.setItem('currentUserVotingRecord', votingRecordStr);
+
+        alert(`🎉 Welcome back! Logged in as User ID: ${data.id}`);
+        setIsLoggedIn(true);
+      } else {
+        alert(data.error || "User not found. Please verify your email or sign up.");
+      }
+    } catch (error) {
+      console.error("Login lookup failure:", error);
+      alert("Failed to communicate with database server on port 5000.");
+    }
+  };
+
+  // FIXED: Explicit logout handler to wipe application state locks
+  const handleSignOutClick = () => {
+    sessionStorage.clear(); // Clear all user tokens out of browser memory cache
+    setIsLoggedIn(false);
+    setShowDropdown(false);
+  };
+
   return (
     <header className="site-header">
       <div className="brand">
@@ -25,20 +67,16 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
           ))}
         </nav>
 
-        {/* Conditional Rendering: Sign In Button or Profile Icon */}
+        {/* Conditional Rendering UI Row */}
         {!isLoggedIn ? (
-          <button className="btn-signin" onClick={() => setIsLoggedIn(true)}>
+          <button className="btn-signin" onClick={handleSignInClick}>
             Sign In
           </button>
         ) : (
           <div className="profile-container">
-            <button
-              className="profile-trigger"
-              onClick={() => setShowDropdown(!showDropdown)}
-            >
+            <button className="profile-trigger" onClick={() => setShowDropdown(!showDropdown)}>
               👤
             </button>
-
             {showDropdown && (
               <div className="dropdown-menu">
                 <span className="dropdown-item" onClick={() => { openModal('profile'); setShowDropdown(false); }}>
@@ -51,7 +89,7 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
                   ⚙️ Preferences
                 </span>
                 <div className="dropdown-divider"></div>
-                <span className="dropdown-item" onClick={() => { setIsLoggedIn(false); setShowDropdown(false); }}>
+                <span className="dropdown-item" onClick={handleSignOutClick}>
                   Sign out
                 </span>
               </div>

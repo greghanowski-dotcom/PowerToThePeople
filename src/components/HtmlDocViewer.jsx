@@ -27,9 +27,8 @@ export default function HtmlDocViewer({ url }) {
     }, [url]);
 
     if (loading) return <div>Loading document...</div>;
-    // Replace empty paragraph tags with a line break
+    // Replace empty paragraph tags with a line break because they are being ignored
     const html = content.replace(/<p><\/p>/g, '<br>');
-    console.log("Fetched document:", html);
 
     return (
         <div

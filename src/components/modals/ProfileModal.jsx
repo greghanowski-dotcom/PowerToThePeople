@@ -4,9 +4,11 @@ import './ProfileModal.css';
 export default function ProfileModal({ onClose }) { 
   const [formData, setFormData] = useState({ 
     email: '', 
+    password: '', 
+    phone: '',
     gender: '', 
-    party: '',  
-    zip: '', 
+    party_affiliation: '',  
+    zip_code: '', 
     age: ''     
   });
   
@@ -17,30 +19,37 @@ export default function ProfileModal({ onClose }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setValidationError('');
+const handleSubmit = async (e) => {
+  e.preventDefault(); 
+  setValidationError(''); 
 
-    try {
-      const response = await fetch('http://127.0.0.1:5000/api/save_user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData), // Sends email, gender, age, party, zip cleanly
-      });
+  try {
+    const response = await fetch('http://127.0.0.1:5000/api/save_user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData), 
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        alert(`🎉 Success! Record saved to MySQL with User ID: ${data.userId}`);
-        onClose(); 
-      } else {
-        setValidationError(data.details || data.error || "Something went wrong.");
-      }
-    } catch (error) {
-      console.error("Database connection failure:", error);
-      setValidationError("Failed to communicate with database server on port 5000.");
+    if (response.ok) {
+      // 1. FIXED: Store the live auto-incremented data parameters inside browser session storage
+      sessionStorage.setItem('currentUserId', data.userId);
+      sessionStorage.setItem('currentUserEmail', formData.email);
+
+      alert(`🎉 Success! Record saved to MySQL with User ID: ${data.userId}`);
+      onClose(); 
+
+      // 2. FIXED: Triggers a clean page update so other layout files read the new tracking states immediately
+      window.location.reload();
+    } else {
+      setValidationError(data.details || data.error || "Something went wrong.");
     }
-  };
+  } catch (error) {
+    console.error("Database connection failure:", error);
+    setValidationError("Failed to communicate with database server on port 5000.");
+  }
+};
 
   return (
     <div className="modal-overlay" onClick={onClose}>

@@ -14,15 +14,19 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
       // FIXED: Preserving your exact required full URL structure using backticks
       const response = await fetch(`http://127.0.0.1:5000/api/get_user/${encodeURIComponent(enteredEmail.trim())}`);
       const data = await response.json();
-
+console.log("Login lookup response data:", data);
       if (response.ok) {
         // Since server.js now safely outputs rows[0], data IS your single user object record!
         sessionStorage.setItem('currentUserId', data.id);
         sessionStorage.setItem('currentUserEmail', data.email);
+        sessionStorage.setItem('currentUserPassword', data.password || '');
+        sessionStorage.setItem('currentUserPhone', data.phone || '');
         sessionStorage.setItem('currentUserGender', data.gender || '');
         sessionStorage.setItem('currentUserAge', data.age || '');
-        sessionStorage.setItem('currentUserParty', data.party_affiliation || '');
-        sessionStorage.setItem('currentUserZip', data.zip_code || '');
+        sessionStorage.setItem('currentUserPartyAffiliation', data.party_affiliation || '');
+        sessionStorage.setItem('currentUserZipCode', data.zip_code || '');
+        sessionStorage.setItem('currentUserAccordionPanels', data.accordion_panels_stay_open || '');
+        sessionStorage.setItem('currentUserVotingRecord', data.voting_record || '');
 
         const votingRecordStr = typeof data.voting_record === 'string'
           ? data.voting_record

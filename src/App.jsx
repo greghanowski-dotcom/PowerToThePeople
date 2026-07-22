@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
@@ -23,6 +23,44 @@ export default function App() {
     keepAccordionsOpen: true,
     notifications: true
   });
+  // Inside your main App component:
+  const [votes, setVotes] = useState({});
+
+  useEffect(() => {
+    // 1. Check if the returning user has an active voting record string saved in browser memory
+    const storedVotingRecord = sessionStorage.getItem('currentUserVotingRecord');
+
+    if (isLoggedIn && storedVotingRecord) {
+      try {
+        // 2. Translate the MySQL string database snapshot back into a usable JavaScript array layout
+        const votingHistory = JSON.parse(storedVotingRecord);
+
+        // 3. Use plain JavaScript reduce to turn the flat history list into a mapped React tracking layout
+        const initializedVotes = votingHistory.reduce((acc, currentVote) => {
+          // Extract your table data attributes
+          const issueId = currentVote.issue_id;
+          const voteType = currentVote.vote; // e.g., 'up' or 'down'
+
+          acc[issueId] = {
+            up: voteType === 'up' ? 1 : 0,
+            down: voteType === 'down' ? 1 : 0,
+            hasVoted: true // FIXED: This locks the button state on screen initialization
+          };
+
+          return acc;
+        }, {});
+
+        // 4. Hydrate your state engine with your true historical records
+        setVotes(initializedVotes);
+
+      } catch (error) {
+        console.error("Failed to parse loaded database voting records:", error);
+      }
+    } else if (!isLoggedIn) {
+      // Optional Safety: Clear out button tracking states if they choose to log out
+      setVotes({});
+    }
+  }, [isLoggedIn]); // Fires automatically whenever the user flips their 'isLoggedIn' state token!
 
   console.log("App.jsx", { isLoggedIn, activeModal, openPanels, keepAccordionsOpen, preferences });
   const togglePanel = (panelId) => {
@@ -53,7 +91,10 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/polls" element={<Polls />} />
-          <Route path="/ideas" element={<Ideas keepAccordionsOpen={preferences.keepAccordionsOpen} />} />
+          <Route 
+  path="/ideas" 
+  element={<Ideas keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} 
+/>
           <Route path="/news" element={<News />} />
           <Route path="/about" element={<About />} />
           <Route path="/details/:slug" element={<DynamicContentPage />} />

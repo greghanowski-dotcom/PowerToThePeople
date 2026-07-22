@@ -36,7 +36,7 @@ app.get('/api/get_user/:email', async (req, res) => {
     const { email } = req.params;
 
     const query = `
-      SELECT id, email, gender, age, party_affiliation, zip_code, voting_record 
+      SELECT id, email, password, phone, gender, age, party_affiliation, zip_code, voting_record 
       FROM users 
       WHERE email = ? 
       LIMIT 1
@@ -63,51 +63,52 @@ app.get('/api/get_user/:email', async (req, res) => {
 });
 
 
-// HTTP POST route endpoint to handle data insertion
 app.post('/api/save_user', async (req, res) => {
   try {
-    // FIXED: Extracted fields from req.body so they exist as variables
-    // These keys match your restored React form data state: email, phone, password, gender, age, party, zip, enable_notifications, accordion_panels_stay_open
-    const { email, phone, password, gender, age, party, zip, enable_notifications, accordion_panels_stay_open, voting_record } = req.body;
+    // Extracted fields exactly as they are sent by your React ProfileModal state
+    const { 
+      email, phone, password, gender, age, party_affiliation, zip_code, 
+      enable_notifications, accordion_panels_stay_open 
+    } = req.body;
 
-    // FIXED: Checked column names. You have 9 columns listed but only 8 value parameters.
-    // Removed 'username' to align with the form values you are saving.
+    console.log("Received user data for saving:", req.body);
+
+    // FIXED: Removed trailing comma and aligned VALUES() metrics to match columns exactly
     const query = `
-      INSERT INTO user 
-      (email, password, phone, gender, age, party_affiliation, zip_code, enable_notifications, accordion_panels_stay_open, voting_record) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        email = VALUES(email),
-        password = VALUES(password),
-        phone = VALUES(phone),
-        gender = VALUES(gender),
-        age = VALUES(age),
-        party_affiliation = VALUES(party_affiliation),
-        zip_code = VALUES(zip_code),
-        enable_notifications = VALUES(enable_notifications),
-        accordion_panels_stay_open = VALUES(accordion_panels_stay_open),
-        voting_record = VALUES(voting_record)
+      INSERT INTO users (email, password, phone, gender, age, party_affiliation, zip_code, enable_notifications, accordion_panels_stay_open) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE 
+        email = VALUES(email), 
+        password = VALUES(password), 
+        phone = VALUES(phone), 
+        gender = VALUES(gender), 
+        age = VALUES(age), 
+        party_affiliation = VALUES(party_affiliation), 
+        zip_code = VALUES(zip_code), 
+        enable_notifications = VALUES(enable_notifications), 
+        accordion_panels_stay_open = VALUES(accordion_panels_stay_open)
     `;
 
+    // FIXED: Tied values array mapping back to your actual destructured variables (party, zip)
     const values = [
       email || null,
-      password || null, // Assuming you want to store password as well; ensure it's hashed in production
+      password || null, 
       phone || null,
       gender || null,
-      age ? parseInt(age) : null,
-      party_affiliation || null,                      
-      zip_code || null,                         
-      0,                                   
-      0,                                   
-      JSON.stringify([])                   
+      age ? parseInt(age, 10) : null,
+      party_affiliation || null, // Maps your React 'party' state field safely
+      zip_code || null,   // Maps your React 'zip' state field safely
+      enable_notifications ? 1 : 0, 
+      accordion_panels_stay_open ? 1 : 0
     ];
 
-    // This now works perfectly because db is a promise pool
-    const [result] = await db.query(query, values); 
+    const [result] = await db.query(query, values);
 
+    // If an insert happens, result.insertId is returned. 
+    // If an ON DUPLICATE update happens, MySQL might return an alternate index reference or 0.
     res.status(201).json({ 
-      message: 'User record created successfully', 
-      userId: result.insertId 
+      message: 'User record saved successfully', 
+      userId: result.insertId || null 
     });
 
   } catch (err) {
@@ -117,18 +118,22 @@ app.post('/api/save_user', async (req, res) => {
 });
 
 app.post('/api/save_vote', async (req, res) => {
+  // Establish a dedicated connection thread container out of your connection pool
+  const connection = await db.getConnection();
+  
   try {
     const { userId, issueId, voteType } = req.body;
 
-    // 1. Structure the object matching your exact schema layout requirement
+    // Initialize an atomic execution sandbox block
+    await connection.beginTransaction();
+
     const newVoteObject = {
       issue_id: issueId,
       vote: voteType
     };
 
-    // 2. FIXED: Removed the CAST function and explicitly forced MySQL 
-    // to parse the incoming text string parameter as a direct JSON object block
-    const query = `
+    // OPERATION 1: Append the transaction details to the private user JSON block
+    const userQuery = `
       UPDATE users 
       SET voting_record = JSON_ARRAY_APPEND(
         COALESCE(voting_record, '[]'), 
@@ -137,25 +142,50 @@ app.post('/api/save_vote', async (req, res) => {
       ) 
       WHERE id = ?
     `;
+    const [userResult] = await connection.query(userQuery, [JSON.stringify(newVoteObject), userId]);
 
-    // Convert the javascript object structure into a valid string layout
-    const values = [JSON.stringify(newVoteObject), userId];
-
-    // Execute the database pool query using async await
-    const [result] = await db.query(query, values);
-
-    res.status(200).json({ message: 'Vote entry recorded successfully into JSON block' });
-    // FIXED CHECK: If MySQL returns 0 affected rows, it means the userId does not exist
-    if (result.affectedRows === 0) {
-      console.warn(`⚠️ VOTE REJECTED: User ID ${userId} does not exist in the users table.`);
+    // Validation Guard: If the user ID isn't found, rollback the operation safely
+    if (userResult.affectedRows === 0) {
+      await connection.rollback();
+      console.warn(`⚠️ VOTE REJECTED: User ID ${userId} does not exist inside the users table.`);
       return res.status(404).json({ error: 'Database save failed', details: `User ID ${userId} not found.` });
     }
-    res.status(200).json({ message: 'Vote entry recorded successfully into JSON block' });
+
+    // OPERATION 2: Increment the public global counter row dynamically
+    // Uses template strings to choose which column to increment safely based on user click values
+    const columnName = voteType === 'up' ? 'up_votes' : 'down_votes';
+    const globalQuery = `
+      UPDATE issue_votes 
+      SET ${columnName} = ${columnName} + 1 
+      WHERE issue_id = ?
+    `;
+    await connection.query(globalQuery, [issueId]);
+
+    // Commit both database actions together safely
+    await connection.commit();
+    res.status(200).json({ message: 'Private user preference saved and public global tally updated!' });
 
   } catch (err) {
-    // This logs the literal internal exception detail text directly to your terminal panel
-    console.error("❌ MYSQL VOTE SAVE EXCEPTION:", err.message);
-    res.status(500).json({ error: 'Failed to append vote data', details: err.message });
+    // If an error happens midway through execution, reverse all changes to maintain database integrity
+    await connection.rollback();
+    console.error("❌ GLOBAL TALLY EXECUTION EXCEPTION:", err.message);
+    res.status(500).json({ error: 'Failed to record vote selection', details: err.message });
+  } finally {
+    // Release the network connection thread safely back into your primary cluster pool
+    connection.release();
+  }
+});
+
+// GET endpoint to retrieve all shared public vote counters from your table grid
+app.get('/api/global_votes', async (req, res) => {
+  try {
+    const query = 'SELECT issue_id, up_votes, down_votes FROM issue_votes';
+    const [rows] = await db.query(query);
+    
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("❌ GLOBAL FETCH FAILURE:", err.message);
+    res.status(500).json({ error: 'Failed to fetch public counts' });
   }
 });
 

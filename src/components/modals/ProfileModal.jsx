@@ -2,14 +2,15 @@ import { useState } from 'react';
 import './ProfileModal.css';
 
 export default function ProfileModal({ onClose }) { 
+  // FIXED: Hydrates form inputs from browser storage variables instantly on load
   const [formData, setFormData] = useState({ 
-    email: '', 
-    password: '', 
-    phone: '',
-    gender: '', 
-    party_affiliation: '',  
-    zip_code: '', 
-    age: ''     
+    email: sessionStorage.getItem('currentUserEmail') || '', 
+    password: sessionStorage.getItem('currentUserPassword') || '', 
+    phone: sessionStorage.getItem('currentUserPhone') || '', 
+    gender: sessionStorage.getItem('currentUserGender') || '', 
+    age: sessionStorage.getItem('currentUserAge') || '',    
+    party_affiliation: sessionStorage.getItem('currentUserPartyAffiliation') || '',  
+    zip_code: sessionStorage.getItem('currentUserZipCode') || '', 
   });
   
   const [validationError, setValidationError] = useState('');
@@ -20,10 +21,11 @@ export default function ProfileModal({ onClose }) {
   };
 
 const handleSubmit = async (e) => {
-  e.preventDefault(); 
-  setValidationError(''); 
+  e.preventDefault();
+  setValidationError('');
 
   try {
+    // CRITICAL API CHECK: Ensuring the absolute IPv4 loopback destination path is perfectly intact
     const response = await fetch('http://127.0.0.1:5000/api/save_user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,14 +35,20 @@ const handleSubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      // 1. FIXED: Store the live auto-incremented data parameters inside browser session storage
+      // FIXED: Sync storage parameters to match the freshly saved user data fields
       sessionStorage.setItem('currentUserId', data.userId);
       sessionStorage.setItem('currentUserEmail', formData.email);
+      sessionStorage.setItem('currentUserPassword', formData.password);
+      sessionStorage.setItem('currentUserPhone', formData.phone);
+      sessionStorage.setItem('currentUserGender', formData.gender);
+      sessionStorage.setItem('currentUserAge', formData.age);
+      sessionStorage.setItem('currentUserPartyAffiliation', formData.party_affiliation);
+      sessionStorage.setItem('currentUserZipCode', formData.zip_code);
 
-      alert(`🎉 Success! Record saved to MySQL with User ID: ${data.userId}`);
+      alert(`🎉 Success! Record saved to MySQL: ${data.userId}`);
       onClose(); 
-
-      // 2. FIXED: Triggers a clean page update so other layout files read the new tracking states immediately
+      
+      // Forces your page UI nodes to re-render with your fresh preferences setup
       window.location.reload();
     } else {
       setValidationError(data.details || data.error || "Something went wrong.");
@@ -50,6 +58,7 @@ const handleSubmit = async (e) => {
     setValidationError("Failed to communicate with database server on port 5000.");
   }
 };
+
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -101,7 +110,7 @@ const handleSubmit = async (e) => {
 
           <div className="form-group">
             <label>Party Affiliation</label>
-            <select name="party" value={formData.party} onChange={handleChange}>
+            <select name="party_affiliation" value={formData.party_affiliation} onChange={handleChange}>
               <option value="">Select Party</option>
               <option value="Democrat">Democrat</option>
               <option value="Republican">Republican</option>
@@ -111,7 +120,7 @@ const handleSubmit = async (e) => {
 
           <div className="form-group">
             <label>Zip Code</label>
-            <input type="text" name="zip" value={formData.zip} placeholder="90210" onChange={handleChange} />
+            <input type="text" name="zip_code" value={formData.zip_code} placeholder="90210" onChange={handleChange} />
           </div>
 
           <div className="modal-buttons" style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>

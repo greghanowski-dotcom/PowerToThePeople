@@ -105,6 +105,7 @@ export default function App() {
       {activeModal === 'profile' && (
         <ProfileModal
           onClose={() => setActiveModal(null)}
+          setIsLoggedIn={setIsLoggedIn}
         />
       )}
 

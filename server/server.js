@@ -95,9 +95,9 @@ app.post('/api/save_user', async (req, res) => {
       password || null, 
       phone || null,
       gender || null,
-      age ? parseInt(age, 10) : null,
+      age || null,
       party_affiliation || null, // Maps your React 'party' state field safely
-      zip_code || null,   // Maps your React 'zip' state field safely
+      zip_code || null,   // Maps your React 'zip_code' state field safely
       enable_notifications ? 1 : 0, 
       accordion_panels_stay_open ? 1 : 0
     ];

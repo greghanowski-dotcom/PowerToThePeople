@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './ProfileModal.css';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // 1. Destructured props cleanly at the entry gate
 export default function ProfileModal({ onClose, setIsLoggedIn }) { 
@@ -27,7 +28,7 @@ export default function ProfileModal({ onClose, setIsLoggedIn }) {
 
     try {
       // Direct POST request mapping your inputs straight to your port 5000 MySQL backend
-      const response = await fetch('http://127.0.0.1:5000/api/save_user', {
+      const response = await fetch(`${API_URL}/save_user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

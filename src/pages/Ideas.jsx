@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Accordion from '../components/Accordion';
 import HtmlDocViewer from '../components/HtmlDocViewer';
 import './Ideas.css';
+const API_URL = import.meta.env.VITE_API_URL || '/api'; //since .env file doesnt get pushed to the production server (because of .gitignore), it will default to '/api'. This ensures that the application can will function correctly both locally and remotely.
 
 export default function Ideas({ keepAccordionsOpen, isLoggedIn }) {
     const [groupedDocs, setGroupedDocs] = useState({}); // Stores data grouped by category
@@ -52,7 +53,7 @@ export default function Ideas({ keepAccordionsOpen, isLoggedIn }) {
             setVotes({}); // Resets the button UI to default clear settings if they sign out
         }
 
-        fetch('http://127.0.0.1:5000/api/global_votes')
+        fetch(`${API_URL}/global_votes`)
             .then(res => res.json())
             .then(globalData => {
                 // Merge your private history locks and the public counters together into your votes state object
@@ -104,7 +105,7 @@ export default function Ideas({ keepAccordionsOpen, isLoggedIn }) {
             const savedUserId = sessionStorage.getItem('currentUserId') || 1;
 
             // CRITICAL: Double checking that the IP address string is 100% complete and accurate!
-            const response = await fetch('http://127.0.0.1:5000/api/save_vote', {
+            const response = await fetch(`${API_URL}/save_vote`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

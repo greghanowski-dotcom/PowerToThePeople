@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import './Header.css';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -12,9 +13,9 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
 
     try {
       // FIXED: Preserving your exact required full URL structure using backticks
-      const response = await fetch(`http://127.0.0.1:5000/api/get_user/${encodeURIComponent(enteredEmail.trim())}`);
+      const response = await fetch(`${API_URL}/get_user/${encodeURIComponent(enteredEmail.trim())}`);
       const data = await response.json();
-console.log("Login lookup response data:", data);
+      console.log("Login lookup response data:", data);
       if (response.ok) {
         // Since server.js now safely outputs rows[0], data IS your single user object record!
         sessionStorage.setItem('currentUserId', data.id);

@@ -16,7 +16,11 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "google-libphonenumber": "^3.2.44",
     "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.23.1"
+    "mysql2": "^3.23.1",
+    "nodemailer": "^9.0.3",
+    "resend": "^6.18.0",
+    "twilio": "^6.0.2"
   }
 }

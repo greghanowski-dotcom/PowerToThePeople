@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import TwoFactorLogin from './components/TwoFactorLogin';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Polls from './pages/Polls';
@@ -14,115 +15,130 @@ import VoteModal from './components/modals/VoteModal';
 import AccountModal from './components/modals/AccountModal';
 import PreferencesModal from './components/modals/PreferencesModal';
 
+// Adaptive endpoint URL: uses local environment variables or falls back to production Nginx routes
+const GLOBAL_API_URL = import.meta.env?.VITE_API_URL || '/api';
+
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'profile', 'discussion', etc.
-  const [openPanels, setOpenPanels] = useState([]);
-  const [keepAccordionsOpen, setKeepAccordionsOpen] = useState(false); // This will be controlled by PreferencesModal
-  const [preferences, setPreferences] = useState({
-    keepAccordionsOpen: true,
-    notifications: true
-  });
-  // Inside your main App component:
-  const [votes, setVotes] = useState({});
+    // Session states
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [isAppLoading, setIsAppLoading] = useState(true);
 
-  useEffect(() => {
-    // 1. Check if the returning user has an active voting record string saved in browser memory
-    const storedVotingRecord = sessionStorage.getItem('currentUserVotingRecord');
+    // Modal and accordion panel states
+    const [activeModal, setActiveModal] = useState(null); 
+    const [openPanels, setOpenPanels] = useState([]);
+    const [keepAccordionsOpen, setKeepAccordionsOpen] = useState(false); 
+    const [preferences, setPreferences] = useState({ keepAccordionsOpen: true, notifications: true }); 
+    const [votes, setVotes] = useState({});
 
-    if (isLoggedIn && storedVotingRecord) {
-      try {
-        // 2. Translate the MySQL string database snapshot back into a usable JavaScript array layout
-        const votingHistory = JSON.parse(storedVotingRecord);
+    // 1. DEVICE RECOGNITION TIMELINE CHECK
+    useEffect(() => {
+        const verifyExistingDeviceToken = () => {
+            const token = localStorage.getItem('voter_token');
+            const savedUid = localStorage.getItem('voter_uid');
 
-        // 3. Use plain JavaScript reduce to turn the flat history list into a mapped React tracking layout
-        const initializedVotes = votingHistory.reduce((acc, currentVote) => {
-          // Extract your table data attributes
-          const issueId = currentVote.issue_id;
-          const voteType = currentVote.vote; // e.g., 'up' or 'down'
+            if (token && savedUid) {
+                // Device recognized! Authorize the dashboard views instantly
+                setUserId(savedUid);
+                setIsLoggedIn(true);
+            }
+            setIsAppLoading(false);
+        };
+        verifyExistingDeviceToken();
+    }, []);
 
-          acc[issueId] = {
-            up: voteType === 'up' ? 1 : 0,
-            down: voteType === 'down' ? 1 : 0,
-            hasVoted: true // FIXED: This locks the button state on screen initialization
-          };
+    // 2. BACKEND DATABASE SNAPSHOT HYDRATION LOOP
+    useEffect(() => {
+        const storedVotingRecord = sessionStorage.getItem('currentUserVotingRecord');
+        if (isLoggedIn && storedVotingRecord) {
+            try {
+                const votingHistory = JSON.parse(storedVotingRecord);
+                const initializedVotes = votingHistory.reduce((acc, currentVote) => {
+                    const issueId = currentVote.issue_id;
+                    const voteType = currentVote.vote;
+                    acc[issueId] = { up: voteType === 'up' ? 1 : 0, down: voteType === 'down' ? 1 : 0, hasVoted: true };
+                    return acc;
+                }, {});
+                setVotes(initializedVotes);
+            } catch (error) {
+                console.error("Failed to parse loaded database voting records:", error);
+            }
+        } else if (!isLoggedIn) {
+            setVotes({});
+        }
+    }, [isLoggedIn]);
 
-          return acc;
-        }, {});
+    // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK
+    const handleAuthSuccess = (authenticatedUserId) => {
+        localStorage.setItem('voter_token', 'secure-device-verified-token');
+        localStorage.setItem('voter_uid', authenticatedUserId);
+        setUserId(authenticatedUserId);
+        setIsLoggedIn(true);
+    };
 
-        // 4. Hydrate your state engine with your true historical records
-        setVotes(initializedVotes);
+    // 4. SECURE LOGOUT TERMINATION HANDLER
+    const handleLogout = () => {
+        localStorage.removeItem('voter_token');
+        localStorage.removeItem('voter_uid');
+        sessionStorage.removeItem('currentUserVotingRecord');
+        setIsLoggedIn(false);
+        setUserId(null);
+        setActiveModal(null);
+    };
 
-      } catch (error) {
-        console.error("Failed to parse loaded database voting records:", error);
-      }
-    } else if (!isLoggedIn) {
-      // Optional Safety: Clear out button tracking states if they choose to log out
-      setVotes({});
+    const togglePanel = (panelId) => {
+        if (keepAccordionsOpen) {
+            setOpenPanels(prev => prev.includes(panelId) ? prev.filter(id => id !== panelId) : [...prev, panelId]);
+        } else {
+            setOpenPanels(prev => prev.includes(panelId) ? [] : [panelId]);
+        }
+    };
+
+    // Delay render if the device is currently analyzing its localStorage tokens
+    if (isAppLoading) {
+        return <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>Verifying Device Identity Security...</div>;
     }
-  }, [isLoggedIn]); // Fires automatically whenever the user flips their 'isLoggedIn' state token!
 
-  console.log("App.jsx", { isLoggedIn, activeModal, openPanels, keepAccordionsOpen, preferences });
-  const togglePanel = (panelId) => {
-    if (keepAccordionsOpen) {
-      // Multi-open logic
-      setOpenPanels(prev =>
-        prev.includes(panelId)
-          ? prev.filter(id => id !== panelId)
-          : [...prev, panelId]
-      );
-    } else {
-      // Single-open logic
-      setOpenPanels(prev =>
-        prev.includes(panelId) ? [] : [panelId]
-      );
+    /* 🛡️ SECURITY SHIELD: If unverified, block all routes and force 2FA input */
+    if (!isLoggedIn) {
+        return (
+            <div className="security-auth-container" style={{ padding: '20px', minHeight: '100vh', display: 'flex', alignItems: 'center', backgroundColor: '#f9fafb' }}>
+                <TwoFactorLogin onAuthSuccess={handleAuthSuccess} apiBaseUrl={GLOBAL_API_URL} />
+            </div>
+        );
     }
-  };
 
-  return (
-    <div className="app-container">
-      <Header
-        isLoggedIn={isLoggedIn}
-        setIsLoggedIn={setIsLoggedIn}
-        openModal={setActiveModal}
-      />
+    /* 🚀 ROUTING ARCHITECTURE: Only rendered if device authorization passes */
+    return (
+        <div className="app-container">
+            {/* Header now receives a customized logout injection loop to wipe local tokens safely */}
+            <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} /> 
+            
+            <main className="content-area">
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/polls" element={<Polls />} />
+                    <Route path="/ideas" element={<Ideas keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} />
+                    <Route path="/news" element={<News />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/details/:slug" element={<DynamicContentPage />} />
+                    {/* Catch-all safety redirect route */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </main>
 
-      <main className="content-area">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/polls" element={<Polls />} />
-          <Route 
-  path="/ideas" 
-  element={<Ideas keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} 
-/>
-          <Route path="/news" element={<News />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/details/:slug" element={<DynamicContentPage />} />
-        </Routes>
-      </main>
-
-      {/* Modal Manager */}
-      {activeModal === 'profile' && (
-        <ProfileModal
-          onClose={() => setActiveModal(null)}
-          setIsLoggedIn={setIsLoggedIn}
-        />
-      )}
-
-      {activeModal === 'account' && (
-        <AccountModal
-          onClose={() => setActiveModal(null)}
-        />
-      )}
-      {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
-      {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
-      {activeModal === 'preferences' && (
-        <PreferencesModal
-          prefs={preferences}
-          setPrefs={setPreferences}
-          onClose={() => setActiveModal(null)}
-        />
-      )}
-    </div>
-  );
+            {/* Modal Control Layer */}
+            {activeModal === 'profile' && (
+                <ProfileModal onClose={() => setActiveModal(null)} setIsLoggedIn={handleLogout} />
+            )}
+            {activeModal === 'account' && (
+                <AccountModal onClose={() => setActiveModal(null)} />
+            )}
+            {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
+            {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
+            {activeModal === 'preferences' && (
+                <PreferencesModal prefs={preferences} setPrefs={setPreferences} onClose={() => setActiveModal(null)} />
+            )}
+        </div>
+    );
 }

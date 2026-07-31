@@ -45,7 +45,28 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
     }
   };
 
-  // FIXED: Explicit logout handler to wipe application state locks
+const handleLogin = async (email, password) => {
+    try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Securely store the authentication string token inside browser memory
+            localStorage.setItem('voter_token', data.token);
+            alert('Logged in successfully!');
+        } else {
+            alert(data.error);
+        }
+    } catch (err) {
+        console.error('Authentication transmission failed');
+    }
+};
+
+// FIXED: Explicit logout handler to wipe application state locks
   const handleSignOutClick = () => {
     sessionStorage.clear(); // Clear all user tokens out of browser memory cache
     setIsLoggedIn(false);

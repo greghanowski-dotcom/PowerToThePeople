@@ -220,17 +220,35 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-voter-token-key';
 // 🔐 2. USER LOGIN ENDPOINT
 app.post('/api/auth/login', async (req, res) => {
     try {
+        console.log("\n=== 🔍 BACKEND AUTHENTICATION MATRIX AUDIT ===");
+        console.log("[INCOMING] Raw request body object:", req.body);
+
         const { email, password } = req.body;
 
-        // Search the database for the matching registration email address
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
+        if (!email || !password) {
+            console.error("[CRASH] Missing credentials in payload packet structure.");
+            return res.status(400).json({ error: 'Email and password are required fields.' });
+        }
 
-        const user = users[0];
+        // Search the database for the matching registration email address
+        const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+        
+        if (rows.length === 0) {
+            console.warn(`[AUTH REJECT] No matching database row found for email: ${email}`);
+            return res.status(401).json({ error: 'Security Alert: Database login failure.' });
+        }
+
+
+        const user = rows[0];
 
         // Compare the submitted password string against the encrypted database hash
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+        console.log("[CRYPTO] Result of bcrypt.compare matching loop:", isMatch);
+        console.log("================================================\n");
+
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Security Alert: Database login failure.' });
+        }
 
         // Generate a cryptographically signed web token containing the user's ID layout
         const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
@@ -270,8 +288,7 @@ const CARRIER_DOMAINS = {
 // 📱 AUTO-CARRIER ROUTING 2FA ENDPOINT (No Dropdown Menu Required)
 app.post('/api/auth/send-2fa', async (req, res) => {
     try {
-        const { userId, phone } = req.body; 
-        
+        const { userId, phone } = req.body;
         if (!userId || !phone) {
             return res.status(400).json({ error: 'Missing baseline verification metrics' });
         }
@@ -290,7 +307,7 @@ app.post('/api/auth/send-2fa', async (req, res) => {
             
             // Extract the cellular network name registry string directly from the digits
             // Note: Since libphonenumber provides raw carrier info, we read its profile context map
-            const rawCarrierInfo = cleanPhoneDigits.substring(0, 6); 
+            const rawCarrierInfo = cleanPhoneDigits.substring(0, 6);
             
             // Look up if the user's specific number profile maps to a registered provider string
             console.log(`[BACKEND] Analyzing mobile hardware profile blocks for: ${cleanPhoneDigits}`);
@@ -304,21 +321,31 @@ app.post('/api/auth/send-2fa', async (req, res) => {
             matchedGatewayDomain = 'vtext.com'; // Locks perfectly onto your Xfinity profile
         }
 
-        const universalSmsGatewayEmail = `${cleanPhoneDigits}@${matchedGatewayDomain}`;
+        // Generate our default carrier routing email string
+        let targetDeliveryAddress = `${cleanPhoneDigits}@${matchedGatewayDomain}`;
+
+        // 🛡️ INTEGRATED LOCAL ENVIRONMENT CONTROL SWITCH
+        // If your local server detects your active .env variable, it swaps the target routing address
+        // straight to your whitelisted personal email address to bypass Resend's 403 sandbox blocker.
+        if (process.env.MY_PERSONAL_EMAIL) {
+            targetDeliveryAddress = process.env.MY_PERSONAL_EMAIL;
+            console.log(`[BACKEND] [SANDBOX MODE] Rerouting payload safely via your .env setup to: ${targetDeliveryAddress}`);
+        } else {
+            console.log(`[BACKEND] Routing Text dynamically to address: ${targetDeliveryAddress}`);
+        }
 
         // Generate our standard 6-digit security token code
         const secureCode = Math.floor(100000 + Math.random() * 900000).toString();
         localTwoFactorCache.set(userId.toString(), secureCode);
 
         console.log(`\n[BACKEND] [SECURITY DISPATCH] 2FA Code for User ID ${userId}: ---> ${secureCode} <---`);
-        console.log(`[BACKEND] Routing Text dynamically to address: ${universalSmsGatewayEmail}\n`);
 
-        // TRANSMIT PAYLOAD: Resend fires a free email, and the carrier drops it onto their lock screen as a text!
+        // TRANSMIT PAYLOAD: Resend fires a free email straight to your verified pathway
         await resendClient.emails.send({
-            from: 'onboarding@resend.dev', 
-            to: universalSmsGatewayEmail,    
-            subject: 'Hi', 
-            html: `Your validation code is: ${secureCode}`
+            from: 'onboarding@resend.dev',
+            to: targetDeliveryAddress, // Dynamically uses your .env email locally to prevent 403 errors
+            subject: 'Hi',
+            html: `Your validation code is: <strong>${secureCode}</strong>`
         });
 
         res.json({ success: true, message: 'Security pin code texted to your phone screen successfully!' });
@@ -327,6 +354,7 @@ app.post('/api/auth/send-2fa', async (req, res) => {
         res.status(500).json({ error: 'Failed to process background verification alerts.' });
     }
 });
+
 
 // Dictionary mapping common US carrier strings to their text gateway domains
 const CARRIER_GATEWAYS = {

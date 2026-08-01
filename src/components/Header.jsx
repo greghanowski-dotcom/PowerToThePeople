@@ -1,130 +1,172 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import './Header.css';
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
-  const [showDropdown, setShowDropdown] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownBoundaryRef = useRef(null);
 
-  // FIXED: Dynamic login event handler connected to port 5000
-  const handleSignInClick = async () => {
-    const enteredEmail = prompt("Please enter your email address to Sign In:");
-    if (!enteredEmail) return;
+    // Auto-Closing listener detects clicks anywhere outside the avatar area box
+    useEffect(() => {
+        const handleOutsideClickClose = (event) => {
+            if (dropdownBoundaryRef.current && !dropdownBoundaryRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
 
-    try {
-      // FIXED: Preserving your exact required full URL structure using backticks
-      const response = await fetch(`${API_URL}/get_user/${encodeURIComponent(enteredEmail.trim())}`);
-      const data = await response.json();
-      console.log("Login lookup response data:", data);
-      if (response.ok) {
-        // Since server.js now safely outputs rows[0], data IS your single user object record!
-        sessionStorage.setItem('currentUserId', data.id);
-        sessionStorage.setItem('currentUserEmail', data.email);
-        sessionStorage.setItem('currentUserPassword', data.password || '');
-        sessionStorage.setItem('currentUserPhone', data.phone || '');
-        sessionStorage.setItem('currentUserGender', data.gender || '');
-        sessionStorage.setItem('currentUserAge', data.age || '');
-        sessionStorage.setItem('currentUserPartyAffiliation', data.party_affiliation || '');
-        sessionStorage.setItem('currentUserZipCode', data.zip_code || '');
-        sessionStorage.setItem('currentUserAccordionPanels', data.accordion_panels_stay_open || '');
-        sessionStorage.setItem('currentUserVotingRecord', data.voting_record || '');
-
-        const votingRecordStr = typeof data.voting_record === 'string'
-          ? data.voting_record
-          : JSON.stringify(data.voting_record || []);
-        sessionStorage.setItem('currentUserVotingRecord', votingRecordStr);
-
-        alert(`🎉 Welcome back! Logged in as User ID: ${data.id}`);
-        setIsLoggedIn(true);
-      } else {
-        alert(data.error || "User not found. Please verify your email or sign up.");
-      }
-    } catch (error) {
-      console.error("Login lookup failure:", error);
-      alert("Failed to communicate with database server on port 5000.");
-    }
-  };
-
-const handleLogin = async (email, password) => {
-    try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        
-        if (response.ok) {
-            // Securely store the authentication string token inside browser memory
-            localStorage.setItem('voter_token', data.token);
-            alert('Logged in successfully!');
-        } else {
-            alert(data.error);
+        if (showDropdown) {
+            document.addEventListener('mousedown', handleOutsideClickClose);
         }
-    } catch (err) {
-        console.error('Authentication transmission failed');
-    }
-};
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClickClose);
+        };
+    }, [showDropdown]);
 
-// FIXED: Explicit logout handler to wipe application state locks
-  const handleSignOutClick = () => {
-    sessionStorage.clear(); // Clear all user tokens out of browser memory cache
-    setIsLoggedIn(false);
-    setShowDropdown(false);
-  };
+    const handleSignInClick = async () => {
+        const enteredEmail = prompt("Please enter your email address to Sign In:");
+        if (!enteredEmail) return;
+        try {
+            const response = await fetch(`${API_URL}/get_user/${encodeURIComponent(enteredEmail.trim())}`);
+            const data = await response.json();
+            if (response.ok) {
+                sessionStorage.setItem('currentUserId', data.id);
+                sessionStorage.setItem('currentUserEmail', data.email);
+                sessionStorage.setItem('currentUserPassword', data.password || '');
+                sessionStorage.setItem('currentUserPhone', data.phone || '');
+                sessionStorage.setItem('currentUserGender', data.gender || '');
+                sessionStorage.setItem('currentUserAge', data.age || '');
+                sessionStorage.setItem('currentUserPartyAffiliation', data.party_affiliation || '');
+                sessionStorage.setItem('currentUserZipCode', data.zip_code || '');
+                sessionStorage.setItem('currentUserAccordionPanels', data.accordion_panels_stay_open || '');
+                sessionStorage.setItem('currentUserVotingRecord', data.voting_record || '');
+                
+                const votingRecordStr = typeof data.voting_record === 'string' ? data.voting_record : JSON.stringify(data.voting_record || []);
+                sessionStorage.setItem('currentUserVotingRecord', votingRecordStr);
+                
+                alert(`🎉 Welcome back! Logged in as User ID: ${data.id}`);
+                setIsLoggedIn(true);
+            } else {
+                alert(data.error || "User not found. Please verify your email or sign up.");
+            }
+        } catch (error) {
+            console.error("Login lookup failure:", error);
+            alert("Failed to communicate with database server on port 5000.");
+        }
+    };
 
-  return (
-    <header className="site-header">
-      <div className="brand">
-        <span className="brand-icon">🗳️</span>
-        <span className="brand-title">Power to the People!</span>
-      </div>
+    const handleSignOutClick = () => {
+        sessionStorage.clear();
+        setIsLoggedIn(false);
+        setShowDropdown(false);
+    };
 
-      <div className="control-panel">
-        <nav className="nav-menu">
-          {['home', 'polls', 'ideas', 'news', 'about'].map((page) => (
-            <NavLink
-              key={page}
-              to={page === 'home' ? '/' : `/${page}`}
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-            >
-              {page.charAt(0).toUpperCase() + page.slice(1)}
-            </NavLink>
-          ))}
-        </nav>
+    return (
+        <header className="site-header">
+            <div className="brand">
+                <span className="brand-icon">🗳️</span>
+                <span className="brand-title">Power to the People!</span>
+            </div>
+            
+            <div className="control-panel">
+                <nav className="nav-menu">
+                    {['home', 'polls', 'ideas', 'news', 'about'].map((page) => (
+                        <NavLink 
+                            key={page} 
+                            to={page === 'home' ? '/' : `/${page}`} 
+                            className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+                        >
+                            {page.charAt(0).toUpperCase() + page.slice(1)}
+                        </NavLink>
+                    ))}
+                </nav>
 
-        {/* Conditional Rendering UI Row */}
-        {!isLoggedIn ? (
-          <button className="btn-signin" onClick={handleSignInClick}>
-            Sign In
-          </button>
-        ) : (
-          <div className="profile-container">
-            <button className="profile-trigger" onClick={() => setShowDropdown(!showDropdown)}>
-              👤
-            </button>
-            {showDropdown && (
-              <div className="dropdown-menu">
-                <span className="dropdown-item" onClick={() => { openModal('profile'); setShowDropdown(false); }}>
-                  👤 Profile
-                </span>
-                <span className="dropdown-item" onClick={() => { openModal('account'); setShowDropdown(false); }}>
-                  🛡️ Account Settings
-                </span>
-                <span className="dropdown-item" onClick={() => { openModal('preferences'); setShowDropdown(false); }}>
-                  ⚙️ Preferences
-                </span>
-                <div className="dropdown-divider"></div>
-                <span className="dropdown-item" onClick={handleSignOutClick}>
-                  Sign out
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </header>
-  );
+                {!isLoggedIn ? (
+                    <button className="btn-signin" onClick={handleSignInClick}>
+                        Sign In
+                    </button>
+                ) : (
+                    <div className="profile-container" ref={dropdownBoundaryRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                        
+                        <div className={`diagnostic-led-dot ${showDropdown ? 'diagnostic-led-active' : 'diagnostic-led-inactive'}`} />
+
+                        <button 
+                            className="profile-trigger" 
+                            style={{ fontSize: '22px', border: 'none', background: 'none', cursor: 'pointer', padding: '4px 8px' }}
+                            onClick={() => setShowDropdown(!showDropdown)}
+                        >
+                            👤
+                        </button>
+                        
+                        {/* 🚀 THE FIXED SHORT-CIRCUIT MOUNT VECTOR:
+                           Instead of toggling 'display: none', using '{showDropdown && (...)}' ensures that 
+                           the dropdown is physically deleted from the DOM tree memory layout the exact 
+                           millisecond an option is clicked, stopping re-render state freezing dead in its tracks! */}
+                        {showDropdown && (
+                            <div 
+                                className="dropdown-menu" 
+                                style={{ 
+                                    display: 'flex',
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: '100%',
+                                    marginTop: '8px',
+                                    backgroundColor: '#ffffff',
+                                    border: '1px solid #dddddd',
+                                    borderRadius: '6px',
+                                    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15)',
+                                    flexDirection: 'column',
+                                    minWidth: '180px',
+                                    padding: '6px 0',
+                                    zIndex: 999999999
+                                }}
+                            >
+                                <span 
+                                    className="dropdown-item" 
+                                    style={{ padding: '10px 16px', fontSize: '14px', color: '#333', cursor: 'pointer', display: 'block', textAlign: 'left' }}
+                                    onClick={() => {
+                                        setShowDropdown(false); // 🔒 1. Delete dropdown nodes immediately
+                                        openModal('profile');    // 🚀 2. Mount your profile dashboard modal safely
+                                    }}
+                                >
+                                    👤 Profile
+                                </span>
+                                <span 
+                                    className="dropdown-item" 
+                                    style={{ padding: '10px 16px', fontSize: '14px', color: '#333', cursor: 'pointer', display: 'block', textAlign: 'left' }}
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        openModal('account');
+                                    }}
+                                >
+                                    🛡️ Account Settings
+                                end Settings</span>
+                                <span 
+                                    className="dropdown-item" 
+                                    style={{ padding: '10px 16px', fontSize: '14px', color: '#333', cursor: 'pointer', display: 'block', textAlign: 'left' }}
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        openModal('preferences');
+                                    }}
+                                >
+                                    ⚙️ Preferences
+                                </span>
+                                <div className="dropdown-divider" style={{ height: '1px', backgroundColor: '#eeeeee', margin: '6px 0' }} />
+                                <span 
+                                    className="dropdown-item" 
+                                    style={{ padding: '10px 16px', fontSize: '14px', color: '#dc2626', cursor: 'pointer', display: 'block', textAlign: 'left' }} 
+                                    onClick={handleSignOutClick}
+                                >
+                                    Sign out
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </header>
+    );
 };
 
 export default Header;

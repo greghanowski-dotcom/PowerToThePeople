@@ -68,7 +68,8 @@ export default function App() {
         }
     }, [isLoggedIn]);
 
-    // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK
+    console.log("[APP CORE] Current activeModal state string position value:", activeModal);
+   // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK
     const handleAuthSuccess = (authenticatedUserId) => {
         localStorage.setItem('voter_token', 'secure-device-verified-token');
         localStorage.setItem('voter_uid', authenticatedUserId);
@@ -134,11 +135,11 @@ export default function App() {
             {activeModal === 'account' && (
                 <AccountModal onClose={() => setActiveModal(null)} />
             )}
-            {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
-            {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
             {activeModal === 'preferences' && (
                 <PreferencesModal prefs={preferences} setPrefs={setPreferences} onClose={() => setActiveModal(null)} />
             )}
-        </div>
+           {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
+            {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
+         </div>
     );
 }

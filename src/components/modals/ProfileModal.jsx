@@ -4,7 +4,8 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // 1. Destructured props cleanly at the entry gate
 export default function ProfileModal({ onClose, setIsLoggedIn }) { 
-  
+      console.log("=== 📦 PROFILE MODAL COMPONENT MOUNTED IN RECONCILIATION TREE ===");
+ 
   // 2. Initialized state variables cleanly so no inputs start as undefined
   const [formData, setFormData] = useState({ 
     email: sessionStorage.getItem('currentUserEmail') || '', 

@@ -221,30 +221,55 @@ nav a:hover {
 }
 
 .dropdown-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: white;
-    color: black;
-    border: 1px solid #ccc;
-    min-width: 150px;
-    z-index: 1000;
+    display: none;/* ==========================================================================
+   🚀 UNIFIED GLOBAL DROPDOWN SYSTEM
+   Every dropdown across your entire project will now inherit this exact layout!
+   ========================================================================== */
+
+/* 1. Base Hidden State (Resting Context) */
+.dropdown-menu {
+  display: none; /* Safely hides the element from the viewport layout by default */
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+  min-width: 180px;
+  padding: 6px 0;
+  
+  /* CRITICAL: Ensures every dropdown slices in front of underlying text, grids, or maps */
+  z-index: 999999999 !important; 
 }
 
-.dropdown-menu.show {
-    display: block;
+/* 2. Unified Active Visibility Override State */
+.dropdown-menu.active-visible {
+  display: flex !important; /* Overrides 'display: none' instantly when React applies the class! */
 }
 
+/* 3. Global Nested Dropdown Item Mechanics */
 .dropdown-item {
-    padding: 10px;
-    display: block;
-    cursor: pointer;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #333333;
+  cursor: pointer;
+  display: block;
+  text-align: left;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f6f8fa;
+  color: #0070f3;
 }
 
 .dropdown-divider {
-    height: 1px;
-    background: #eee;
+  height: 1px;
+  background-color: #eeeeee;
+  margin: 6px 0;
 }
 
 /* --- Accordion Styling --- */

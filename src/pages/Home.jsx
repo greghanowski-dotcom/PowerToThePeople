@@ -9,10 +9,10 @@ export default function Home() {
     const visibleText = (<div>
         <h3>Our Mission</h3>
         <p>
-            Here, we empower citizens to have a direct say in the issues that matter most. 
-            Our mission is to create a transparent, secure, and representative democratic process that 
-            bypasses the influence of special interests and amplifies the voices of everyday people. 
-         </p>
+            Here, we empower citizens to have a direct say in the issues that matter most.
+            Our mission is to create a transparent, secure, and representative democratic process that
+            bypasses the influence of special interests and amplifies the voices of everyday people.
+        </p>
         <p>
 
         </p>
@@ -118,16 +118,14 @@ export default function Home() {
 
     return (
         <div style={{ padding: '20px' }}>
-            <p>
-                {visibleText}
+            {visibleText}
 
-                {/* 🔒 DYNAMIC DISPLAY: Renders the text only when state is true */}
-                {isExpanded && (
-                    <span style={{ animation: 'fadeIn 0.3s ease-in' }}>
-                        {hiddenText}
-                    </span>
-                )}
-            </p>
+            {/* 🔒 DYNAMIC DISPLAY: Renders the text only when state is true */}
+            {isExpanded && (
+                <span style={{ animation: 'fadeIn 0.3s ease-in' }}>
+                    {hiddenText}
+                </span>
+            )}
 
             {/* 📱 DROPDOWN ACTION BUTTON */}
             <button

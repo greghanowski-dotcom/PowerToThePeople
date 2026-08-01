@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function TwoFactorLogin({ onAuthSuccess, apiBaseUrl = '/api' }) {
+export default function TwoFactorLogin({ onAuthSuccess }) {
     // Structural state management
     const [step, setStep] = useState(1); // Step 1: Login, Step 2: SMS 2FA
     const [email, setEmail] = useState('');
@@ -10,6 +10,9 @@ export default function TwoFactorLogin({ onAuthSuccess, apiBaseUrl = '/api' }) {
     const [userId, setUserId] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const apiBaseUrl = import.meta.env.VITE_API_URL
+        ? `${import.meta.env.VITE_API_URL}/auth`
+        : '/api/auth';
 
     // PHASE 1: STANDARD PRIMARY AUTHENTICATION
     const handlePrimaryLogin = async (e) => {
@@ -91,7 +94,7 @@ export default function TwoFactorLogin({ onAuthSuccess, apiBaseUrl = '/api' }) {
     return (
         <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
             <h2 style={{ textAlign: 'center' }}>Voter Access Control</h2>
-            
+
             {errorMessage && (
                 <div style={{ color: 'red', backgroundColor: '#fee', padding: '10px', borderRadius: '4px', marginBottom: '15px' }}>
                     <strong>Security Alert:</strong> {errorMessage}

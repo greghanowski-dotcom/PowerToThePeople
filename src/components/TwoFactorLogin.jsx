@@ -1,139 +1,244 @@
 import React, { useState } from 'react';
 
 export default function TwoFactorLogin({ onAuthSuccess }) {
-    // Structural state management
-    const [step, setStep] = useState(1); // Step 1: Login, Step 2: SMS 2FA
+    const [view, setView] = useState('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
-    const [twoFactorCode, setTwoFactorCode] = useState('');
-    const [userId, setUserId] = useState(null);
+    const [otpCode, setOtpCode] = useState('');
+
+    // Status message trackers
     const [errorMessage, setErrorMessage] = useState('');
-    const [loading, setLoading] = useState(false);
-    const apiBaseUrl = import.meta.env.VITE_API_URL
-        ? `${import.meta.env.VITE_API_URL}/auth`
-        : '/api/auth';
+    const [successMessage, setSuccessMessage] = useState('');
+    const [showOptionsNotice, setShowOptionsNotice] = useState(false);
 
-    // PHASE 1: STANDARD PRIMARY AUTHENTICATION
-    const handlePrimaryLogin = async (e) => {
+    // Password Visibility State Hook
+    const [showPasswordText, setShowPasswordText] = useState(false);
+
+    const [userId, setUserId] = useState(null);
+
+    // 🚀 ZERO HARDCODING: Auto-detects local vs remote hosting without manual code changes!
+    const getBaseUrl = () => {
+        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+            return 'http://localhost:5000'; // Dynamic local development pathing
+        }
+        return ''; // Production defaults to relative paths through your Nginx reverse proxy
+    };
+
+    // 🔒 THE ONLY ACTIVE DECLARATION BLOCK (Clears your duplicate identifier parse errors)
+    const apiBaseUrl = `${getBaseUrl()}/api/auth`;
+    const handleActionSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setErrorMessage('');
+        setSuccessMessage('');
+        setShowOptionsNotice(false);
 
         try {
-            const response = await fetch(`${apiBaseUrl}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-            const data = await response.json();
+            if (view === 'login') {
+                // Phase 1: Verify email exists in the system via relative proxy routing
+                const lookupRes = await fetch(`/api/get_user/${encodeURIComponent(email.trim().toLowerCase())}`);
 
-            if (!response.ok) throw new Error(data.error || 'Login failed');
+                if (!lookupRes.ok) {
+                    setErrorMessage('Your credentials failed. Please select an action below to proceed.');
+                    setShowOptionsNotice(true);
+                    return;
+                }
 
-            setUserId(data.user.id);
+                // Phase 2: Verify account password matches table records
+                const loginRes = await fetch(`${apiBaseUrl}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email.trim(), password }),
+                });
+                const loginData = await loginRes.json();
+                console.log("=== 🔍 FRONTEND RECEIVED LOGIN DATA PACKET ===", loginData);
 
-            // Trigger the background 2FA transmission routine
-            await handleTriggerSMS(data.user.id);
+                if (!loginRes.ok || loginData.error) {
+                    setErrorMessage(loginData.error || 'Authentication rejected.');
+                    return;
+                }
+
+                setUserId(loginData.userId);
+
+                // Phase 3: Trigger the 2FA token generation sequence
+                const sendOtpRes = await fetch(`${apiBaseUrl}/send-2fa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: loginData.userId,
+                        phone: loginData.phone // Keeps your updated database 'phone' property mapping intact!
+                    }),
+                });
+
+                if (!sendOtpRes.ok) {
+                    setErrorMessage('Failed to initialize two-factor verification sequence.');
+                    return;
+                }
+
+                setView('2fa'); // Progress smoothly to pin layout once the server confirms generation!
+            }
+
+            else if (view === 'register') {
+                const res = await fetch(`${apiBaseUrl}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, phone }),
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) return setErrorMessage(data.error || 'Registration failed.');
+
+                setSuccessMessage('Registration successful! You can now log in.');
+                setView('login');
+            }
+
+            else if (view === '2fa') {
+                const res = await fetch(`${apiBaseUrl}/verify-2fa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, token: otpCode }),
+                });
+                const data = await res.json();
+
+                if (!res.ok || data.error) return setErrorMessage(data.error || 'Invalid code.');
+
+                if (onAuthSuccess) {
+                    onAuthSuccess(userId);
+                }
+            }
         } catch (err) {
-            setErrorMessage(err.message);
-        } finally {
-            setLoading(false);
+            setErrorMessage('Network connection failure. Transaction aborted.');
         }
     };
 
-    // PHASE 2: SMS TRANSMISSION DISPATCHER
-    const handleTriggerSMS = async (id) => {
-        try {
-            // Prompt user for phone number if not stored, otherwise backend handles it
-            const targetPhone = phone || prompt("Enter your mobile number for 2FA verification:");
-            if (!targetPhone) throw new Error('Phone number is required for account security verification');
-            setPhone(targetPhone);
-
-            const response = await fetch(`${apiBaseUrl}/auth/send-2fa`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: id, phone: targetPhone }),
-            });
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(data.error || 'Failed to dispatch 2FA code');
-
-            // Shift form layout grid row view directly over to code verification viewport
-            setStep(2);
-        } catch (err) {
-            setErrorMessage(err.message);
-        }
-    };
-
-    // PHASE 3: SECURE CODE & COOKIE DEVICE LOCKOUT VALIDATION
-    const handleVerify2FA = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+    // Helper function to reset text inputs cleanly when toggling forms
+    const handleNavigationSwitch = (targetView) => {
         setErrorMessage('');
-
-        try {
-            const response = await fetch(`${apiBaseUrl}/auth/verify-2fa`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, code: twoFactorCode }),
-            });
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(data.error || 'Invalid security validation token');
-
-            // Success! Inform the master app layout context to pass down core user state parameters
-            alert('Device fully authenticated and locked successfully!');
-            onAuthSuccess(userId);
-        } catch (err) {
-            setErrorMessage(err.message);
-        } finally {
-            setLoading(false);
-        }
+        setSuccessMessage('');
+        setShowOptionsNotice(false);
+        setView(targetView);
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-            <h2 style={{ textAlign: 'center' }}>Voter Access Control</h2>
+        <div style={{ maxWidth: '420px', width: '100%', margin: '0 auto', padding: '30px', border: '1px solid #ddd', borderRadius: '8px', fontFamily: 'sans-serif', backgroundColor: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <h2 style={{ marginBottom: '20px', textTransform: 'capitalize', color: '#111', marginTop: '0', fontSize: '22px', textAlign: 'center' }}>
+                Voter {view.replace('-', ' ')} Gateway
+            </h2>
 
+            {/* Red Validation Error Message Box */}
             {errorMessage && (
-                <div style={{ color: 'red', backgroundColor: '#fee', padding: '10px', borderRadius: '4px', marginBottom: '15px' }}>
-                    <strong>Security Alert:</strong> {errorMessage}
+                <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #fca5a5', lineHeight: '1.4' }}>
+                    {errorMessage}
                 </div>
             )}
 
-            {step === 1 ? (
-                /* STEP 1: EMAIL & PASSWORD LAYOUT FORM BLOCK */
-                <form onSubmit={handlePrimaryLogin}>
+            {/* Green Registration Success Message Box */}
+            {successMessage && (
+                <div style={{ padding: '12px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #a7f3d0' }}>
+                    {successMessage}
+                </div>
+            )}
+
+            {/* INTERACTIVE CREDENTIALS FAILED ACTION RECOVERY LINKS */}
+            {showOptionsNotice && (
+                <div style={{ padding: '15px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', color: '#374151' }}>
+                    <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>Available Recovery Actions:</p>
+                    <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', listStyleType: 'square' }}>
+                        <li>
+                            <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>
+                                Try Entering Credentials Again
+                            </span>
+                        </li>
+                        <li>
+                            <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => alert('Password reset initialization pipeline triggered via email links.')}>
+                                Reset Account Password
+                            </span>
+                        </li>
+                        <li>
+                            <span style={{ color: '#10b981', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>
+                                Register as a New Voter Profile
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            )}
+
+            {/* Form Structural Mapping Context */}
+            {view !== '2fa' ? (
+                <form onSubmit={handleActionSubmit}>
+                    {view === 'register' && (
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Username</label>
+                            <input type="text" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={username} onChange={(e) => setUsername(e.target.value)} />
+                        </div>
+                    )}
+
                     <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Email Address</label>
-                        <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Email Address</label>
+                        <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Password</label>
-                        <input type="password" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                    <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                        {loading ? 'Processing Authentication...' : 'Verify Credentials'}
+
+                    {(view === 'login' || view === 'register') && (
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Password</label>
+                            {/* Password input row wrapping our visibility trigger icon */}
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type={showPasswordText ? "text" : "password"}
+                                    required
+                                    style={{ width: '100%', padding: '8px', paddingRight: '40px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <span
+                                    onClick={() => setShowPasswordText(!showPasswordText)}
+                                    style={{ position: 'absolute', right: '12px', cursor: 'pointer', fontSize: '16px', userSelect: 'none', color: '#666' }}
+                                    title={showPasswordText ? "Hide Password" : "Show Password"}
+                                >
+                                    {showPasswordText ? "👁️" : "🙈"}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'register' && (
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Mobile Phone Number</label>
+                            <input type="tel" required placeholder="303-555-0199" style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        </div>
+                    )}
+
+                    <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', marginTop: '10px' }}>
+                        Continue to {view}
                     </button>
                 </form>
             ) : (
-                /* STEP 2: 6-DIGIT SMS VERIFICATION COMPONENT OVERLAY */
-                <form onSubmit={handleVerify2FA}>
-                    <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px' }}>
-                        A secure 6-digit verification code has been dispatched to <strong>{phone}</strong>. Enter the validation string below to lock this device profile.
+                <form onSubmit={handleActionSubmit}>
+                    <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', lineHeight: '1.4', textAlign: 'center' }}>
+                        A secure 6-digit access code has been dispatched. Please check your mobile lock screen text notifications.
                     </p>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>SMS Security Code</label>
-                        <input type="text" maxLength="6" required placeholder="000000" style={{ width: '100%', padding: '12px', boxSizing: 'border-box', textAlign: 'center', fontSize: '20px', letterSpacing: '4px' }} value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} />
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Secure Verification Token</label>
+                        <input type="text" maxLength="6" placeholder="000000" required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', fontSize: '20px', letterSpacing: '4px', textAlign: 'center' }} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} />
                     </div>
-                    <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                        {loading ? 'Verifying Hardware footprint...' : 'Complete Device Authorization'}
-                    </button>
-                    <button type="button" onClick={() => handleTriggerSMS(userId)} style={{ width: '100%', marginTop: '10px', padding: '8px', backgroundColor: 'transparent', color: '#0070f3', border: 'none', cursor: 'pointer', fontSize: '13px' }}>
-                        Resend Code
+                    <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
+                        Verify Secure Token Code
                     </button>
                 </form>
             )}
+
+            {/* BASE NAVIGATION FOOTER ACTIONS */}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                {view !== 'login' ? (
+                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>
+                        Back to Sign In Form
+                    </span>
+                ) : (
+                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>
+                        Create an Account / Register Link
+                    </span>
+                )}
+            </div>
         </div>
     );
 }

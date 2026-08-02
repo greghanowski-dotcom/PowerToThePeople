@@ -84,6 +84,14 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
+        // 🚀 FIXED: Supplies your private .env email token seamlessly alongside user IDs!
+        res.json({ 
+            success: true, 
+            userId: user.id, 
+            phone: user.phone,
+            email: process.env.MY_PERSONAL_EMAIL || user.email // Fallbacks cleanly to the database column value
+        });
+
         // Return user indicators including cell numbers back to frontend triggers
         res.json({ success: true, userId: user.id, phone: user.phone });
     } catch (err) {

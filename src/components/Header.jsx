@@ -140,8 +140,7 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
                                         openModal('account');
                                     }}
                                 >
-                                    🛡️ Account Settings
-                                end Settings</span>
+                                    🛡️ Account Settings</span>
                                 <span 
                                     className="dropdown-item" 
                                     style={{ padding: '10px 16px', fontSize: '14px', color: '#333', cursor: 'pointer', display: 'block', textAlign: 'left' }}

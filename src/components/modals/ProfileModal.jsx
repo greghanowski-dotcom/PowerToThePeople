@@ -33,7 +33,6 @@ export default function ProfileModal({ onClose, setIsLoggedIn }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email,
           gender: formData.gender,
           age: formData.age,
           party_affiliation: formData.party, 
@@ -84,11 +83,6 @@ export default function ProfileModal({ onClose, setIsLoggedIn }) {
         <form onSubmit={handleSubmit}>
 
           <div className="form-group">
-            <label>Email Address</label>
-            <input type="email" name="email" value={formData.email} placeholder="user@example.com" onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
             <label>Gender</label>
             <select name="gender" value={formData.gender} onChange={handleChange}>
               <option value="">Select Gender</option>
@@ -115,12 +109,13 @@ export default function ProfileModal({ onClose, setIsLoggedIn }) {
               <option value="Democrat">Democrat</option>
               <option value="Republican">Republican</option>
               <option value="Independent">Independent</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
           <div className="form-group">
             <label>Zip Code</label>
-            <input type="text" name="zip_code" value={formData.zip_code} placeholder="90210" onChange={handleChange} />
+            <input type="text" name="zip_code" value={formData.zip_code} onChange={handleChange} />
           </div>
 
           <div className="modal-buttons" style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>

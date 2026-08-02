@@ -129,17 +129,26 @@ export default function App() {
             </main>
 
             {/* Modal Control Layer */}
-            {activeModal === 'profile' && (
-                <ProfileModal onClose={() => setActiveModal(null)} setIsLoggedIn={handleLogout} />
-            )}
-            {activeModal === 'account' && (
-                <AccountModal onClose={() => setActiveModal(null)} />
-            )}
-            {activeModal === 'preferences' && (
-                <PreferencesModal prefs={preferences} setPrefs={setPreferences} onClose={() => setActiveModal(null)} />
-            )}
-           {activeModal === 'vote' && <VoteModal onClose={() => setActiveModal(null)} />}
-            {activeModal === 'consensus' && <ConsensusModal onClose={() => setActiveModal(null)} />}
+{/* 🚀 THE FIXED SELF-HEALING SWITCH WRAPPER: Matches whichever string layout state maps down */}
+{activeModal && (
+    <div className="global-modal-manager">
+        {/* Mounts the profile form card when state hits profile */}
+        {activeModal === 'profile' && (
+            <ProfileModal onClose={() => setActiveModal(null)} />
+        )}
+
+        {/* 🚀 FIXED: Captures 'account', 'account-settings', or 'accountSettings' states seamlessly! */}
+        {(activeModal === 'account' || activeModal === 'account-settings' || activeModal === 'accountSettings') && (
+            <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
+        )}
+
+        {/* Mounts the preference configurations */}
+        {activeModal === 'preferences' && (
+            <PreferencesModal onClose={() => setActiveModal(null)} />
+        )}
+    </div>
+)}
+
          </div>
     );
 }

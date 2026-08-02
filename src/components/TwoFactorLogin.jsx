@@ -4,7 +4,6 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
     const [view, setView] = useState('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
     const [otpCode, setOtpCode] = useState('');
 
@@ -38,12 +37,15 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
             if (view === 'login') {
                 // Phase 1: Verify email exists in the system via relative proxy routing
                 const lookupRes = await fetch(`/api/get_user/${encodeURIComponent(email.trim().toLowerCase())}`);
-
+                
                 if (!lookupRes.ok) {
+                    // CATCHER A: Triggers if the email doesn't exist in MySQL
                     setErrorMessage('Your credentials failed. Please select an action below to proceed.');
                     setShowOptionsNotice(true);
                     return;
                 }
+
+                const lookupData = await lookupRes.json();
 
                 // Phase 2: Verify account password matches table records
                 const loginRes = await fetch(`${apiBaseUrl}/login`, {
@@ -52,22 +54,25 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                     body: JSON.stringify({ email: email.trim(), password }),
                 });
                 const loginData = await loginRes.json();
-                console.log("=== 🔍 FRONTEND RECEIVED LOGIN DATA PACKET ===", loginData);
-
+                
                 if (!loginRes.ok || loginData.error) {
-                    setErrorMessage(loginData.error || 'Authentication rejected.');
+                    // 🚀 FIXED: Instead of showing a 401 error message, take them to the EXACT 
+                    // same options recovery page as an invalid email address!
+                    setErrorMessage('Your credentials failed. Please select an action below to proceed.');
+                    setShowOptionsNotice(true);
                     return;
                 }
-
+                
+                // If credentials are completely correct, advance cleanly to 2FA generation
                 setUserId(loginData.userId);
 
                 // Phase 3: Trigger the 2FA token generation sequence
                 const sendOtpRes = await fetch(`${apiBaseUrl}/send-2fa`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: loginData.userId,
-                        phone: loginData.phone // Keeps your updated database 'phone' property mapping intact!
+                    body: JSON.stringify({ 
+                        userId: loginData.userId, 
+                        phone: loginData.phone 
                     }),
                 });
 
@@ -76,14 +81,14 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                     return;
                 }
 
-                setView('2fa'); // Progress smoothly to pin layout once the server confirms generation!
+                setView('2fa'); // Progress smoothly to pin layout
             }
 
             else if (view === 'register') {
                 const res = await fetch(`${apiBaseUrl}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password, phone }),
+                    body: JSON.stringify({ email, password, phone }),
                 });
                 const data = await res.json();
                 if (!res.ok || data.error) return setErrorMessage(data.error || 'Registration failed.');
@@ -168,11 +173,9 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 <form onSubmit={handleActionSubmit}>
                     {view === 'register' && (
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Username</label>
                             <input type="text" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={username} onChange={(e) => setUsername(e.target.value)} />
                         </div>
                     )}
-
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Email Address</label>
                         <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -208,9 +211,27 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                         </div>
                     )}
 
-                    <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', marginTop: '10px' }}>
+                    {/* 🚀 FIXED: The button dynamically reads form parameters to control interaction loops */}
+                    <button
+                        type="submit"
+                        disabled={view === 'login' && (!email.trim() || !password.trim())}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            backgroundColor: (view === 'login' && (!email.trim() || !password.trim())) ? '#cbd5e1' : '#0070f3',
+                            color: (view === 'login' && (!email.trim() || !password.trim())) ? '#64748b' : '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontWeight: 'bold',
+                            cursor: (view === 'login' && (!email.trim() || !password.trim())) ? 'not-allowed' : 'pointer',
+                            fontSize: '15px',
+                            marginTop: '10px',
+                            transition: 'background-color 0.2s ease, color 0.2s ease'
+                        }}
+                    >
                         Continue to {view}
                     </button>
+
                 </form>
             ) : (
                 <form onSubmit={handleActionSubmit}>
@@ -235,7 +256,7 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                     </span>
                 ) : (
                     <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>
-                        Create an Account / Register Link
+                        Create Account / Register
                     </span>
                 )}
             </div>

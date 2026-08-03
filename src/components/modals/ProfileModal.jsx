@@ -1,130 +1,148 @@
-import { useState } from 'react';
-import './ProfileModal.css';
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import React, { useState, useEffect } from 'react';
 
-// 1. Destructured props cleanly at the entry gate
-export default function ProfileModal({ onClose, setIsLoggedIn }) { 
-      console.log("=== 📦 PROFILE MODAL COMPONENT MOUNTED IN RECONCILIATION TREE ===");
- 
-  // 2. Initialized state variables cleanly so no inputs start as undefined
-  const [formData, setFormData] = useState({ 
-    email: sessionStorage.getItem('currentUserEmail') || '', 
-    gender: sessionStorage.getItem('currentUserGender') || '', 
-    party: sessionStorage.getItem('currentUserPartyAffiliation') || '',  
-    zip_code: sessionStorage.getItem('currentUserZipCode') || '', 
-    age: sessionStorage.getItem('currentUserAge') || ''     
-  });
-  
-  // FIXED: Ensured this exact state hook is declared at the top of your component body
-  const [validationError, setValidationError] = useState('');
+export default function ProfileModal({ isOpen, onClose }) {
+    // 🚀 FIXED: Instantly reads the values cached inside your session storage variables on load
+    const [address, setAddress] = useState('');
+    const [gender, setGender] = useState('');
+    const [age, setAge] = useState('');
+    const [party, setParty] = useState('Independent');
+    
+    const [showTooltip, setShowTooltip] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [statusMessage, setStatusMessage] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    const apiBaseUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:5000'
+        : '';
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setValidationError('');
-
-    try {
-      // Direct POST request mapping your inputs straight to your port 5000 MySQL backend
-      const response = await fetch(`${API_URL}/save_user`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gender: formData.gender,
-          age: formData.age,
-          party_affiliation: formData.party, 
-          zip_code: formData.zip_code             
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Hydrate all database columns into frontend sessionStorage variables
-        sessionStorage.setItem('currentUserId', data.userId);
-        sessionStorage.setItem('currentUserEmail', formData.email);
-        sessionStorage.setItem('currentUserGender', formData.gender);
-        sessionStorage.setItem('currentUserAge', formData.age);
-        sessionStorage.setItem('currentUserPartyAffiliation', formData.party);
-        sessionStorage.setItem('currentUserZipCode', formData.zip_code);
-
-        alert(`🎉 Success! Record saved to MySQL with User ID: ${data.userId}`);
-        
-        // Keeps your top navigation bar layout logged in safely instead of wiping memory!
-        if (typeof setIsLoggedIn === 'function') {
-          setIsLoggedIn(true); 
+    // Synchronizes component inputs directly with session storage keys whenever the modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setAddress(sessionStorage.getItem('currentUserAddress') || '');
+            setGender(sessionStorage.getItem('currentUserGender') || '');
+            setAge(sessionStorage.getItem('currentUserAge') || '');
+            setParty(sessionStorage.getItem('currentUserPartyAffiliation') || 'Independent');
         }
+    }, [isOpen]);
 
-        onClose(); 
-      } else {
-        setValidationError(data.details || data.error || "Something went wrong.");
-      }
-    } catch (error) {
-      console.error("Database connection failure:", error);
-      setValidationError("Failed to communicate with database server on port 5000.");
-    }
-  };
+    if (!isOpen) return null;
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ textAlign: 'center', marginBottom: '20px' }}>My Profile</h3>
+    const handleFormSave = async (e) => {
+        e.preventDefault();
+        const cachedUserId = sessionStorage.getItem('currentUserId') || '1';
+        setIsLoading(true);
+        setStatusMessage('');
 
-        {/* FIXED POSITION: This safely resolves line 64 error because hook is in scope */}
-        {validationError && (
-          <div style={{ color: 'red', marginBottom: '15px', fontWeight: 'bold', textAlign: 'center' }}>
-            ⚠️ {validationError}
-          </div>
-        )}
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/update_profile`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: cachedUserId,
+                    address: address.trim(),
+                    gender,
+                    age,
+                    party
+                })
+            });
 
-        <form onSubmit={handleSubmit}>
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                setStatusMessage(`❌ Error: ${data.error || 'Sync failed.'}`);
+                return;
+            }
 
-          <div className="form-group">
-            <label>Gender</label>
-            <select name="gender" value={formData.gender} onChange={handleChange}>
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-          </div>
+            // Sync successful local session cache copies seamlessly
+            sessionStorage.setItem('currentUserAddress', address.trim());
+            sessionStorage.setItem('currentUserGender', gender);
+            sessionStorage.setItem('currentUserAge', age);
+            sessionStorage.setItem('currentUserPartyAffiliation', party);
 
-          <div className="form-group">
-            <label>Age</label>
-            <select name="age" value={formData.age} onChange={handleChange}>
-              <option value="">Select Age</option>
-              <option value="18-24">18-24</option>
-              <option value="25-34">25-34</option>
-              <option value="35-50">35-50</option>
-              <option value="50+">50+</option>
-            </select>
-          </div>
+            alert("🎉 Profile parameters synchronized successfully!");
+            onClose();
+        } catch (err) {
+            setStatusMessage('❌ Network failure. Failed to update profile.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-          <div className="form-group">
-            <label>Party Affiliation</label>
-            <select name="party" value={formData.party} onChange={handleChange}>
-              <option value="">Select Party</option>
-              <option value="Democrat">Democrat</option>
-              <option value="Republican">Republican</option>
-              <option value="Independent">Independent</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+    return (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999999 }}>
+            <div style={{ backgroundColor: '#fff', padding: '35px', borderRadius: '10px', maxWidth: '460px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', fontFamily: 'sans-serif', color: '#111' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '25px', textAlign: 'center', fontSize: '22px' }}>👤 Voter Profile Attributes</h3><br/>
+                
+                {statusMessage && (
+                    <div style={{ padding: '10px', marginBottom: '15px', borderRadius: '4px', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '13px', border: '1px solid #fca5a5' }}>
+                        {statusMessage}
+                    </div>
+                )}
 
-          <div className="form-group">
-            <label>Zip Code</label>
-            <input type="text" name="zip_code" value={formData.zip_code} onChange={handleChange} />
-          </div>
+                <form onSubmit={handleFormSave}>
+                    <div style={{ marginBottom: '18px', position: 'relative' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>Full Mailing Address (Optional)</label>
+                            <span 
+                                onMouseEnter={() => setShowTooltip(true)}
+                                onMouseLeave={() => setShowTooltip(false)}
+                                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', backgroundColor: '#e2e8f0', color: '#475569', borderRadius: '50%', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none' }}
+                            >
+                                ?
+                            </span>
+                        </div>
 
-          <div className="modal-buttons" style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
-            <button type="button" className="btn-close" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-save">Save Changes</button>
-          </div>
+                        {showTooltip && (
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#1e293b', color: '#f8fafc', padding: '14px', borderRadius: '6px', fontSize: '12px', zIndex: 999999, marginTop: '5px' }}>
+                                📌 Why add your address? ZIP codes cross state boundaries. An address allows us to cleanly map your exact congressmen.
+                            </div>
+                        )}
 
-        </form>
-      </div>
-    </div>
-  );
+                        <input type="text" placeholder="123 Main St, Denver, CO 80108" style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px' }} value={address} onChange={(e) => setAddress(e.target.value)} />
+                    </div>
+
+                    <div style={{ marginBottom: '18px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Gender Indicator</label>
+                        <select style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: '#fff' }} value={gender} onChange={(e) => setGender(e.target.value)}>
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-binary">Non-binary</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                    </div>
+
+                    <div style={{ marginBottom: '18px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Voter Age Group</label>
+                        <select style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: '#fff' }} value={age} onChange={(e) => setAge(e.target.value)}>
+                            <option value="">Select Age Group...</option>
+                            <option value="18-24">18-24</option>
+                            <option value="25-34">25-34</option>
+                            <option value="35-44">35-44</option>
+                            <option value="45-54">45-54</option>
+                            <option value="55-64">55-64</option>
+                            <option value="65+">65+</option>
+                        </select>
+                    </div>
+
+                    <div style={{ marginBottom: '25px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Party Affiliation Alignment</label>
+                        <select style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: '#fff' }} value={party} onChange={(e) => setParty(e.target.value)}>
+                            <option value="Independent">Independent</option>
+                            <option value="Democrat">Democrat</option>
+                            <option value="Republican">Republican</option>
+                            <option value="Green">Green Party</option>
+                            <option value="Libertarian">Libertarian</option>
+                        </select>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                        <button type="submit" disabled={isLoading} style={{ padding: '10px 16px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            {isLoading ? 'Syncing...' : 'Save'}
+                        </button>
+                        <button type="button" onClick={onClose} style={{ padding: '10px 16px', backgroundColor: '#f1f5f9', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 }

@@ -84,12 +84,16 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
-        // 🚀 FIXED: Supplies your private .env email token seamlessly alongside user IDs!
         res.json({ 
             success: true, 
             userId: user.id, 
+            username: user.username,
+            email: user.email,
             phone: user.phone,
-            email: process.env.MY_PERSONAL_EMAIL || user.email // Fallbacks cleanly to the database column value
+            address: user.address,
+            gender: user.gender,
+            age: user.age,
+            party: user.party_affiliation
         });
 
         // Return user indicators including cell numbers back to frontend triggers
@@ -234,4 +238,41 @@ app.post('/api/auth/verify-2fa', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`[BACKEND] Universal service running smoothly on port ${PORT}`);
+});
+
+/* ==========================================================================
+   POST ROUTE: SAVE / UPDATE VOTER PROFILE ATTRIBUTES
+   ========================================================================== */
+app.post('/api/update_profile', async (req, res) => {
+    try {
+        const { userId, address, gender, age, party } = req.body;
+        
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing critical user identification parameter.' });
+        }
+
+        // 🚀 Executes a safe relational SQL update layout inside your users table matrix
+        const [result] = await db.query(
+            `UPDATE users 
+             SET address = ?, gender = ?, age = ?, party_affiliation = ? 
+             WHERE id = ?`,
+            [
+                address ? address.trim() : null, 
+                gender ? gender.trim() : null, 
+                age ? parseInt(age, 10) : null, 
+                party || 'Independent', 
+                userId
+            ]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Failed to locate a matching user profile row.' });
+        }
+
+        console.log(`[DATABASE] 🎉 Successfully synchronized profile attributes for User ID: ${userId}`);
+        res.json({ success: true, message: 'Voter profile attributes synchronized cleanly!' });
+    } catch (err) {
+        console.error("[BACKEND] ❌ Profile update pipeline crash:", err.message);
+        res.status(500).json({ error: 'Failed to write profile record to the database schema.' });
+    }
 });

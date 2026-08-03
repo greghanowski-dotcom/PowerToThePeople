@@ -130,24 +130,23 @@ export default function App() {
 
             {/* Modal Control Layer */}
 {/* 🚀 THE FIXED SELF-HEALING SWITCH WRAPPER: Matches whichever string layout state maps down */}
+{/* 🚀 FIXED: Passes the explicit isOpen gate property so the modals can paint onto the DOM screen */}
 {activeModal && (
     <div className="global-modal-manager">
-        {/* Mounts the profile form card when state hits profile */}
         {activeModal === 'profile' && (
-            <ProfileModal onClose={() => setActiveModal(null)} />
+            <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
         )}
 
-        {/* 🚀 FIXED: Captures 'account', 'account-settings', or 'accountSettings' states seamlessly! */}
-        {(activeModal === 'account' || activeModal === 'account-settings' || activeModal === 'accountSettings') && (
+        {activeModal === 'account' && (
             <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
         )}
 
-        {/* Mounts the preference configurations */}
         {activeModal === 'preferences' && (
-            <PreferencesModal onClose={() => setActiveModal(null)} />
+            <PreferencesModal isOpen={true} onClose={() => setActiveModal(null)} />
         )}
     </div>
 )}
+
 
          </div>
     );

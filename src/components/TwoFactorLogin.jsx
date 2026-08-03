@@ -4,29 +4,30 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
     const [view, setView] = useState('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
     const [otpCode, setOtpCode] = useState('');
-
+    
     // Status message trackers
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [showOptionsNotice, setShowOptionsNotice] = useState(false);
-
+    
     // Password Visibility State Hook
     const [showPasswordText, setShowPasswordText] = useState(false);
-
+    
     const [userId, setUserId] = useState(null);
 
-    // 🚀 ZERO HARDCODING: Auto-detects local vs remote hosting without manual code changes!
+    // ZERO HARDCODING: Auto-detects local vs remote hosting without manual code changes
     const getBaseUrl = () => {
         if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-            return 'http://localhost:5000'; // Dynamic local development pathing
+            return 'http://localhost:5000';
         }
-        return ''; // Production defaults to relative paths through your Nginx reverse proxy
+        return '';
     };
 
-    // 🔒 THE ONLY ACTIVE DECLARATION BLOCK (Clears your duplicate identifier parse errors)
     const apiBaseUrl = `${getBaseUrl()}/api/auth`;
+
     const handleActionSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage('');
@@ -35,17 +36,14 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
 
         try {
             if (view === 'login') {
-                // Phase 1: Verify email exists in the system via relative proxy routing
-                const lookupRes = await fetch(`/api/get_user/${encodeURIComponent(email.trim().toLowerCase())}`);
+                // Phase 1: Verify email exists in the system
+                const lookupRes = await fetch(`${getBaseUrl()}/api/get_user/${encodeURIComponent(email.trim().toLowerCase())}`);
                 
                 if (!lookupRes.ok) {
-                    // CATCHER A: Triggers if the email doesn't exist in MySQL
                     setErrorMessage('Your credentials failed. Please select an action below to proceed.');
                     setShowOptionsNotice(true);
                     return;
                 }
-
-                const lookupData = await lookupRes.json();
 
                 // Phase 2: Verify account password matches table records
                 const loginRes = await fetch(`${apiBaseUrl}/login`, {
@@ -56,15 +54,19 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 const loginData = await loginRes.json();
                 
                 if (!loginRes.ok || loginData.error) {
-                    // 🚀 FIXED: Instead of showing a 401 error message, take them to the EXACT 
-                    // same options recovery page as an invalid email address!
                     setErrorMessage('Your credentials failed. Please select an action below to proceed.');
                     setShowOptionsNotice(true);
                     return;
                 }
                 
-                // If credentials are completely correct, advance cleanly to 2FA generation
+                // 🚀 FIXED SCOPE: Store all profile attributes safely into session storage right here where loginData is active!
                 setUserId(loginData.userId);
+                sessionStorage.setItem('currentUserId', loginData.userId);
+                sessionStorage.setItem('currentUserEmail', loginData.email || '');
+                sessionStorage.setItem('currentUserAddress', loginData.address || '');
+                sessionStorage.setItem('currentUserGender', loginData.gender || '');
+                sessionStorage.setItem('currentUserAge', loginData.age || '');
+                sessionStorage.setItem('currentUserPartyAffiliation', loginData.party || 'Independent');
 
                 // Phase 3: Trigger the 2FA token generation sequence
                 const sendOtpRes = await fetch(`${apiBaseUrl}/send-2fa`, {
@@ -81,32 +83,35 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                     return;
                 }
 
-                setView('2fa'); // Progress smoothly to pin layout
-            }
-
+                setView('2fa'); // Transition over to the 6-digit pin screen
+            } 
+            
             else if (view === 'register') {
                 const res = await fetch(`${apiBaseUrl}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, phone }),
+                    body: JSON.stringify({ username, email, password, phone }),
                 });
                 const data = await res.json();
                 if (!res.ok || data.error) return setErrorMessage(data.error || 'Registration failed.');
-
+                
                 setSuccessMessage('Registration successful! You can now log in.');
                 setView('login');
-            }
-
+            } 
+            
             else if (view === '2fa') {
                 const res = await fetch(`${apiBaseUrl}/verify-2fa`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, token: otpCode }),
+                    body: JSON.stringify({ 
+                        userId: userId, 
+                        token: otpCode 
+                    }),
                 });
                 const data = await res.json();
-
+                
                 if (!res.ok || data.error) return setErrorMessage(data.error || 'Invalid code.');
-
+                
                 if (onAuthSuccess) {
                     onAuthSuccess(userId);
                 }
@@ -116,7 +121,6 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
         }
     };
 
-    // Helper function to reset text inputs cleanly when toggling forms
     const handleNavigationSwitch = (targetView) => {
         setErrorMessage('');
         setSuccessMessage('');
@@ -130,21 +134,18 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 Voter {view.replace('-', ' ')} Gateway
             </h2>
 
-            {/* Red Validation Error Message Box */}
             {errorMessage && (
                 <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #fca5a5', lineHeight: '1.4' }}>
                     {errorMessage}
                 </div>
             )}
 
-            {/* Green Registration Success Message Box */}
             {successMessage && (
                 <div style={{ padding: '12px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #a7f3d0' }}>
                     {successMessage}
                 </div>
             )}
 
-            {/* INTERACTIVE CREDENTIALS FAILED ACTION RECOVERY LINKS */}
             {showOptionsNotice && (
                 <div style={{ padding: '15px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', color: '#374151' }}>
                     <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>Available Recovery Actions:</p>
@@ -155,7 +156,7 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                             </span>
                         </li>
                         <li>
-                            <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => alert('Password reset initialization pipeline triggered via email links.')}>
+                            <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => alert('Password reset initialization pipeline triggered.')}>
                                 Reset Account Password
                             </span>
                         </li>
@@ -168,14 +169,15 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 </div>
             )}
 
-            {/* Form Structural Mapping Context */}
             {view !== '2fa' ? (
                 <form onSubmit={handleActionSubmit}>
                     {view === 'register' && (
                         <div style={{ marginBottom: '15px' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Username</label>
                             <input type="text" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={username} onChange={(e) => setUsername(e.target.value)} />
                         </div>
                     )}
+
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Email Address</label>
                         <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -184,10 +186,9 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                     {(view === 'login' || view === 'register') && (
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Password</label>
-                            {/* Password input row wrapping our visibility trigger icon */}
-                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <div style={{ position: 'relative' }}>
                                 <input
-                                    type={showPasswordText ? "text" : "password"}
+                                    type={showPasswordText ? 'text' : 'password'}
                                     required
                                     style={{ width: '100%', padding: '8px', paddingRight: '40px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
                                     value={password}
@@ -195,10 +196,10 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                                 />
                                 <span
                                     onClick={() => setShowPasswordText(!showPasswordText)}
-                                    style={{ position: 'absolute', right: '12px', cursor: 'pointer', fontSize: '16px', userSelect: 'none', color: '#666' }}
-                                    title={showPasswordText ? "Hide Password" : "Show Password"}
+                                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '16px', userSelect: 'none', color: '#666' }}
+                                    title={showPasswordText ? 'Hide Password' : 'Show Password'}
                                 >
-                                    {showPasswordText ? "👁️" : "🙈"}
+                                    {showPasswordText ? '👁️' : '🙈'}
                                 </span>
                             </div>
                         </div>
@@ -211,7 +212,6 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                         </div>
                     )}
 
-                    {/* 🚀 FIXED: The button dynamically reads form parameters to control interaction loops */}
                     <button
                         type="submit"
                         disabled={view === 'login' && (!email.trim() || !password.trim())}
@@ -225,39 +225,28 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                             fontWeight: 'bold',
                             cursor: (view === 'login' && (!email.trim() || !password.trim())) ? 'not-allowed' : 'pointer',
                             fontSize: '15px',
-                            marginTop: '10px',
-                            transition: 'background-color 0.2s ease, color 0.2s ease'
+                            marginTop: '10px'
                         }}
                     >
                         Continue to {view}
                     </button>
-
                 </form>
             ) : (
-                <form onSubmit={handleActionSubmit}>
-                    <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', lineHeight: '1.4', textAlign: 'center' }}>
-                        A secure 6-digit access code has been dispatched. Please check your mobile lock screen text notifications.
-                    </p>
+                <div>
+                    <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', lineHeight: '1.4', textAlign: 'center' }}>A secure 6-digit access code has been dispatched. Please check your mobile lock screen text notifications.</p>
                     <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Secure Verification Token</label>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold' }}>Secure Verification Token</label>
                         <input type="text" maxLength="6" placeholder="000000" required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', fontSize: '20px', letterSpacing: '4px', textAlign: 'center' }} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} />
                     </div>
-                    <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
-                        Verify Secure Token Code
-                    </button>
-                </form>
+                    <button type="button" onClick={handleActionSubmit} style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Verify Secure Token Code</button>
+                </div>
             )}
 
-            {/* BASE NAVIGATION FOOTER ACTIONS */}
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
                 {view !== 'login' ? (
-                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>
-                        Back to Sign In Form
-                    </span>
+                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>Back to Sign In Form</span>
                 ) : (
-                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>
-                        Create Account / Register
-                    </span>
+                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>Create an Account / Register</span>
                 )}
             </div>
         </div>

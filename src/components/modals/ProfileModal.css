@@ -1,135 +1,136 @@
-/* Modal Container */
+/* ==========================================================================
+   📦 STYLING MATRIX: ProfileModal.css
+   ========================================================================== */
+
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
-    justify-content: center;
     align-items: center;
-    z-Index: 999999999;
+    justify-content: center;
+    z-index: 99999999;
 }
 
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 450px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+.modal-card {
+    background-color: #ffffff;
+    padding: 35px;
+    border-radius: 10px;
+    max-width: 460px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    font-family: sans-serif;
+    color: #111111;
+}
+
+.modal-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 22px;
 }
 
 .form-group {
-    display: grid;
-    grid-template-columns: 140px 1fr; 
-    align-items: center;            
-    gap: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 18px;
+    position: relative;
 }
 
-/* Make the disabled "placeholder" option look grey/light */
-.form-group select:invalid {
-    color: #94a3b8;
-    /* Lighter grey for placeholder state */
+.form-group-last {
+    margin-bottom: 25px;
+    position: relative;
 }
 
-/* Also target the placeholder text in standard inputs */
-.form-group input::placeholder {
-    color: #94a3b8;
-    opacity: 1;
-    /* Ensures browsers don't override the lightness */
-}
-
-.form-group input,
-.form-group select {
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-/* Labels: Dark and bold */
-.form-group label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #1e293b; /* Dark */
+.label-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-bottom: 8px;
 }
 
-/* Input placeholders: Grey */
-.form-group input::placeholder {
-    color: #94a3b8; /* Grey */
-    opacity: 1;
+.form-label {
+    font-size: 14px;
+    fontWeight: bold;
+    color: #374151;
+    display: block;
 }
 
-/* Select: Grey when "placeholder" option is selected, Dark when actual value is selected */
-.form-group select {
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: #e2e8f0;
+    color: #475569;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.floating-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1e293b;
+    color: #f8fafc;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    z-index: 999999;
+    margin-top: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.input-field {
+    width: 100%;
     padding: 10px;
+    box-sizing: border-box;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 1rem;
-    color: #1e293b; /* Default text is dark */
+    font-size: 14px;
+    background-color: #ffffff;
 }
 
-/* When the select value is the empty string, make the text grey */
-.form-group select:has(option[value=""]:checked) {
-    color: #94a3b8; /* Grey placeholder state */
-}
-/* Ensure label and input have identical font sizes */
-.form-group label, 
-.form-group input, 
-.form-group select {
-    font-size: 1rem; /* Same size */
-    font-weight: 500;
+.input-field:disabled {
+    background-color: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
 }
 
-/* Label: Dark */
-.form-group label {
-    color: #1e293b;
-    margin: 0;
-}
-
-/* Inputs/Select: Default dark, grey when placeholder */
-.form-group input, .form-group select {
-    padding: 8px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    color: #1e293b;
-}
-
-/* Grey placeholder logic */
-.form-group input::placeholder, 
-.form-group select:has(option[value=""]:checked) {
-    color: #94a3b8;
-}
-
-/* Button Styling */
-.modal-buttons {
+.action-container {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 25px;
-}
-
-.btn-save {
-    background: #2563eb;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
 }
 
 .btn-close {
-    background: #f1f5f9;
+    padding: 10px 16px;
+    background-color: #f1f5f9;
     color: #475569;
-    padding: 10px 20px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    font-weight: bold;
 }
 
+.btn-submit {
+    padding: 10px 16px;
+    background-color: #0070f3;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
 
-
+.btn-submit:disabled {
+    background-color: #cbd5e1;
+    cursor: not-allowed;
+}

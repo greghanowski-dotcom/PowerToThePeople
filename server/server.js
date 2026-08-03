@@ -84,6 +84,7 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
+        // 🚀 FIXED: Passes your true database JSON voting column payload downstream safely!
         res.json({ 
             success: true, 
             userId: user.id, 
@@ -93,8 +94,11 @@ app.post('/api/auth/login', async (req, res) => {
             address: user.address,
             gender: user.gender,
             age: user.age,
-            party: user.party_affiliation
+            party: user.party_affiliation,
+            // ✅ Pulls your custom JSON column data array directly from your users schema row
+            voting_record: user.voting_record 
         });
+
 
         // Return user indicators including cell numbers back to frontend triggers
         res.json({ success: true, userId: user.id, phone: user.phone });
@@ -276,3 +280,95 @@ app.post('/api/update_profile', async (req, res) => {
         res.status(500).json({ error: 'Failed to write profile record to the database schema.' });
     }
 });
+
+/* ==========================================================================
+   POST ROUTE: SAVE / UPDATE VOTER BALLOT SELECTIONS INSIDE A JSON COLUMN
+   ========================================================================== */
+app.post('/api/save_vote', async (req, res) => {
+    try {
+        console.log("\n=== 🗳️  BACKEND JSON VOTING MATRIX AUDIT ===");
+        const { userId, issueId, voteType } = req.body;
+
+        if (!userId || !issueId || !voteType) {
+            return res.status(400).json({ error: 'Missing core ballot verification metrics.' });
+        }
+
+        // 1. Fetch the user's current voting_record JSON array from the users table
+        const [users] = await db.query('SELECT voting_record FROM users WHERE id = ?', [userId]);
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'Voter profile record not found.' });
+        }
+
+        // Parse existing records or default to an empty array if null
+        let currentRecord = [];
+        try {
+            if (users[0].voting_record) {
+                currentRecord = typeof users[0].voting_record === 'string'
+                    ? JSON.parse(users[0].voting_record)
+                    : users[0].voting_record;
+            }
+        } catch (parseErr) {
+            currentRecord = [];
+        }
+
+        if (!Array.isArray(currentRecord)) currentRecord = [];
+
+        // 2. UPSERT LOGIC: Remove old vote on this issue if it exists, then push the fresh selection
+        currentRecord = currentRecord.filter(item => item.issue_id !== issueId);
+        currentRecord.push({ issue_id: issueId, vote: voteType });
+
+        // 3. Write the updated JSON string back to the users table matrix
+        await db.query(
+            'UPDATE users SET voting_record = ? WHERE id = ?',
+            [JSON.stringify(currentRecord), userId]
+        );
+
+        console.log(`[JSON SUCCESS] User ID ${userId} updated ballot index inside column matrix successfully!`);
+        res.json({ success: true, message: 'Ballot recorded successfully inside user JSON record!' });
+    } catch (err) {
+        console.error("\n[BACKEND CRASH] ❌ JSON Database Operation Failed:", err.message, "\n");
+        res.status(500).json({ error: 'Failed to write voting record configuration to the database.' });
+    }
+});
+
+/* ==========================================================================
+   GET ROUTE: AGGREGATE GLOBAL COUNTS ACROSS USER JSON COLUMNS
+   ========================================================================== */
+app.get('/api/global_votes', async (req, res) => {
+    try {
+        // Pull down all JSON fields across every user row to calculate global sums dynamically
+        const [rows] = await db.query('SELECT voting_record FROM users WHERE voting_record IS NOT NULL');
+        
+        const countsMap = {};
+
+        rows.forEach(row => {
+            let record = [];
+            try {
+                record = typeof row.voting_record === 'string' 
+                    ? JSON.parse(row.voting_record) 
+                    : row.voting_record;
+            } catch (e) {
+                record = [];
+            }
+
+            if (Array.isArray(record)) {
+                record.forEach(voteItem => {
+                    const id = voteItem.issue_id;
+                    if (!countsMap[id]) {
+                        countsMap[id] = { issue_id: id, up_votes: 0, down_votes: 0 };
+                    }
+                    if (voteItem.vote === 'up') countsMap[id].up_votes += 1;
+                    if (voteItem.vote === 'down') countsMap[id].down_votes += 1;
+                });
+            }
+        });
+
+        res.json(Object.values(countsMap));
+    } catch (err) {
+        console.error("[BACKEND] Global JSON lookups stalled:", err.message);
+        res.status(500).json({ error: 'Database transaction failed.' });
+    }
+});
+
+
+

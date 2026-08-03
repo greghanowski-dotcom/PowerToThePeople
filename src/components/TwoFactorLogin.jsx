@@ -60,6 +60,7 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 }
                 
                 // 🚀 FIXED SCOPE: Store all profile attributes safely into session storage right here where loginData is active!
+                // Phase 2 Login Success: Store all attributes safely inside browser memory cache
                 setUserId(loginData.userId);
                 sessionStorage.setItem('currentUserId', loginData.userId);
                 sessionStorage.setItem('currentUserEmail', loginData.email || '');
@@ -67,6 +68,10 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 sessionStorage.setItem('currentUserGender', loginData.gender || '');
                 sessionStorage.setItem('currentUserAge', loginData.age || '');
                 sessionStorage.setItem('currentUserPartyAffiliation', loginData.party || 'Independent');
+                const rawRecord = typeof loginData.voting_record === 'string'
+                    ? loginData.voting_record
+                    : JSON.stringify(loginData.voting_record || []);
+                sessionStorage.setItem('currentUserVotingRecord', rawRecord);
 
                 // Phase 3: Trigger the 2FA token generation sequence
                 const sendOtpRes = await fetch(`${apiBaseUrl}/send-2fa`, {

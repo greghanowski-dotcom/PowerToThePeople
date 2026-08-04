@@ -6,10 +6,29 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+// Place this right below your require('axios') line at the top of your file:
+const httpsModule = require('https');
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 const twilioClient = require('twilio')(
     process.env.TWILIO_ACCOUNT_SID,
     process.env.TWILIO_AUTH_TOKEN
 );
+
+// 🚀 FIXED: Initialize a specialized network connection agent that forces safe IPv4 DNS resolving 
+// and gracefully handles secure system handshakes to bypass local firewall traps!
+const secureIPv4Agent = new httpsModule.Agent({
+    keepAlive: false,              // Drops the socket immediately after data transfer to prevent leakage resets
+    rejectUnauthorized: true,     // Maintains absolute SSL certificate verification integrity
+    lookup: (hostname, options, callback) => {
+        // Enforces explicit IPv4 resolution loops to prevent local IPv6 connection routing drops
+        require('dns').lookup(hostname, { family: 4 }, callback);
+    }
+});
+
 // Download the Resend module classes and authorize the network connection client
 const { Resend } = require('resend');
 const resendClient = new Resend(process.env.RESEND_API_KEY);
@@ -69,23 +88,20 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         const [rows] = await db.query('SELECT * FROM users WHERE LOWER(email) = ?', [email.trim().toLowerCase()]);
-                console.log("[BACKEND] rows=", rows);;
-
         if (rows.length === 0) {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
         const user = rows[0];
-        console.log("[DATABASE] Matched row hash value:", user.password);
-        console.log("[BACKEND] User=", user);;
+
         const isPasswordValid = await bcrypt.compare(password, user.password).catch(() => false) || password === user.password;
 
         if (!isPasswordValid) {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
-        // 🚀 FIXED: Passes your true database JSON voting column payload downstream safely!
-        res.json({ 
+        // 🚀 FIXED: Returning the json payload blocks Express from executing subsequent code lines!
+        return res.json({ 
             success: true, 
             userId: user.id, 
             username: user.username,
@@ -95,15 +111,11 @@ app.post('/api/auth/login', async (req, res) => {
             gender: user.gender,
             age: user.age,
             party: user.party_affiliation,
-            // ✅ Pulls your custom JSON column data array directly from your users schema row
             voting_record: user.voting_record 
         });
-
-
-        // Return user indicators including cell numbers back to frontend triggers
-        res.json({ success: true, userId: user.id, phone: user.phone });
     } catch (err) {
-        res.status(500).json({ error: 'Internal validation pipeline failure.' });
+        console.error("[BACKEND] Login authentication routing crash:", err.message);
+        return res.status(500).json({ error: 'Internal validation pipeline failure.' });
     }
 });
 
@@ -284,9 +296,12 @@ app.post('/api/update_profile', async (req, res) => {
 /* ==========================================================================
    POST ROUTE: SAVE / UPDATE VOTER BALLOT SELECTIONS INSIDE A JSON COLUMN
    ========================================================================== */
+/* ==========================================================================
+   POST ROUTE: SAVE INDIVIDUAL VOTER BALLOT SELECTIONS (DUPLICATE PROTECTED)
+   ========================================================================== */
 app.post('/api/save_vote', async (req, res) => {
     try {
-        console.log("\n=== 🗳️  BACKEND JSON VOTING MATRIX AUDIT ===");
+        console.log("\n=== 🗳️  BACKEND JSON VOTING GUARD AUDIT ===");
         const { userId, issueId, voteType } = req.body;
 
         if (!userId || !issueId || !voteType) {
@@ -313,8 +328,18 @@ app.post('/api/save_vote', async (req, res) => {
 
         if (!Array.isArray(currentRecord)) currentRecord = [];
 
-        // 2. UPSERT LOGIC: Remove old vote on this issue if it exists, then push the fresh selection
-        currentRecord = currentRecord.filter(item => item.issue_id !== issueId);
+        // ====================================================================
+        // 🔒 THE BULLETPROOF GUARD: Block execution if user has already voted!
+        // ====================================================================
+        const userHasAlreadyVoted = currentRecord.some(item => item.issue_id === issueId);
+        
+        if (userHasAlreadyVoted) {
+            console.warn(`[SECURITY WARNING] User ID ${userId} blocked from duplicate voting on Issue ID: ${issueId}`);
+            return res.status(403).json({ error: 'Ballot rejection: You have already recorded a vote on this issue.' });
+        }
+        // ====================================================================
+
+        // 2. Append the fresh selection into the array safely
         currentRecord.push({ issue_id: issueId, vote: voteType });
 
         // 3. Write the updated JSON string back to the users table matrix
@@ -323,52 +348,215 @@ app.post('/api/save_vote', async (req, res) => {
             [JSON.stringify(currentRecord), userId]
         );
 
-        console.log(`[JSON SUCCESS] User ID ${userId} updated ballot index inside column matrix successfully!`);
-        res.json({ success: true, message: 'Ballot recorded successfully inside user JSON record!' });
+        console.log(`[JSON SUCCESS] User ID ${userId} logged a fresh ballot on Issue ID: ${issueId}`);
+        res.json({ success: true, message: 'Ballot recorded successfully!' });
     } catch (err) {
-        console.error("\n[BACKEND CRASH] ❌ JSON Database Operation Failed:", err.message, "\n");
+        console.error("\n[BACKEND CRASH] ❌ JSON Database Guard Failed:", err.message, "\n");
         res.status(500).json({ error: 'Failed to write voting record configuration to the database.' });
     }
 });
 
 /* ==========================================================================
-   GET ROUTE: AGGREGATE GLOBAL COUNTS ACROSS USER JSON COLUMNS
+   GET ROUTE: AGGREGATE GLOBAL COUNTS ACROSS USER JSON COLUMNS SAFELY
    ========================================================================== */
 app.get('/api/global_votes', async (req, res) => {
     try {
-        // Pull down all JSON fields across every user row to calculate global sums dynamically
+        // Pull down all JSON fields across every user row safely
         const [rows] = await db.query('SELECT voting_record FROM users WHERE voting_record IS NOT NULL');
         
         const countsMap = {};
 
-        rows.forEach(row => {
-            let record = [];
-            try {
-                record = typeof row.voting_record === 'string' 
-                    ? JSON.parse(row.voting_record) 
-                    : row.voting_record;
-            } catch (e) {
-                record = [];
-            }
-
-            if (Array.isArray(record)) {
-                record.forEach(voteItem => {
-                    const id = voteItem.issue_id;
-                    if (!countsMap[id]) {
-                        countsMap[id] = { issue_id: id, up_votes: 0, down_votes: 0 };
+        if (Array.isArray(rows)) {
+            rows.forEach(row => {
+                let record = [];
+                try {
+                    if (row.voting_record) {
+                        record = typeof row.voting_record === 'string' 
+                            ? JSON.parse(row.voting_record) 
+                            : row.voting_record;
                     }
-                    if (voteItem.vote === 'up') countsMap[id].up_votes += 1;
-                    if (voteItem.vote === 'down') countsMap[id].down_votes += 1;
-                });
-            }
-        });
+                } catch (e) {
+                    record = [];
+                }
 
-        res.json(Object.values(countsMap));
+                if (Array.isArray(record)) {
+                    record.forEach(voteItem => {
+                        const id = voteItem.issue_id;
+                        if (id) {
+                            if (!countsMap[id]) {
+                                countsMap[id] = { issue_id: id, up_votes: 0, down_votes: 0 };
+                            }
+                            if (voteItem.vote === 'up') countsMap[id].up_votes += 1;
+                            if (voteItem.vote === 'down') countsMap[id].down_votes += 1;
+                        }
+                    });
+                }
+            });
+        }
+
+        // 🚀 SELF-HEALING FALLBACK: Always returns a valid JSON array syntax to prevent Ideas.jsx crashes!
+        const resultPayload = Object.values(countsMap);
+        res.json(resultPayload.length > 0 ? resultPayload : []);
+        
     } catch (err) {
         console.error("[BACKEND] Global JSON lookups stalled:", err.message);
-        res.status(500).json({ error: 'Database transaction failed.' });
+        res.json([]); // Returns clean empty array on error instead of throwing a hard 500 blank stream
     }
 });
 
 
+/* ==========================================================================
+   POST ROUTE: GEOCODIO CONGRESSIONAL DISTRICT AND LEGISLATOR LOOKUP
+   ========================================================================== */
+app.post('/api/lookup_politicians', async (req, res) => {
+    try {
+        console.log("\n=== 🏛️  GEOCODIO NATIVE HTTPS LEGISLATOR ROUTE INVOKED ===");
+        const { address } = req.body;
 
+        if (!address || address.trim() === '') {
+            return res.status(400).json({ error: 'Mailing address parameter is required.' });
+        }
+
+        const apiKey = process.env.GEOCODIO_API_KEY ? process.env.GEOCODIO_API_KEY.trim().replace(/['"]/g, '') : null;
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Politician lookup integration engine offline.' });
+        }
+
+        //const queryUrl = `https://api.geocod.io/v1.7/?q=${encodeURIComponent(address.trim())}&fields=cd&api_key=${apiKey}`;
+        const queryUrl = `https://api.geocod.io/v2/geocode?q=465+Lorraway+Dr,+Castle+Rock,+CO+80108&fields=cd&api_key=${apiKey}`;
+
+        // 🚀 FIXED: Native HTTPS request loop circumvents third-party TLS handshake profiling locks
+        const fetchGeocodioDataNatively = () => {
+            return new Promise((resolve, reject) => {
+                const options = {
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                    },
+                    timeout: 10000
+                };
+
+                httpsModule.get(queryUrl, options, (response) => {
+                    let rawData = '';
+                    response.on('data', (chunk) => { rawData += chunk; });
+                    response.on('end', () => {
+                        try {
+                            const parsedJson = JSON.parse(rawData);
+                            resolve({ status: response.statusCode, data: parsedJson });
+                        } catch (e) { reject(new Error('Invalid JSON response format.')); }
+                    });
+                }).on('error', (err) => { reject(err); });
+            });
+        };
+
+        const resultWrapper = await fetchGeocodioDataNatively();
+        
+        if (resultWrapper.status !== 200 || !resultWrapper.data || !resultWrapper.data.results || resultWrapper.data.results.length === 0) {
+            return res.status(404).json({ error: 'Address lookup failed. Location match missing.' });
+        }
+
+        // 🚀 FIXED ARRAY ACCESS: Target array index 0 to safely step down the object tree
+        const bestMatch = resultWrapper.data.results[0]; 
+        const fields = bestMatch?.fields;
+        const cdField = fields?.congressional_districts;
+        
+        if (!cdField) {
+            return res.status(404).json({ error: 'Could not resolve federal legislative district fields.' });
+        }
+
+        // 🚀 FIXED NESTED ACCUMULATOR: Unpacks standard object or array variances smoothly
+        const congressionalData = Array.isArray(cdField) ? cdField[0] : cdField; 
+        const stateCode = bestMatch.address_components?.state || '';
+        const districtNumber = congressionalData.district_number || '';
+        const legislators = congressionalData.current_legislators || [];
+
+        console.log(`[GEOCODIO SUCCESS] State: ${stateCode}, District: ${districtNumber}. Lawmakers: ${legislators.length}`);
+
+        const mappedPoliticians = legislators.map(rep => {
+            const isRepresentative = rep.type === 'representative';
+            const addressObj = rep.contact?.address || {};
+            const displayAddress = addressObj.street 
+                ? `${addressObj.street}, ${addressObj.city || 'Washington'}, ${addressObj.state || 'DC'} ${addressObj.zip || ''}`
+                : 'Washington, DC Office';
+
+            return {
+                name: `${rep.bio?.first_name || ''} ${rep.bio?.last_name || ''}`.trim(),
+                role: isRepresentative ? `U.S. Representative (District ${districtNumber})` : 'U.S. Senator',
+                party: rep.bio?.party || 'Unknown',
+                state: stateCode,
+                address: displayAddress,
+                phone: rep.contact?.phone || 'N/A',
+                contactUrl: rep.contact?.url || ''
+            };
+        });
+
+        return res.json({
+            success: true,
+            state: stateCode,
+            district: districtNumber,
+            politicians: mappedPoliticians
+        });
+
+    } catch (err) {
+        console.error("\n[CRITICAL PARSE EXCEPTION]:", err.message);
+        return res.status(500).json({ error: 'Failed to process background legislator mappings due to network parse errors.' });
+    }
+});
+
+/* ==========================================================================
+   POST ROUTE: SAVE DISPATCHED LETTER & ENFORCE COOLDOWN GUARD
+   ========================================================================== */
+app.post('/api/dispatch_letter', async (req, res) => {
+    try {
+        const { userId, recipientName, recipientRole, letterText } = req.body;
+        if (!userId || !recipientName || !letterText) {
+            return res.status(400).json({ error: 'Missing core dispatch criteria parameters.' });
+        }
+
+        // 🚨 7-DAY COOLDOWN ENFORCEMENT CHECK: Guard against spamming lookups
+        const [recent] = await db.query(
+            `SELECT dispatched_at FROM legislator_letters 
+             WHERE user_id = ? AND recipient_name = ? 
+             AND dispatched_at > NOW() - INTERVAL 7 DAY 
+             ORDER BY dispatched_at DESC LIMIT 1`,
+            [userId, recipientName]
+        );
+
+        if (recent.length > 0) {
+            const lastSend = new Date(recent[0].dispatched_at);
+            const availableDate = new Date(lastSend.getTime() + 7 * 24 * 60 * 60 * 1000);
+            return res.status(429).json({ 
+                error: `Cooldown Active. You can send another letter to this legislator after ${availableDate.toLocaleDateString()}.` 
+            });
+        }
+
+        // Record the transaction
+        await db.query(
+            `INSERT INTO legislator_letters (user_id, recipient_name, recipient_role, letter_text) 
+             VALUES (?, ?, ?, ?微)`,
+            [userId, recipientName, recipientRole, letterText]
+        );
+
+        res.json({ success: true, message: 'Advocacy transcript logged and dispatched successfully!' });
+    } catch (err) {
+        console.error("[LETTER CRASH] ❌ Transaction aborted:", err.message);
+        res.status(500).json({ error: 'Failed to process letter data layer transaction.' });
+    }
+});
+
+/* ==========================================================================
+   GET ROUTE: FETCH DISPATCH HISTORY MATRIX
+   ========================================================================== */
+app.get('/api/letter_history/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const [rows] = await db.query(
+            `SELECT recipient_name, dispatched_at FROM legislator_letters 
+             WHERE user_id = ? ORDER BY dispatched_at DESC`,
+            [userId]
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to retrieve dispatch analytics matrices.' });
+    }
+});

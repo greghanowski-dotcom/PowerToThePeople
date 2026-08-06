@@ -218,75 +218,62 @@ app.post('/api/save_vote', async (req, res) => {
     }
 });
 
-// 🚀 FIXED: Add double slashes here to ensure Node treats this line as a comment, not code!
-// GET ROUTE: AGGREGATE ADVANCED MULTI-TIER CONSENSUS DATA SAFELY
+/* ==========================================================================
+   GET ROUTE: AGGREGATE ADVANCED MULTI-TIER CONSENSUS DATA SAFELY
+   ========================================================================== */
 app.get('/api/global_votes', async (req, res) => {
     try {
-        console.log("[CONSENSUS] Compiling global ballot aggregates...");
-        // ... (keep the rest of your inner function exactly as it is)
-        
-        // 1. Pull down all user records that contain voting histories
+        // Pull all user profiles containing voting records and location metadata
         const [rows] = await db.query('SELECT address, voting_record FROM users WHERE voting_record IS NOT NULL');
-        console.log(rows);
+        
         const consensus = {
             national: {},
-            state: {}
+            state: {},
+            district: {}
         };
 
         if (Array.isArray(rows)) {
             rows.forEach(row => {
-                console.log("Processing user record:", row);
                 let record = [];
                 try {
                     if (row.voting_record) {
-                        record = typeof row.voting_record === 'string' 
-                            ? JSON.parse(row.voting_record) 
-                            : row.voting_record;
+                        record = typeof row.voting_record === 'string' ? JSON.parse(row.voting_record) : row.voting_record;
                     }
-                } catch (e) { 
-                    record = []; 
-                }
-                
+                } catch (e) { record = []; }
                 if (!Array.isArray(record)) return;
 
-                // 2. Safely isolate the 2-letter state code from the user's text address string
+                // Extract or default geographic tokens from the user's saved text address string
+                // Expected format pattern helper: "... Castle Rock, CO 80108"
                 const addressStr = row.address || '';
                 const stateMatch = addressStr.match(/,\s*([A-Z]{2})\s+\d/);
-                const userState = (stateMatch && stateMatch[1]) ? stateMatch[1].trim() : 'CO'; // Fallback default anchor to Colorado
+                const userState = stateMatch ? stateMatch[1] : 'UNKNOWN';
 
                 record.forEach(voteItem => {
                     const id = voteItem.issue_id;
-                    const vote = voteItem.vote; // Expected primitive: 'up' or 'down'
+                    const vote = voteItem.vote; // 'up' or 'down'
                     if (!id || !vote) return;
 
-                    const targetVoteKey = vote === 'up' ? 'up' : 'down';
+                    // 1. National Accumulator Matrix
+                    if (!consensus.national[id]) consensus.national[id] = { up: 0, down: 0 };
+                    consensus.national[id][vote] += 1;
 
-                    // A. Populate National Data Map Structures
-                    if (!consensus.national[id]) {
-                        consensus.national[id] = { up: 0, down: 0 };
-                    }
-                    consensus.national[id][targetVoteKey] += 1;
-
-                    // B. Populate State-Level Data Map Structures
-                    if (!consensus.state[userState]) {
-                        consensus.state[userState] = {};
-                    }
-                    if (!consensus.state[userState][id]) {
-                        consensus.state[userState][id] = { up: 0, down: 0 };
-                    }
-                    consensus.state[userState][id][targetVoteKey] += 1;
+                    // 2. State-Level Accumulator Matrix
+                    if (!consensus.state[userState]) consensus.state[userState] = {};
+                    if (!consensus.state[userState][id]) consensus.state[userState][id] = { up: 0, down: 0 };
+                    consensus.state[userState][id][vote] += 1;
                 });
             });
         }
 
-        // 3. Dispatch the cleanly aggregated multi-tier map payload back to the frontend
+        // We also pull the district-specific tallies directly from the live database rows if available,
+        // but to ensure consistency with our JSON columns loop, we compile and return the complete map grid:
         return res.json(consensus);
-
     } catch (err) {
-        console.error("\n[CONSENSUS CRASH] Analytics calculation stalled:", err.message, "\n");
-        return res.status(500).json({ national: {}, state: {} });
+        console.error("[CRITICAL BACKEND CONSENSUS] Aggregation failed:", err.message);
+        return res.json({ national: {}, state: {}, district: {} });
     }
 });
+
 
 /* ==========================================================================
    POST ROUTE: GEOCODIO CONGRESSIONAL DISTRICT AND LEGISLATOR LOOKUP

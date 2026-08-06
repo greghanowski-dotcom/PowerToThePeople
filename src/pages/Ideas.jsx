@@ -128,8 +128,7 @@ export default function Ideas({ keepAccordionsOpen, isLoggedIn }) {
   };
 
   // Tracks if an address exists inside state or browser memory cache strings to unlock actions
-  const hasSavedAddress = !!sessionStorage.getItem('currentUserAddress');
-
+const hasSavedAddress = !!sessionStorage.getItem('currentUserAddress') || !!sessionStorage.getItem('currentUserEmail');
   return (
     <div style={{ position: 'relative', paddingBottom: '60px' }}>
       {/* Map grouped keys to the Accordion items (Unchanged) */}
@@ -163,7 +162,7 @@ export default function Ideas({ keepAccordionsOpen, isLoggedIn }) {
           onClick={() => setShowCongress(true)}
           style={{ padding: '12px 28px', backgroundColor: (hasSavedAddress && isLoggedIn) ? '#6366f1' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '6px', cursor: (hasSavedAddress && isLoggedIn) ? 'pointer' : 'not-allowed', fontWeight: 'bold', fontSize: '15px', transition: 'background-color 0.2s' }}
         >
-          🏛️ See your congressmen
+          🏛️ See your Legislators
         </button>
 
         {(!isLoggedIn) ? (

@@ -64,6 +64,7 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                 setUserId(loginData.userId);
                 sessionStorage.setItem('currentUserId', loginData.userId);
                 sessionStorage.setItem('currentUserEmail', loginData.email || '');
+                             sessionStorage.setItem('currentUserName', loginData.name || '');
                 sessionStorage.setItem('currentUserAddress', loginData.address || '');
                 sessionStorage.setItem('currentUserGender', loginData.gender || '');
                 sessionStorage.setItem('currentUserAge', loginData.age || '');

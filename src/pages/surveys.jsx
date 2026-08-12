@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Accordion from '../components/Accordion';
 import HtmlDocViewer from '../components/HtmlDocViewer';
 import CongressmenModal from '../components/modals/CongressmenModal'; // 🚀 IMPORT YOUR CONGRESSIONAL MODAL HERE!
-import './Ideas.css';
+import './Surveys.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-export default function Ideas({ keepAccordionsOpen, isLoggedIn }) {
+export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
   const [groupedDocs, setGroupedDocs] = useState({}); // Stores data grouped by category
   const [modalData, setModalData] = useState(null);
   const [votes, setVotes] = useState({});

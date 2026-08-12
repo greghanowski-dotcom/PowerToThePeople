@@ -71,7 +71,7 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
             
             <div className="control-panel">
                 <nav className="nav-menu">
-                    {['home', 'polls', 'ideas', 'news', 'about'].map((page) => (
+                    {['home', 'polls', 'surveys', 'news', 'about'].map((page) => (
                         <NavLink 
                             key={page} 
                             to={page === 'home' ? '/' : `/${page}`} 

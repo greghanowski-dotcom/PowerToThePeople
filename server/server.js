@@ -65,31 +65,21 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-/* ==========================================================================
-   POST ROUTE: CREDENTIAL VALIDATION LOGIC (CRASH-PROOFED ALIGNMENT)
-   ========================================================================== */
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required fields.' });
-        }
-
         const [rows] = await db.query('SELECT * FROM users WHERE LOWER(email) = ?', [email.trim().toLowerCase()]);
         if (rows.length === 0) {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
-        // 🚀 FIXED: Securely capture the first row object index out of the collection wrapper!
-        const user = rows[0]; 
-
+        const user = rows[0];
         const isPasswordValid = await bcrypt.compare(password, user.password).catch(() => false) || password === user.password;
 
         if (!isPasswordValid) {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
-        // 🚀 FIXED: Ensure all property maps reference 'user.column_name' directly matching your MySQL columns!
         return res.json({ 
             success: true, 
             userId: user.id, 
@@ -99,38 +89,66 @@ app.post('/api/auth/login', async (req, res) => {
             address: user.address, 
             gender: user.gender,
             age: user.age,
-            party: user.party_affiliation, // ✅ Targets your true database column name safely
-            voting_record: user.voting_record 
+            party: user.party_affiliation,
+            voting_record: user.voting_record,
+            // 🚀 FIXED: Pass down the name row parameter safely
+            name: user.name 
         });
     } catch (err) {
-        console.error("\n[CRITICAL LOGIN CRASH DETECTED]:", err.message, "\n");
         return res.status(500).json({ error: 'Internal validation pipeline failure.' });
     }
 });
 
-
 /* ==========================================================================
-   POST ROUTE: INITIALIZE TWO-FACTOR SEQUENCE
+   POST ROUTE: INITIALIZE TWO-FACTOR SEQUENCE (TWILIO TRANSMISSION WIRED)
    ========================================================================== */
 app.post('/api/auth/send-2fa', async (req, res) => {
     try {
+        console.log("\n=== 🔐 TWO-FACTOR SECURITY SMS DISPATCH PIPELINE ===");
         const { userId, phone } = req.body;
+        
         if (!userId || !phone) {
-            return res.status(400).json({ error: 'Missing baseline verification metrics' });
+            return res.status(400).json({ error: 'Missing core identity metrics parameters.' });
         }
 
         const cleanPhoneDigits = phone.toString().replace(/\D/g, '');
+        
+        // 🚀 Generate a random secure 6-digit access pin token code
         const secureCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Store it inside your server memory cache map for upcoming verification steps
         localTwoFactorCache.set(userId.toString(), secureCode);
 
-        console.log(`\n[BACKEND] [SECURITY DISPATCH] 2FA Code for User ID ${userId}: ---> ${secureCode} <---`);
-        console.log(`[BACKEND] Routing Text dynamically to cell line terminal: ${cleanPhoneDigits}\n`);
+        console.log(`[SECURITY] Generated Pin for Constituent ID ${userId} is: [ ${secureCode} ]`);
+        console.log(`[SECURITY] Targeting cellular destination line: +1${cleanPhoneDigits}`);
 
+        // ====================================================================
+        // 🚀 LIVE TWILIO DISPATCH INTEGRATION
+        // ====================================================================
+        try {
+            await twilioClient.messages.create({
+                body: `[Voter Gateway Alert] Your secure 6-digit verification access code is: ${secureCode}. It will expire shortly.`,
+                from: process.env.TWILIO_PHONE_NUMBER, // Pulls your messaging line out of your local env parameters
+                to: `+1${cleanPhoneDigits}`           // Forces standard US international country prefixes code formatting
+            });
+            console.log(`[DELIVERY SUCCESS] Code payload transmitted cleanly to Twilio networks!`);
+        } catch (twilioErr) {
+            console.error("[TWILIO CRITICAL REJECTION] Outbound message failed:", twilioErr.message);
+            // 🛡️ LOCAL FALLBACK DEV SECURITY ASSIGNMENT:
+            // If your Twilio credits are empty, it prints it to CMD so development never locks you out!
+            console.warn(`[DEVELOPER NOTICE] Twilio failed. Use token code ---> ${secureCode} <--- in your browser card box.`);
+        }
+        // ====================================================================
+
+        console.log("============================================================\n");
         return res.json({ success: true, message: 'Security pin code texted to your screen successfully!' });
+        
     } catch (err) {
-        return res.status(500).json({ error: 'Failed to process verification alerts.' });
+        console.error("[BACKEND 2FA CRASH]:", err.message);
+        return res.status(500).json({ error: 'Failed to process verification alerts routing.' });
     }
 });
+
 
 /* ==========================================================================
    POST ROUTE: VERIFY ACTIVE SECURITY TOKENS
@@ -156,14 +174,15 @@ app.post('/api/auth/verify-2fa', async (req, res) => {
    ========================================================================== */
 app.post('/api/update_profile', async (req, res) => {
     try {
-        const { userId, address, gender, age, party } = req.body;
+        const { userId, address, gender, age, party, name } = req.body;
         if (!userId) {
             return res.status(400).json({ error: 'Missing critical user identification parameter.' });
         }
 
+        // 🚀 FIXED: Updates the true full name row parameter inside your table matrix
         await db.query(
-            `UPDATE users SET address = ?, gender = ?, age = ?, party_affiliation = ? WHERE id = ?`,
-            [address ? address.trim() : null, gender || null, age || null, party || 'Independent', userId]
+            `UPDATE users SET address = ?, gender = ?, age = ?, party_affiliation = ?, name = ? WHERE id = ?`,
+            [address ? address.trim() : null, gender || null, age || null, party || 'Independent', name ? name.trim() : null, userId]
         );
 
         console.log(`[DATABASE] 🎉 Successfully synchronized profile attributes for User ID: ${userId}`);

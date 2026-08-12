@@ -4,7 +4,7 @@ import TwoFactorLogin from './components/TwoFactorLogin';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Polls from './pages/Polls';
-import Ideas from './pages/Ideas';
+import Surveys from './pages/Surveys';
 import News from './pages/News';
 import About from './pages/About';
 import DynamicContentPage from './pages/DynamicContentPage';
@@ -119,7 +119,7 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/polls" element={<Polls />} />
-                    <Route path="/ideas" element={<Ideas keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} />
+                    <Route path="/surveys" element={<Surveys keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/details/:slug" element={<DynamicContentPage />} />

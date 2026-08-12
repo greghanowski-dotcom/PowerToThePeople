@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
 export default function ProfileModal({ isOpen, onClose }) {
-    // 🚀 FIXED: Instantly reads the values cached inside your session storage variables on load
+    // Reads the values cached inside your session storage variables on load
     const [address, setAddress] = useState('');
     const [gender, setGender] = useState('');
     const [age, setAge] = useState('');
     const [party, setParty] = useState('Independent');
-    
+    const [name, setName] = useState('');
+
     const [showTooltip, setShowTooltip] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
@@ -18,6 +19,7 @@ export default function ProfileModal({ isOpen, onClose }) {
     // Synchronizes component inputs directly with session storage keys whenever the modal opens
     useEffect(() => {
         if (isOpen) {
+            setName(sessionStorage.getItem('currentUserName') || '');
             setAddress(sessionStorage.getItem('currentUserAddress') || '');
             setGender(sessionStorage.getItem('currentUserGender') || '');
             setAge(sessionStorage.getItem('currentUserAge') || '');
@@ -42,7 +44,8 @@ export default function ProfileModal({ isOpen, onClose }) {
                     address: address.trim(),
                     gender,
                     age,
-                    party
+                    party,
+                    name: name.trim() // 🚀 Pass name parameter value to backend updates
                 })
             });
 
@@ -57,6 +60,7 @@ export default function ProfileModal({ isOpen, onClose }) {
             sessionStorage.setItem('currentUserGender', gender);
             sessionStorage.setItem('currentUserAge', age);
             sessionStorage.setItem('currentUserPartyAffiliation', party);
+            sessionStorage.setItem('currentUserName', name.trim());
 
             alert("🎉 Profile parameters synchronized successfully!");
             onClose();
@@ -70,8 +74,8 @@ export default function ProfileModal({ isOpen, onClose }) {
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999999 }}>
             <div style={{ backgroundColor: '#fff', padding: '35px', borderRadius: '10px', maxWidth: '460px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', fontFamily: 'sans-serif', color: '#111' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '25px', textAlign: 'center', fontSize: '22px' }}>👤 Voter Profile Attributes</h3><br/>
-                
+                <h3 style={{ marginTop: 0, marginBottom: '25px', textAlign: 'center', fontSize: '22px' }}>👤 Voter Profile Attributes</h3><br />
+
                 {statusMessage && (
                     <div style={{ padding: '10px', marginBottom: '15px', borderRadius: '4px', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '13px', border: '1px solid #fca5a5' }}>
                         {statusMessage}
@@ -80,9 +84,20 @@ export default function ProfileModal({ isOpen, onClose }) {
 
                 <form onSubmit={handleFormSave}>
                     <div style={{ marginBottom: '18px', position: 'relative' }}>
+                        <div className="form-group">
+                            <label className="form-label">Full Name</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                disabled={isLoading}
+                                placeholder="John Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                             <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>Full Mailing Address (Optional)</label>
-                            <span 
+                            <span
                                 onMouseEnter={() => setShowTooltip(true)}
                                 onMouseLeave={() => setShowTooltip(false)}
                                 style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', backgroundColor: '#e2e8f0', color: '#475569', borderRadius: '50%', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none' }}

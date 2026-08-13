@@ -7,7 +7,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
     const [letters, setLetters] = useState({});
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState('');
-    
+
     // All panels start collapsed and closed initially
     const [activePanelIndex, setActivePanelIndex] = useState(null);
 
@@ -20,12 +20,12 @@ export default function CongressmenModal({ isOpen, onClose }) {
 
     const apiBaseUrl = getBaseUrl();
     const address = sessionStorage.getItem('currentUserAddress') || '';
-    const userName = sessionStorage.getItem('currentUserName') || ''; 
+    const userName = sessionStorage.getItem('currentUserName') || '';
     const userId = sessionStorage.getItem('currentUserId') || '1';
 
     useEffect(() => {
         if (!isOpen || !address) return;
-        
+
         const loadLegislatorMatrix = async () => {
             setLoading(true);
             setErr('');
@@ -57,25 +57,25 @@ export default function CongressmenModal({ isOpen, onClose }) {
                 // 5. Gather current user ballot selections records
                 const rawRecord = sessionStorage.getItem('currentUserVotingRecord') || '[]';
                 let voterHistory = [];
-                try { voterHistory = JSON.parse(rawRecord); } catch(e) {}
+                try { voterHistory = JSON.parse(rawRecord); } catch (e) { }
 
                 const stateCode = repData.state || 'CO';
                 const districtNum = repData.district || '4';
 
                 const generatedDrafts = {};
-                
+
                 repData.politicians.forEach(p => {
                     const isRepresentative = p.role.includes('Representative');
                     const nameParts = p.name.split(' ');
                     const lastName = nameParts[nameParts.length - 1] || p.name;
-                    
-                    const salutationLine = isRepresentative 
-                        ? `Dear Representative ${lastName},` 
+
+                    const salutationLine = isRepresentative
+                        ? `Dear Representative ${lastName},`
                         : `Dear Senator ${lastName},`;
 
                     // Group user voted issues by their explicit category names
                     const groupedByCategory = {};
-                    
+
                     if (Array.isArray(voterHistory)) {
                         voterHistory.forEach((item) => {
                             const issueId = item.issue_id;
@@ -95,9 +95,9 @@ export default function CongressmenModal({ isOpen, onClose }) {
                             let statsString = '';
                             if (!isRepresentative) {
                                 statsString = `   - State Consensus (${stateCode}): 👍 ${stateUp} | 👎 ${stateDown}\n` +
-                                              `   - Country Consensus (US): 👍 ${natUp} | 👎 ${natDown}`;
+                                    `   - Country Consensus (US): 👍 ${natUp} | 👎 ${natDown}`;
                             } else {
-                                const distUp = Math.ceil(stateUp * 0.7); 
+                                const distUp = Math.ceil(stateUp * 0.7);
                                 const distDown = Math.floor(stateDown * 0.6);
                                 statsString = `   - District Consensus (District ${districtNum}): 👍 ${distUp} | 👎 ${distDown}`;
                             }
@@ -112,7 +112,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     // Formats category labels into explicit upper-level section headers
                     let legislativeSummaryText = `=== VERIFIED CONSTITUENT CONSENSUS ===\n`;
                     const categories = Object.keys(groupedByCategory);
-                    
+
                     if (categories.length === 0) {
                         legislativeSummaryText += `[No ballot records logged yet for this constituent profile.]\n`;
                     } else {
@@ -123,31 +123,32 @@ export default function CongressmenModal({ isOpen, onClose }) {
                             });
                         });
                     }
+                    const signatureName = (userName && userName.trim().length > 0) ? userName.trim() : 'Verified Citizen';
 
                     // Complete letter text generation with customized wording
                     generatedDrafts[p.name] = `To: ${p.name} (${p.role})\n` +
-                        `From: ${userName || 'Registered Constituent'}\n` +
-                        `Address: ${address}\n` + 
+                        `From: ${signatureName}\n` +
+                        `Address: ${address}\n` +
                         `Date: ${new Date().toLocaleDateString()}\n\n` +
-                        `${salutationLine}\n\n` + `It appears to most of us that special interest groups, dark money campaign financing, and vocal minorities often usurp the will of the people. `+
+                        `${salutationLine}\n\n` +
                         `We know it can be difficult to ascertain a consensus, so we created a web site (https://voter-voice.org) that attempts to do so. On it, current political issues, and potential solutions are described in great detail so users can carefully consider them before responding to the survey.\n\n` +
                         `${legislativeSummaryText}\n` +
-                        `We hope these consensus results from your constituents will inform and direct your legislative decisions.\n\n` + 
-                        `Sincerely,\n${userName || 'Verified Citizen'}`; 
+                        `We hope these consensus results from your constituents will inform and direct your legislative decisions.\n\n` +
+                        `Sincerely,\n${signatureName}`;
+
+                    setLetters(generatedDrafts);
+                    setReps(repData.politicians);
+                    setActivePanelIndex(null);
                 });
+                } catch (error) {
+                    setErr(error.message || 'Legislator matrix loading failed.');
+                } finally {
+                    setLoading(false);
+                }
+            };
 
-                setLetters(generatedDrafts);
-                setReps(repData.politicians);
-                setActivePanelIndex(null); 
-            } catch (error) {
-                setErr(error.message || 'Legislator matrix loading failed.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadLegislatorMatrix();
-    }, [isOpen, address, userName]);
+            loadLegislatorMatrix();
+        }, [isOpen, address, userName]);
 
     const handleSendLetter = async (repName, repRole) => {
         try {
@@ -165,7 +166,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
             if (!res.ok) return alert(data.error || 'Transmission failed.');
 
             alert(`🎉 Advocacy transcript logged and sent successfully to ${repName}!`);
-            
+
             const freshRes = await fetch(`${apiBaseUrl}/api/letter_history/${userId}`);
             const freshData = await freshRes.json();
             setHistory(Array.isArray(freshData) ? freshData : []);
@@ -178,9 +179,9 @@ export default function CongressmenModal({ isOpen, onClose }) {
     return (
         <div className="congress-overlay">
             <div className="congress-card" style={{ maxWidth: '680px', width: '92%', position: 'relative' }}>
-                
+
                 {/* Top-Right Corner Exit Close Button */}
-                <button 
+                <button
                     onClick={onClose}
                     style={{ position: 'absolute', top: '15px', right: '20px', background: 'none', border: 'none', fontSize: '22px', fontWeight: 'bold', color: '#94a3b8', cursor: 'pointer', transition: 'color 0.2s', padding: '5px' }}
                     onMouseEnter={(e) => e.target.style.color = '#475569'}
@@ -204,12 +205,12 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     const isExpanded = activePanelIndex === index;
                     const lastSentRow = history.find(h => h.recipient_name === p.name);
                     const cooldownActive = lastSentRow && (new Date() - new Date(lastSentRow.dispatched_at) < 7 * 24 * 60 * 60 * 1000);
-                    
+
                     const isDemocrat = p.party === 'Democrat';
                     const isRepublican = p.party === 'Republican';
 
-                    const headerBackground = isExpanded 
-                        ? (isDemocrat ? '#e0f2fe' : isRepublican ? '#fee2e2' : '#f8fafc') 
+                    const headerBackground = isExpanded
+                        ? (isDemocrat ? '#e0f2fe' : isRepublican ? '#fee2e2' : '#f8fafc')
                         : '#ffffff';
                     const borderColor = isDemocrat ? '#bae6fd' : isRepublican ? '#fca5a5' : '#e2e8f0';
                     const textColor = isDemocrat ? '#0369a1' : isRepublican ? '#991b1b' : '#1e293b';
@@ -217,9 +218,9 @@ export default function CongressmenModal({ isOpen, onClose }) {
 
                     return (
                         <div key={p.name} style={{ border: `1px solid ${borderColor}`, borderRadius: '8px', marginBottom: '12px', overflow: 'hidden', backgroundColor: '#ffffff', boxShadow: isDemocrat ? '0 2px 6px rgba(2,132,199,0.05)' : isRepublican ? '0 2px 6px rgba(220,38,38,0.05)' : '0 2px 4px rgba(0,0,0,0.02)' }}>
-                            
+
                             {/* Accordion Toggle Header Bar */}
-                            <div 
+                            <div
                                 onClick={() => setActivePanelIndex(isExpanded ? null : index)}
                                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: headerBackground, cursor: 'pointer', userSelect: 'none', borderBottom: isExpanded ? `1px solid ${borderColor}` : 'none', transition: 'background-color 0.2s' }}
                             >
@@ -244,22 +245,22 @@ export default function CongressmenModal({ isOpen, onClose }) {
                                     <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '6px', color: '#1e293b' }}>
                                         Review Advocacy Transcript Letter:
                                     </label>
-                                    <textarea 
-                                        className="letter-box" 
-                                        value={letters[p.name] || ''} 
+                                    <textarea
+                                        className="letter-box"
+                                        value={letters[p.name] || ''}
                                         onChange={(e) => setLetters({ ...letters, [p.name]: e.target.value })}
                                         style={{ width: '100%', height: '240px', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontFamily: 'monospace', fontSize: '12px', lineHeight: '1.4', boxSizing: 'border-box', resize: 'vertical', backgroundColor: '#fafafa' }}
                                     />
 
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px' }}>
-                                        <button 
-                                            disabled={cooldownActive} 
+                                        <button
+                                            disabled={cooldownActive}
                                             onClick={() => handleSendLetter(p.name, p.role)}
                                             style={{ padding: '10px 20px', backgroundColor: cooldownActive ? '#cbd5e1' : badgeBg, color: '#fff', border: 'none', borderRadius: '6px', cursor: cooldownActive ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '13px', transition: 'background-color 0.2s' }}
                                         >
                                             {cooldownActive ? '✓ Letter Recorded' : '✉️ Confirm & Save Send'}
                                         </button>
-                                        
+
                                         {lastSentRow && (
                                             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b45309' }}>
                                                 Last Transmitted: {new Date(lastSentRow.dispatched_at).toLocaleDateString()}

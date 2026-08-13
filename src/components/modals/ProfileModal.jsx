@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import CongressmenModal from './CongressmenModal';
+import './ProfileModal.css';
 
 export default function ProfileModal({ isOpen, onClose }) {
-    // Reads the values cached inside your session storage variables on load
+    const [name, setName] = useState('');
     const [address, setAddress] = useState('');
     const [gender, setGender] = useState('');
     const [age, setAge] = useState('');
     const [party, setParty] = useState('Independent');
-    const [name, setName] = useState('');
-
-    const [showTooltip, setShowTooltip] = useState(false);
+    
+    // Status tracking tooltips visibility layers
+    const [showCongress, setShowCongress] = useState(false);
+    const [showAddressTooltip, setShowAddressTooltip] = useState(false);
+    
+    // Independent state hook tracks the hover card visibility for your Name field
+    const [showNameTooltip, setShowNameTooltip] = useState(false);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
 
@@ -16,7 +23,7 @@ export default function ProfileModal({ isOpen, onClose }) {
         ? 'http://localhost:5000'
         : '';
 
-    // Synchronizes component inputs directly with session storage keys whenever the modal opens
+    // Synchronize form states on mount using browser session values
     useEffect(() => {
         if (isOpen) {
             setName(sessionStorage.getItem('currentUserName') || '');
@@ -45,7 +52,7 @@ export default function ProfileModal({ isOpen, onClose }) {
                     gender,
                     age,
                     party,
-                    name: name.trim() // 🚀 Pass name parameter value to backend updates
+                    name: name.trim()
                 })
             });
 
@@ -55,12 +62,11 @@ export default function ProfileModal({ isOpen, onClose }) {
                 return;
             }
 
-            // Sync successful local session cache copies seamlessly
+            sessionStorage.setItem('currentUserName', name.trim());
             sessionStorage.setItem('currentUserAddress', address.trim());
             sessionStorage.setItem('currentUserGender', gender);
             sessionStorage.setItem('currentUserAge', age);
             sessionStorage.setItem('currentUserPartyAffiliation', party);
-            sessionStorage.setItem('currentUserName', name.trim());
 
             alert("🎉 Profile parameters synchronized successfully!");
             onClose();
@@ -71,11 +77,12 @@ export default function ProfileModal({ isOpen, onClose }) {
         }
     };
 
+    const hasSavedAddress = address.trim().length > 0 || !!sessionStorage.getItem('currentUserAddress');
     return (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999999 }}>
-            <div style={{ backgroundColor: '#fff', padding: '35px', borderRadius: '10px', maxWidth: '460px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', fontFamily: 'sans-serif', color: '#111' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '25px', textAlign: 'center', fontSize: '22px' }}>👤 Voter Profile Attributes</h3><br />
-
+        <div className="modal-overlay">
+            <div className="modal-card">
+                <h3 className="modal-title">👤 Voter Profile</h3>
+                
                 {statusMessage && (
                     <div style={{ padding: '10px', marginBottom: '15px', borderRadius: '4px', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '13px', border: '1px solid #fca5a5' }}>
                         {statusMessage}
@@ -83,41 +90,74 @@ export default function ProfileModal({ isOpen, onClose }) {
                 )}
 
                 <form onSubmit={handleFormSave}>
-                    <div style={{ marginBottom: '18px', position: 'relative' }}>
-                        <div className="form-group">
-                            <label className="form-label">Full Name</label>
-                            <input
-                                type="text"
-                                className="input-field"
-                                disabled={isLoading}
-                                placeholder="John Doe"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                            <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>Full Mailing Address (Optional)</label>
-                            <span
-                                onMouseEnter={() => setShowTooltip(true)}
-                                onMouseLeave={() => setShowTooltip(false)}
-                                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', backgroundColor: '#e2e8f0', color: '#475569', borderRadius: '50%', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none' }}
+                    
+                    {/* Aligned Full Name field group with bold label layout and explicit (Optional) text */}
+                    <div className="form-group">
+                        <div className="label-container">
+                            <label className="form-label" style={{ fontWeight: 'bold' }}>Full Name (Optional)</label>
+                            <span 
+                                onMouseEnter={() => setShowNameTooltip(true)}
+                                onMouseLeave={() => setShowNameTooltip(false)}
+                                className="info-icon"
                             >
                                 ?
                             </span>
                         </div>
 
-                        {showTooltip && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#1e293b', color: '#f8fafc', padding: '14px', borderRadius: '6px', fontSize: '12px', zIndex: 999999, marginTop: '5px' }}>
+                        {showNameTooltip && (
+                            <div className="floating-tooltip">
+                                Why add your name? It's just a convenience for you to have it drop into the letters to your congressmen. You can add it manually in the letters if you prefer.
+                            </div>
+                        )}
+
+                        <input 
+                            type="text" 
+                            className="input-field" 
+                            disabled={isLoading}
+                            placeholder="John Doe" 
+                            value={name} 
+                            onChange={(e) => setName(e.target.value)} 
+                        />
+                    </div>
+
+                    {/* Address Group Input Box Container */}
+                    <div className="form-group">
+                        <div className="label-container">
+                            <label className="form-label" style={{ fontWeight: 'bold' }}>Full Mailing Address (Optional)</label>
+                            <span 
+                                onMouseEnter={() => setShowAddressTooltip(true)}
+                                onMouseLeave={() => setShowAddressTooltip(false)}
+                                className="info-icon"
+                            >
+                                ?
+                            </span>
+                        </div>
+
+                        {showAddressTooltip && (
+                            <div className="floating-tooltip">
                                 📌 Why add your address? ZIP codes cross state boundaries. An address allows us to cleanly map your exact congressmen.
                             </div>
                         )}
 
-                        <input type="text" placeholder="123 Main St, Denver, CO 80108" style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px' }} value={address} onChange={(e) => setAddress(e.target.value)} />
+                        <input 
+                            type="text" 
+                            className="input-field" 
+                            disabled={isLoading}
+                            placeholder="123 Main St, Denver, CO 80108" 
+                            value={address} 
+                            onChange={(e) => setAddress(e.target.value)} 
+                        />
                     </div>
 
-                    <div style={{ marginBottom: '18px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Gender Indicator</label>
-                        <select style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: '#fff' }} value={gender} onChange={(e) => setGender(e.target.value)}>
+                    {/* Gender Indicator Selector */}
+                    <div className="form-group">
+                        <label className="form-label" style={{ fontWeight: 'bold' }}>Gender Indicator</label>
+                        <select 
+                            className="input-field" 
+                            disabled={isLoading}
+                            value={gender} 
+                            onChange={(e) => setGender(e.target.value)}
+                        >
                             <option value="">Select...</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
@@ -126,9 +166,15 @@ export default function ProfileModal({ isOpen, onClose }) {
                         </select>
                     </div>
 
-                    <div style={{ marginBottom: '18px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Voter Age Group</label>
-                        <select style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: '#fff' }} value={age} onChange={(e) => setAge(e.target.value)}>
+                    {/* Voter Age Group Selector */}
+                    <div className="form-group">
+                        <label className="form-label" style={{ fontWeight: 'bold' }}>Voter Age Group</label>
+                        <select 
+                            className="input-field" 
+                            disabled={isLoading}
+                            value={age} 
+                            onChange={(e) => setAge(e.target.value)}
+                        >
                             <option value="">Select Age Group...</option>
                             <option value="18-24">18-24</option>
                             <option value="25-34">25-34</option>
@@ -139,9 +185,15 @@ export default function ProfileModal({ isOpen, onClose }) {
                         </select>
                     </div>
 
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Party Affiliation Alignment</label>
-                        <select style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', backgroundColor: '#fff' }} value={party} onChange={(e) => setParty(e.target.value)}>
+                    {/* Party Affiliation Alignment Selector */}
+                    <div className="form-group-last">
+                        <label className="form-label" style={{ fontWeight: 'bold' }}>Party Affiliation Alignment</label>
+                        <select 
+                            className="input-field" 
+                            disabled={isLoading}
+                            value={party} 
+                            onChange={(e) => setParty(e.target.value)}
+                        >
                             <option value="Independent">Independent</option>
                             <option value="Democrat">Democrat</option>
                             <option value="Republican">Republican</option>
@@ -150,14 +202,30 @@ export default function ProfileModal({ isOpen, onClose }) {
                         </select>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                        <button type="submit" disabled={isLoading} style={{ padding: '10px 16px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-                            {isLoading ? 'Syncing...' : 'Save'}
+                    {/* See Your Congressmen Action Row Section Link Container */}
+                    <div style={{ borderTop: '1px solid #e2e8f0', marginTop: '20px', paddingTop: '15px', marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <button 
+                            type="button"
+                            disabled={!hasSavedAddress}
+                            onClick={() => setShowCongress(true)}
+                            style={{ width: '100%', padding: '12px', backgroundColor: hasSavedAddress ? '#6366f1' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '6px', cursor: hasSavedAddress ? 'pointer' : 'not-allowed', fontWeight: 'bold', fontSize: '14px' }}
+                        >
+                            🏛️ See your congressmen
                         </button>
-                        <button type="button" onClick={onClose} style={{ padding: '10px 16px', backgroundColor: '#f1f5f9', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Close</button>
+                        {!hasSavedAddress && <small style={{ color: '#ef4444', textAlign: 'center', fontSize: '11px', fontWeight: '500' }}>⚠️ You must save an address first to unlock your legislators tracker.</small>}
+                    </div>
+
+                    {/* 🚀 FIXED: Save button renamed and positioned to the left of the Close button */}
+                    <div className="action-container" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button type="submit" className="btn-submit" disabled={isLoading}>
+                            {isLoading ? 'Saving...' : 'Save'}
+                        </button>
+                        <button type="button" className="btn-close" onClick={onClose}>Close</button>
                     </div>
                 </form>
             </div>
+
+            <CongressmenModal isOpen={showCongress} onClose={() => setShowCongress(false)} />
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import './Accordion.css';
+import '../styles/Accordion.css';
 
 export default function Accordion({ items, renderContent, keepOpen = false}) {
   console.log('keepOpen prop is:', keepOpen);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './VoteModal.css';
+import '../../styles/VoteModal.css';
 
 export default function VoteModal({ issue, mode, onClose, onSubmit }) {
   const [selectedChoice, setSelectedChoice] = useState('');

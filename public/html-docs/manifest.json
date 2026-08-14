@@ -1,44 +1,162 @@
 [
   {
-    "id": "Increase Doctor Supply",
-    "title": "Increase Doctor Supply",
-    "category": "Healthcare",
-    "url": "/html-docs/Healthcare/Increase Doctor Supply.html"
+    "id": "101",
+    "title": "Federal Campaign Financial Transparency Act",
+    "category": "Electoral Reform",
+    "desc": "Stricter limits should be placed on political fundraising, and anonymous 'dark money' donor pools should be completely banned.",
+    "for": "Blocks wealthy donors from buying undue political influence.",
+    "against": "Limits corporate and organizational free speech rights."
   },
   {
-    "id": "Reduce Administrative Costs",
-    "title": "Reduce Administrative Costs",
-    "category": "Healthcare",
-    "url": "/html-docs/Healthcare/Reduce Administrative Costs.html"
+    "id": "102",
+    "title": "Handheld Cellular Driving Regulations Charter",
+    "category": "Public Safety",
+    "desc": "The federal government should establish mandatory national penalties for operating a mobile device while driving to reduce commuter collisions.",
+    "for": "Significantly decreases traffic fatalities and distracted driving.",
+    "against": "Infringes on personal freedoms and duplicates existing state laws."
   },
   {
-    "id": "Reduce Malpractice Insurance",
-    "title": "Reduce Malpractice Insurance",
-    "category": "Healthcare",
-    "url": "/html-docs/Healthcare/Reduce Malpractice Insurance.html"
+    "id": "103",
+    "title": "Municipal Carbon Infrastructure Taxation Initiative",
+    "category": "Environmental Policy",
+    "desc": "Heavy corporate waste producers should pay penalty fees to reduce industrial pollution footprints.",
+    "for": "Forces massive polluters to clean up their operations.",
+    "against": "Increases production costs, which gets passed to consumers."
   },
   {
-    "id": "Reducing drug prices",
-    "title": "Reducing drug prices",
-    "category": "Healthcare",
-    "url": "/html-docs/Healthcare/Reducing drug prices.html"
+    "id": "104",
+    "title": "Carbon Tax on Imports",
+    "category": "Environmental Policy",
+    "desc": "The nation should enact tariff penalties on imported goods from countries that fail to meet baseline climate and environmental benchmarks.",
+    "for": "Protects domestic clean manufacturing from cheap foreign polluters.",
+    "against": "Can spark global trade retaliations and supply chain disruptions."
   },
   {
-    "id": "Single-Payer Negotiation Leverage",
-    "title": "Single Payer Negotiation Leverage",
-    "category": "Healthcare",
-    "url": "/html-docs/Healthcare/Single-Payer Negotiation Leverage.html"
+    "id": "105",
+    "title": "Federal Term Limits",
+    "category": "Electoral Reform",
+    "desc": "Constitutional rules should be amended to place term ceilings on Supreme Court justices and members of Congress instead of lifetime appointments.",
+    "for": "Encourages dynamic, generational turnover and blocks career political corruption.",
+    "against": "Loses experienced lawmakers and increases reliance on unelected lobbyists."
   },
   {
-    "id": "Subsidized Doctor Education",
-    "title": "Subsidized Doctor Education",
-    "category": "Healthcare",
-    "url": "/html-docs/Healthcare/Subsidized Doctor Education.html"
+    "id": "106",
+    "title": "Campaign Finance Reform",
+    "category": "Electoral Reform",
+    "desc": "The government should implement stricter limits and greater transparency rules on all political campaign contributions and organizational expenditures.",
+    "for": "Returns basic electoral power to individual, everyday citizens.",
+    "against": "Restricts fundraising avenues required for competitive political outreach."
   },
   {
-    "id": "Warren Buffet Idea To Fix Budget Deficit",
-    "title": "Warren Buffet Idea To Fix Budget Deficit",
-    "category": "National Debt",
-    "url": "/html-docs/National Debt/Warren Buffet Idea To Fix Budget Deficit.html"
+    "id": "107",
+    "title": "National Debt Resolution",
+    "category": "Fiscal Policy",
+    "desc": "The federal government should implement structural spending caps and comprehensive tax audits to systematically reduce the national debt.",
+    "for": "Restores long-term economic stability and stops inflation spirals.",
+    "against": "Requires painful cuts to public programs or unpopular tax hikes."
+  },
+  {
+    "id": "108",
+    "title": "Universal Healthcare Option",
+    "category": "Healthcare",
+    "desc": "The government should establish a universal public healthcare option to guarantee basic medical coverage and lower patient costs for all citizens.",
+    "for": "Guarantees healthcare access for all income brackets and removes medical debt.",
+    "against": "Significantly raises government spending and disrupts private insurance options."
+  },
+  {
+    "id": "109",
+    "title": "Global Warming Mitigation",
+    "category": "Climate Change",
+    "desc": "The federal government should phase out fossil fuel subsidies and heavily fund renewable energy grids to combat rising global temperatures.",
+    "for": "Reduces catastrophic climate risks and creates modern green energy jobs.",
+    "against": "Hurts traditional energy sectors and raises short-term grid costs."
+  },
+  {
+    "id": "110",
+    "title": "Artificial Intelligence Safety Standards",
+    "category": "Technology & AI",
+    "desc": "Stricter federal regulations and algorithmic audit parameters should be enforced on artificial intelligence developers to protect data privacy and jobs.",
+    "for": "Prevents corporate data misuse, job displacements, and deepfake misinformation.",
+    "against": "Stifles global technological innovation and hampers startup businesses."
+  },
+  {
+    "id": "111",
+    "title": "Wealth Gap Mitigation",
+    "category": "Economic Policy",
+    "desc": "Federal tax brackets should be reorganized to increase taxes on extreme wealth and capital gains to fund middle-class social mobility programs.",
+    "for": "Balances growing financial inequality and builds stronger communities.",
+    "against": "Discourages wealth accumulation and can cause investment capital flight."
+  },
+  {
+    "id": "112",
+    "title": "Trump Administration Political Legacy Evaluation",
+    "category": "National Politics",
+    "desc": "The 'America First' policy framework, characterized by strict border control and deregulation, remains the ideal blueprint for future administrations.",
+    "for": "Prioritizes domestic economic growth, industrial jobs, and strong borders.",
+    "against": "Weakens international alliances and stalls vital climate initiatives."
+  },
+  {
+    "id": "113",
+    "title": "Foreign Affairs Alliances",
+    "category": "Foreign Affairs",
+    "desc": "The United States should restrict its military interventions abroad and focus its foreign resources strictly on securing local democratic trade alliances.",
+    "for": "Saves billions in taxpayer funds and prevents messy proxy conflicts.",
+    "against": "Creates global power vacuums that can be filled by aggressive foreign adversaries."
+  },
+  {
+    "id": "114",
+    "title": "Education Funding Reallocation",
+    "category": "Education",
+    "desc": "The federal government should establish public school voucher systems, letting parents direct public funding to private or charter institutions.",
+    "for": "Empowers parents with choices and introduces healthy academic competition.",
+    "against": "Drains vital resource funding from already underfunded public school systems."
+  },
+  {
+    "id": "115",
+    "title": "Energy Grid Modernization",
+    "category": "Energy",
+    "desc": "Nuclear power infrastructure development should be heavily expanded to guarantee domestic clean energy independence alongside solar and wind systems.",
+    "for": "Provides massive, reliable zero-emission baseline power to support grids.",
+    "against": "Presents long-term radioactive waste management and facility security challenges."
+  },
+  {
+    "id": "116",
+    "title": "Gun Control Legislation",
+    "category": "Public Safety",
+    "desc": "Federal background checks should be mandatory for all firearm sales, including red-flag laws that restrict access for high-risk individuals.",
+    "for": "Reduces gun violence and blocks firearm access for dangerous actors.",
+    "against": "Infringes on the constitutional rights of law-abiding citizens."
+  },
+  {
+    "id": "117",
+    "title": "Immigration Processing Reform",
+    "category": "Immigration",
+    "desc": "Border enforcement resources should be balanced with expanded legal asylum processing networks to solve humanitarian port backlogs.",
+    "for": "Creates orderly border controls while preserving basic human dignity.",
+    "against": "Encourages larger migration waves and strains municipal safety nets."
+  },
+  {
+    "id": "118",
+    "title": "Social Media Algorithmic Accountability",
+    "category": "Technology & AI",
+    "desc": "Social media platforms should face legal liabilities for failing to filter toxic algorithms that actively harm youth mental health.",
+    "for": "Holds tech giants accountable for targeted addictive programming.",
+    "against": "Creates severe free speech censorship risks across open web networks."
+  },
+  {
+    "id": "119",
+    "title": "Tariff Application Enforcement",
+    "category": "Economic Policy",
+    "desc": "Broad import tariffs should be permanently sustained on foreign manufacturing competitors to force corporations to rebuild supply chains domestically.",
+    "for": "Brings manufacturing jobs back and protects domestic industries.",
+    "against": "Triggers immediate consumer price spikes and sparks inflation loops."
+  },
+  {
+    "id": "120",
+    "title": "Fiscal Responsibility and Congressional Accountability Act",
+    "category": "Fiscal Policy",
+    "desc": "When the federal government fails to maintain a balanced budget by the end of a fiscal year, all sitting members of Congress shall be immediately ineligible for reelection.",
+    "for": "Creates ultimate personal accountability for lawmakers and fixes spending incentives.",
+    "against": "Could force extreme, sudden cuts to public programs during national downturns."
   }
 ]

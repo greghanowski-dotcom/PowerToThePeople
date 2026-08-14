@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CongressmenModal from './CongressmenModal';
-import './ProfileModal.css';
+import '../../styles/ProfileModal.css';
 
 export default function ProfileModal({ isOpen, onClose }) {
     const [name, setName] = useState('');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './CongressmenModal.css';
+import '../../styles/CongressmenModal.css';
 
 export default function CongressmenModal({ isOpen, onClose }) {
     const [reps, setReps] = useState([]);

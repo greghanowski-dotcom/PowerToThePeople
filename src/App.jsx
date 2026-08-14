@@ -25,10 +25,10 @@ export default function App() {
     const [isAppLoading, setIsAppLoading] = useState(true);
 
     // Modal and accordion panel states
-    const [activeModal, setActiveModal] = useState(null); 
+    const [activeModal, setActiveModal] = useState(null);
     const [openPanels, setOpenPanels] = useState([]);
-    const [keepAccordionsOpen, setKeepAccordionsOpen] = useState(false); 
-    const [preferences, setPreferences] = useState({ keepAccordionsOpen: true, notifications: true }); 
+    const [keepAccordionsOpen, setKeepAccordionsOpen] = useState(false);
+    const [preferences, setPreferences] = useState({ keepAccordionsOpen: true, notifications: true });
     const [votes, setVotes] = useState({});
 
     // 1. DEVICE RECOGNITION TIMELINE CHECK
@@ -69,7 +69,7 @@ export default function App() {
     }, [isLoggedIn]);
 
     console.log("[APP CORE] Current activeModal state string position value:", activeModal);
-   // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK
+    // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK
     const handleAuthSuccess = (authenticatedUserId) => {
         localStorage.setItem('voter_token', 'secure-device-verified-token');
         localStorage.setItem('voter_uid', authenticatedUserId);
@@ -113,8 +113,8 @@ export default function App() {
     return (
         <div className="app-container">
             {/* Header now receives a customized logout injection loop to wipe local tokens safely */}
-            <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} /> 
-            
+            <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} />
+
             <main className="content-area">
                 <Routes>
                     <Route path="/" element={<Home />} />
@@ -129,25 +129,23 @@ export default function App() {
             </main>
 
             {/* Modal Control Layer */}
-{/* 🚀 THE FIXED SELF-HEALING SWITCH WRAPPER: Matches whichever string layout state maps down */}
-{/* 🚀 FIXED: Passes the explicit isOpen gate property so the modals can paint onto the DOM screen */}
-{activeModal && (
-    <div className="global-modal-manager">
-        {activeModal === 'profile' && (
-            <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
-        )}
+            {/* 🚀 THE FIXED SELF-HEALING SWITCH WRAPPER: Matches whichever string layout state maps down */}
+            {/* 🚀 FIXED: Passes the explicit isOpen gate property so the modals can paint onto the DOM screen */}
+            {activeModal && (
+                <div className="global-modal-manager">
+                    {activeModal === 'profile' && (
+                        <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
+                    )}
 
-        {activeModal === 'account' && (
-            <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
-        )}
+                    {activeModal === 'account' && (
+                        <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
+                    )}
 
-        {activeModal === 'preferences' && (
-            <PreferencesModal isOpen={true} onClose={() => setActiveModal(null)} />
-        )}
-    </div>
-)}
-
-
-         </div>
+                    {activeModal === 'preferences' && (
+                        <PreferencesModal isOpen={true} onClose={() => setActiveModal(null)} />
+                    )}
+                </div>
+            )}
+        </div>
     );
 }

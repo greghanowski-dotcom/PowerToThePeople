@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Accordion from '../components/Accordion';
 import HtmlDocViewer from '../components/HtmlDocViewer';
-import CongressmenModal from '../components/modals/CongressmenModal'; // 🚀 IMPORT YOUR CONGRESSIONAL MODAL HERE!
-import './Surveys.css';
+import CongressmenModal from '../components/modals/CongressmenModal'; 
+import '../styles/Surveys.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -11,7 +11,7 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
   const [modalData, setModalData] = useState(null);
   const [votes, setVotes] = useState({});
 
-  // 🚀 NEW: State parameters layer tracking for your legislator overlays
+  // State parameters layer tracking for your legislator overlays
   const [showCongress, setShowCongress] = useState(false);
 
   useEffect(() => {
@@ -40,10 +40,18 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
           localHistoryMap = votingHistory.reduce((acc, currentVote) => {
             const issueId = currentVote.issue_id;
             const voteType = currentVote.vote;
+            
+            // Standardize string casing mapping key helper conversion
+            const internalKey = voteType.charAt(0).toLowerCase() + voteType.slice(1).replace(/\s+/g, '');
+            
             acc[issueId] = {
-              up: voteType === 'up' ? 1 : 0,
-              down: voteType === 'down' ? 1 : 0,
-              hasVoted: true
+              stronglyAgree: internalKey === 'stronglyAgree' ? 1 : 0,
+              somewhatAgree: internalKey === 'somewhatAgree' ? 1 : 0,
+              neutral: internalKey === 'neutral' ? 1 : 0,
+              somewhatDisagree: internalKey === 'somewhatDisagree' ? 1 : 0,
+              stronglyDisagree: internalKey === 'stronglyDisagree' ? 1 : 0,
+              hasVoted: true,
+              userChoice: voteType
             };
             return acc;
           }, {});
@@ -61,12 +69,18 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       .then(globalData => {
         setVotes(prev => {
           const updatedVotes = { ...localHistoryMap };
-          if (Array.isArray(globalData)) {
-            globalData.forEach(item => {
-              updatedVotes[item.issue_id] = {
-                up: item.up_votes || 0,
-                down: item.down_votes || 0,
-                hasVoted: localHistoryMap[item.issue_id]?.hasVoted || false
+          
+          if (globalData && globalData.national) {
+            Object.keys(globalData.national).forEach(issueId => {
+              const stats = globalData.national[issueId];
+              updatedVotes[issueId] = {
+                stronglyAgree: stats.stronglyAgree || 0,
+                somewhatAgree: stats.somewhatAgree || 0,
+                neutral: stats.neutral || 0,
+                somewhatDisagree: stats.somewhatDisagree || 0,
+                stronglyDisagree: stats.stronglyDisagree || 0,
+                hasVoted: localHistoryMap[issueId]?.hasVoted || false,
+                userChoice: localHistoryMap[issueId]?.userChoice || null
               };
             });
           }
@@ -76,24 +90,29 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       .catch(err => console.error("Error connecting to public votes:", err));
   }, [isLoggedIn]);
 
-  const handleVote = async (id, type) => {
+  const handleVote = async (id, chosenPositionString) => {
     if (votes[id]?.hasVoted) return;
+
+    // Convert string titles format mapping: 'Strongly Agree' -> 'stronglyAgree'
+    const internalKey = chosenPositionString.charAt(0).toLowerCase() + chosenPositionString.slice(1).replace(/\s+/g, '');
 
     setVotes(prev => ({
       ...prev,
       [id]: {
-        up: (prev[id]?.up || 0) + (type === 'up' ? 1 : 0),
-        down: (prev[id]?.down || 0) + (type === 'down' ? 1 : 0),
-        hasVoted: true
+        ...prev[id],
+        [internalKey]: (prev[id]?.[internalKey] || 0) + 1,
+        hasVoted: true,
+        userChoice: chosenPositionString
       }
     }));
 
     setModalData(prev => ({
       ...prev,
       votes: {
-        up: (prev.votes?.up || 0) + (type === 'up' ? 1 : 0),
-        down: (prev.votes?.down || 0) + (type === 'down' ? 1 : 0),
-        hasVoted: true
+        ...prev.votes,
+        [internalKey]: (prev.votes?.[internalKey] || 0) + 1,
+        hasVoted: true,
+        userChoice: chosenPositionString
       }
     }));
 
@@ -105,7 +124,7 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
         body: JSON.stringify({
           userId: parseInt(savedUserId, 10),
           issueId: id,
-          voteType: type
+          voteType: chosenPositionString
         }),
       });
 
@@ -116,7 +135,7 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
         if (!Array.isArray(currentArray)) currentArray = [];
 
         currentArray = currentArray.filter(item => item.issue_id !== id);
-        currentArray.push({ issue_id: id, vote: type });
+        currentArray.push({ issue_id: id, vote: chosenPositionString });
         sessionStorage.setItem('currentUserVotingRecord', JSON.stringify(currentArray));
       } else {
         const errorData = await response.json();
@@ -126,33 +145,40 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       console.error("Network interface error on port 5000:", error);
     }
   };
-
   // Tracks if an address exists inside state or browser memory cache strings to unlock actions
-const hasSavedAddress = !!sessionStorage.getItem('currentUserAddress') || !!sessionStorage.getItem('currentUserEmail');
+  const hasSavedAddress = !!sessionStorage.getItem('currentUserAddress') || !!sessionStorage.getItem('currentUserEmail');
+
   return (
     <div style={{ position: 'relative', paddingBottom: '60px' }}>
-      {/* Map grouped keys to the Accordion items (Unchanged) */}
-      <Accordion items={Object.keys(groupedDocs).map(category => ({ title: category, content: groupedDocs[category] }))} renderContent={(item) => (
-        item.content.map(doc => (
-          <div key={doc.id} className="solution-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{doc.title}</span>
-            <button disabled={votes[doc.id]?.hasVoted} onClick={() => {
-              if (!votes[doc.id]?.hasVoted) {
-                setModalData({ ...doc, votes: votes[doc.id] || { up: 0, down: 0, hasVoted: false } });
-              }
-            }} style={{ padding: '6px 12px', cursor: votes[doc.id]?.hasVoted ? 'not-allowed' : 'pointer', backgroundColor: votes[doc.id]?.hasVoted ? '#6c757d' : '#007bff', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
-              {votes[doc.id]?.hasVoted ? '✓ Voted' : 'Vote'}
-            </button>
-          </div>
-        ))
-      )} keepOpen={keepAccordionsOpen} />
+      
+      {/* Map grouped keys to the Accordion items */}
+      <Accordion 
+        items={Object.keys(groupedDocs).map(category => ({ title: category, content: groupedDocs[category] }))} 
+        renderContent={(item) => (
+          item.content.map(doc => (
+            <div key={doc.id} className="solution-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 8px', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ fontSize: '15px', fontWeight: '500' }}>{doc.title}</span>
+              <button 
+                disabled={votes[doc.id]?.hasVoted} 
+                onClick={() => {
+                  setModalData({ ...doc, votes: votes[doc.id] || { stronglyAgree: 0, somewhatAgree: 0, neutral: 0, somewhatDisagree: 0, stronglyDisagree: 0, hasVoted: false, userChoice: null } });
+                }} 
+                style={{ padding: '6px 12px', cursor: votes[doc.id]?.hasVoted ? 'not-allowed' : 'pointer', backgroundColor: votes[doc.id]?.hasVoted ? '#6c757d' : '#007bff', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '13px' }}
+              >
+                {votes[doc.id]?.hasVoted ? '✓ Registered' : 'Evaluate'}
+              </button>
+            </div>
+          ))
+        )} 
+        keepOpen={keepAccordionsOpen} 
+      />
 
-      {/* 🚀 THE BASE LAYOUT ACTION SECTION BANNER: Placed at the bottom of the screen page */}
+      {/* 📬 CONGRESSIONAL ACTION DELEGATION BANNER SECTION */}
       <div style={{ marginTop: '40px', padding: '25px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
         <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>
           📬 Engage with your Congressional Delegation
         </h4>
-        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#475569', maxWIdth: '500px', margin: '0 auto 20px auto', lineHeight: '1.4' }}>
+        <p style={{ margin: '0 auto 20px auto', fontSize: '14px', color: '#475569', maxWidth: '500px', lineHeight: '1.4' }}>
           Generate dynamic advocacy letter updates sharing your private ballot alignments and platform consensus statistics to send directly to your lawmakers.
         </p>
 
@@ -172,27 +198,101 @@ const hasSavedAddress = !!sessionStorage.getItem('currentUserAddress') || !!sess
         ) : null}
       </div>
 
-      {/* The Interactive Voting Dialog Overlay Window */}
+      {/* Interactive Voting Dialog Overlay Window */}
       {modalData && (
         <div className="modal-overlay" onClick={() => setModalData(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setModalData(null)}>x</button>
-            <h3>{modalData.title}</h3>
-            <HtmlDocViewer url={modalData.url} />
-            <hr />
-            <div className="vote-group">
-              <span>Vote on this idea:</span>
-              <button disabled={votes[modalData.id]?.hasVoted} onClick={() => handleVote(modalData.id, 'up')}> 👍 {votes[modalData.id]?.up || 0} </button>
-              <button disabled={votes[modalData.id]?.hasVoted} onClick={() => handleVote(modalData.id, 'down')}> 👎 {votes[modalData.id]?.down || 0} </button>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8' }} onClick={() => setModalData(null)}>x</button>
+            <h3 style={{ margin: '0 0 4px 0', color: '#1e3a8a' }}>{modalData.title}</h3>
+            
+            {/* Injects the manifest.json "desc" value directly beneath the title heading */}
+            <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.5', margin: '0 0 20px 0', fontStyle: 'italic', backgroundColor: '#f8fafc', padding: '12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+              {modalData.desc || "No survey statement summary provided."}
+            </p>
+            
+            {/* Replaced legacy raw "Loading document..." tracker placeholder line block */}
+            {/* 🚀 FIXED: Renders a closed accordion housing the custom For/Against arguments parsed from your manifest file mapping under a neat "Details" layout card panel trigger link */}
+            <div style={{ marginBottom: '20px' }}>
+              <Accordion
+                keepOpen={false}
+                items={[
+                  {
+                    title: "📋 Details",
+                    for: modalData.for || "No supporting parameters logged.",
+                    against: modalData.against || "No opposing parameters logged."
+                  }
+                ]}
+                renderContent={(argItem) => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '5px 0' }}>
+                    <div style={{ padding: '12px', backgroundColor: '#f0fdf4', borderRadius: '6px', borderLeft: '4px solid #16a34a' }}>
+                      <strong style={{ display: 'block', color: '#14803d', fontSize: '13.5px', marginBottom: '4px' }}>🟢 Arguments For:</strong>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#166534', lineHeight: '1.4' }}>{argItem.for}</p>
+                    </div>
+                    <div style={{ padding: '12px', backgroundColor: '#fef2f2', borderRadius: '6px', borderLeft: '4px solid #dc2626' }}>
+                      <strong style={{ display: 'block', color: '#b91c1c', fontSize: '13.5px', marginBottom: '4px' }}>🔴 Arguments Against:</strong>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#991b1b', lineHeight: '1.4' }}>{argItem.against}</p>
+                    </div>
+                  </div>
+                )}
+              />
             </div>
-            {votes[modalData.id]?.hasVoted && (
-              <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                <p className="voted-msg" style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: 'green' }}>Thanks for your vote!</p>
-                <div className="global-stats-banner" style={{ display: 'inline-block', backgroundColor: '#f8f9fa', padding: '8px 15px', borderRadius: '6px', border: '1px solid #eee', fontSize: '14px', color: '#555' }}>
-                  📈 Global Total: <strong style={{ color: 'green' }}>👍 {votes[modalData.id]?.up || 0}</strong> | <strong style={{ color: 'red' }}>👎 {votes[modalData.id]?.down || 0}</strong>
+
+            <HtmlDocViewer url={modalData.url} />
+            <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
+            
+            {/* Formal 5-point Likert Scale voting prompt grid layout */}
+            <div className="likert-vote-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {!votes[modalData.id]?.hasVoted ? (
+                <>
+                  {/* 🚀 FIXED: Custom nested Details sub-accordion sits directly above this line block section inside the view template layout container card */}
+                  <span style={{ fontSize: '14.5px', fontWeight: 'bold', color: '#1e293b' }}>Select your position on this initiative statement:</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
+                    {[
+                      { text: 'Strongly Agree', color: '#16a34a', bg: '#f0fdf4' },
+                      { text: 'Somewhat Agree', color: '#15803d', bg: '#f0fdf4' },
+                      { text: 'Neutral', color: '#475569', bg: '#f8fafc' },
+                      { text: 'Somewhat Disagree', color: '#b91c1c', bg: '#fef2f2' },
+                      { text: 'Strongly Disagree', color: '#dc2626', bg: '#fef2f2' }
+                    ].map((opt) => (
+                      <button
+                        key={opt.text}
+                        onClick={() => handleVote(modalData.id, opt.text)}
+                        style={{
+                          padding: '10px 16px',
+                          textAlign: 'left',
+                          backgroundColor: opt.bg,
+                          color: opt.color,
+                          border: `1px solid ${opt.color}40`,
+                          borderRadius: '6px',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s'
+                        }}
+                      >
+                        🔘 {opt.text}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div style={{ marginTop: '5px', textAlign: 'center' }}>
+                  <p className="voted-msg" style={{ margin: '0 0 12px 0', fontWeight: 'bold', color: '#16a34a', fontSize: '15px' }}>
+                    🎉 Thanks for your vote! Your response position [ {votes[modalData.id]?.userChoice} ] has been locked.
+                  </p>
+                  <div className="global-stats-banner" style={{ display: 'block', backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', color: '#334155', textAlign: 'left', lineHeight: '1.6' }}>
+                    <strong style={{ display: 'block', marginBottom: '6px', fontSize: '13.5px', color: '#1e3a8a', textAlign: 'center' }}>📊 Active Community Consensus Trends:</strong>
+                    🟢 Strongly Agree: <strong>{votes[modalData.id]?.stronglyAgree || 0}</strong><br />
+                    🟢 Somewhat Agree: <strong>{votes[modalData.id]?.somewhatAgree || 0}</strong><br />
+                    ⚪ Neutral: <strong>{votes[modalData.id]?.neutral || 0}</strong><br />
+                    🔴 Somewhat Disagree: <strong>{votes[modalData.id]?.somewhatDisagree || 0}</strong><br />
+                    🔴 Strongly Disagree: <strong>{votes[modalData.id]?.stronglyDisagree || 0}</strong>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
           </div>
         </div>
       )}

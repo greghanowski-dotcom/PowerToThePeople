@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import './Header.css';
+import '../styles/Header.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 

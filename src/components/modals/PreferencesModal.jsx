@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './Preferences.css';
+import '../../styles/Preferences.css';
 
 export default function PreferencesModal({ prefs, setPrefs, onClose }) {
   const handleToggle = (name) => {

@@ -209,13 +209,21 @@ app.get('/api/get_user/:email', async (req, res) => {
 /* ==========================================================================
    POST ROUTE: SAVE INDIVIDUAL VOTER BALLOT SELECTIONS (DUPLICATE PROTECTED)
    ========================================================================== */
+/* ==========================================================================
+   🚀 REFACTORED POST ROUTE: SAVE INDIVIDUAL 5-POINT LIKERT SELECTIONS
+   ========================================================================== */
 app.post('/api/save_vote', async (req, res) => {
     try {
-        const { userId, issueId, voteType } = req.body;
-        if (!userId || !issueId || !voteType) return res.status(400).json({ error: 'Missing metrics.' });
+        const { userId, issueId, voteType } = req.body; // voteType format: 'Strongly Agree'
+        
+        // Dynamic input safety array validator check
+        const validScales = ['Strongly Agree', 'Somewhat Agree', 'Neutral', 'Somewhat Disagree', 'Strongly Disagree'];
+        if (!userId || !issueId || !validScales.includes(voteType)) {
+            return res.status(400).json({ error: 'Invalid or missing ballot metrics parameters.' });
+        }
 
         const [users] = await db.query('SELECT voting_record FROM users WHERE id = ?', [userId]);
-        if (users.length === 0) return res.status(404).json({ error: 'User not found.' });
+        if (users.length === 0) return res.status(404).json({ error: 'Voter profile missing.' });
 
         let currentRecord = [];
         try {
@@ -225,30 +233,32 @@ app.post('/api/save_vote', async (req, res) => {
         } catch (e) { currentRecord = []; }
         if (!Array.isArray(currentRecord)) currentRecord = [];
 
+        // Check if the voter has already cast a ballot for this issue
         if (currentRecord.some(item => item.issue_id === issueId)) {
-            return res.status(403).json({ error: 'You have already recorded a vote on this issue.' });
+            return res.status(403).json({ error: 'You have already recorded a ballot position on this issue.' });
         }
 
+        // Commit the raw text choice to the user's voting record column array
         currentRecord.push({ issue_id: issueId, vote: voteType });
         await db.query('UPDATE users SET voting_record = ? WHERE id = ?', [JSON.stringify(currentRecord), userId]);
-        return res.json({ success: true, message: 'Ballot recorded successfully!' });
+        
+        return res.json({ success: true, message: 'Likert response securely committed to the ledger schema!' });
     } catch (err) {
-        return res.status(500).json({ error: 'Failed to write voting record to the database.' });
+        return res.status(500).json({ error: 'Failed to write voting parameter data to the database.' });
     }
 });
 
 /* ==========================================================================
-   GET ROUTE: AGGREGATE ADVANCED MULTI-TIER CONSENSUS DATA SAFELY
+   🚀 REFACTORED GET ROUTE: AGGREGATE 5-POINT METRICS BY REGION
    ========================================================================== */
 app.get('/api/global_votes', async (req, res) => {
     try {
-        // Pull all user profiles containing voting records and location metadata
+        // Query users with a non-empty voting record column
         const [rows] = await db.query('SELECT address, voting_record FROM users WHERE voting_record IS NOT NULL');
         
         const consensus = {
             national: {},
-            state: {},
-            district: {}
+            state: {}
         };
 
         if (Array.isArray(rows)) {
@@ -261,37 +271,47 @@ app.get('/api/global_votes', async (req, res) => {
                 } catch (e) { record = []; }
                 if (!Array.isArray(record)) return;
 
-                // Extract or default geographic tokens from the user's saved text address string
-                // Expected format pattern helper: "... Castle Rock, CO 80108"
+                // Extract state initials safely from the mailing address text string
                 const addressStr = row.address || '';
                 const stateMatch = addressStr.match(/,\s*([A-Z]{2})\s+\d/);
                 const userState = stateMatch ? stateMatch[1] : 'UNKNOWN';
 
                 record.forEach(voteItem => {
                     const id = voteItem.issue_id;
-                    const vote = voteItem.vote; // 'up' or 'down'
-                    if (!id || !vote) return;
+                    const rawVoteStr = voteItem.vote; // String value matching choice option keys
+                    if (!id || !rawVoteStr) return;
 
-                    // 1. National Accumulator Matrix
-                    if (!consensus.national[id]) consensus.national[id] = { up: 0, down: 0 };
-                    consensus.national[id][vote] += 1;
+                    // Convert human readable string titles to match frontend storage objects
+                    // Standard keys format mapping conversion: 'Strongly Agree' -> 'stronglyAgree'
+                    const internalKey = rawVoteStr.charAt(0).toLowerCase() + rawVoteStr.slice(1).replace(/\s+/g, '');
 
-                    // 2. State-Level Accumulator Matrix
+                    // 1. National Accumulator Map Grid
+                    if (!consensus.national[id]) {
+                        consensus.national[id] = { stronglyAgree: 0, somewhatAgree: 0, neutral: 0, somewhatDisagree: 0, stronglyDisagree: 0 };
+                    }
+                    if (consensus.national[id][internalKey] !== undefined) {
+                        consensus.national[id][internalKey] += 1;
+                    }
+
+                    // 2. Regional State-Level Accumulator Map Grid
                     if (!consensus.state[userState]) consensus.state[userState] = {};
-                    if (!consensus.state[userState][id]) consensus.state[userState][id] = { up: 0, down: 0 };
-                    consensus.state[userState][id][vote] += 1;
+                    if (!consensus.state[userState][id]) {
+                        consensus.state[userState][id] = { stronglyAgree: 0, somewhatAgree: 0, neutral: 0, somewhatDisagree: 0, stronglyDisagree: 0 };
+                    }
+                    if (consensus.state[userState][id][internalKey] !== undefined) {
+                        consensus.state[userState][id][internalKey] += 1;
+                    }
                 });
             });
         }
 
-        // We also pull the district-specific tallies directly from the live database rows if available,
-        // but to ensure consistency with our JSON columns loop, we compile and return the complete map grid:
         return res.json(consensus);
     } catch (err) {
-        console.error("[CRITICAL BACKEND CONSENSUS] Aggregation failed:", err.message);
-        return res.json({ national: {}, state: {}, district: {} });
+        console.error("[CONSENSUS COMPILATION FAILURE]:", err.message);
+        return res.json({ national: {}, state: {} });
     }
 });
+
 
 
 /* ==========================================================================
@@ -392,6 +412,35 @@ app.post('/api/lookup_politicians', async (req, res) => {
     } catch (err) {
         console.error("\n[CRITICAL PARSE EXCEPTION]:", err.message);
         return res.status(500).json({ error: 'Failed to process background legislator mappings due to network parse errors.' });
+    }
+});
+
+app.post('/api/dispatch_letter', async (req, res) => {
+    try {
+        const { userId, recipientName, recipientRole, letterText } = req.body;
+
+        if (!userId || !recipientName || !recipientRole || !letterText) {
+            return res.status(400).json({ error: 'Missing critical delivery matrix tracking fields.' });
+        }
+
+        console.log(`[DISPATCH] Logging letter transcript from User ${userId} targeting lawmaker ${recipientName}`);
+
+        // Relational table transactional command execution
+        const [result] = await db.query(
+            `INSERT INTO legislator_letters (user_id, recipient_name, recipient_role, letter_text, dispatched_at) 
+             VALUES (?, ?, ?, ?, NOW())`,
+            [userId, recipientName.trim(), recipientRole.trim(), letterText.trim()]
+        );
+
+        return res.json({ 
+            success: true, 
+            message: 'Advocacy statement securely logged to tracking database tables!', 
+            letterId: result.insertId 
+        });
+
+    } catch (err) {
+        console.error("[DISPATCH ERROR] ❌ Transaction pipeline logging failed:", err.message);
+        return res.status(500).json({ error: 'Failed to record letter dispatch status metrics inside database ledger.' });
     }
 });
 

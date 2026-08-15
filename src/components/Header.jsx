@@ -23,38 +23,12 @@ const Header = ({ setCurrentPage, isLoggedIn, setIsLoggedIn, openModal }) => {
             document.removeEventListener('mousedown', handleOutsideClickClose);
         };
     }, [showDropdown]);
+// 🚀 FIXED: Deletes the password-bypassing prompt and forces the secure 2FA form to open
+const handleSignInClick = () => {
+    // Opens the 'auth-gate' login component card overlay we added to App.jsx
+    openModal('auth-gate'); 
+};
 
-    const handleSignInClick = async () => {
-        const enteredEmail = prompt("Please enter your email address to Sign In:");
-        if (!enteredEmail) return;
-        try {
-            const response = await fetch(`${API_URL}/get_user/${encodeURIComponent(enteredEmail.trim())}`);
-            const data = await response.json();
-            if (response.ok) {
-                sessionStorage.setItem('currentUserId', data.id);
-                sessionStorage.setItem('currentUserEmail', data.email);
-                sessionStorage.setItem('currentUserPassword', data.password || '');
-                sessionStorage.setItem('currentUserPhone', data.phone || '');
-                sessionStorage.setItem('currentUserGender', data.gender || '');
-                sessionStorage.setItem('currentUserAge', data.age || '');
-                sessionStorage.setItem('currentUserPartyAffiliation', data.party_affiliation || '');
-                sessionStorage.setItem('currentUserZipCode', data.zip_code || '');
-                sessionStorage.setItem('currentUserAccordionPanels', data.accordion_panels_stay_open || '');
-                sessionStorage.setItem('currentUserVotingRecord', data.voting_record || '');
-                
-                const votingRecordStr = typeof data.voting_record === 'string' ? data.voting_record : JSON.stringify(data.voting_record || []);
-                sessionStorage.setItem('currentUserVotingRecord', votingRecordStr);
-                
-                alert(`🎉 Welcome back! Logged in as User ID: ${data.id}`);
-                setIsLoggedIn(true);
-            } else {
-                alert(data.error || "User not found. Please verify your email or sign up.");
-            }
-        } catch (error) {
-            console.error("Login lookup failure:", error);
-            alert("Failed to communicate with database server on port 5000.");
-        }
-    };
 
     const handleSignOutClick = () => {
         sessionStorage.clear();

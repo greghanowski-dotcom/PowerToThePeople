@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Accordion from '../components/Accordion';
 import HtmlDocViewer from '../components/HtmlDocViewer';
-import CongressmenModal from '../components/modals/CongressmenModal'; 
+import CongressmenModal from '../components/modals/CongressmenModal';
 import '../styles/Surveys.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -40,10 +40,10 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
           localHistoryMap = votingHistory.reduce((acc, currentVote) => {
             const issueId = currentVote.issue_id;
             const voteType = currentVote.vote;
-            
+
             // Standardize string casing mapping key helper conversion
             const internalKey = voteType.charAt(0).toLowerCase() + voteType.slice(1).replace(/\s+/g, '');
-            
+
             acc[issueId] = {
               stronglyAgree: internalKey === 'stronglyAgree' ? 1 : 0,
               somewhatAgree: internalKey === 'somewhatAgree' ? 1 : 0,
@@ -69,7 +69,7 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       .then(globalData => {
         setVotes(prev => {
           const updatedVotes = { ...localHistoryMap };
-          
+
           if (globalData && globalData.national) {
             Object.keys(globalData.national).forEach(issueId => {
               const stats = globalData.national[issueId];
@@ -150,27 +150,27 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
 
   return (
     <div style={{ position: 'relative', paddingBottom: '60px' }}>
-      
+
       {/* Map grouped keys to the Accordion items */}
-      <Accordion 
-        items={Object.keys(groupedDocs).map(category => ({ title: category, content: groupedDocs[category] }))} 
+      <Accordion
+        items={Object.keys(groupedDocs).map(category => ({ title: category, content: groupedDocs[category] }))}
         renderContent={(item) => (
           item.content.map(doc => (
             <div key={doc.id} className="solution-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 8px', borderBottom: '1px solid #f1f5f9' }}>
               <span style={{ fontSize: '15px', fontWeight: '500' }}>{doc.title}</span>
-              <button 
-                disabled={votes[doc.id]?.hasVoted} 
+              {/* 🚀 ALLOW ALL USERS: Guest access route unblocks evaluation button panel */}
+              <button
                 onClick={() => {
                   setModalData({ ...doc, votes: votes[doc.id] || { stronglyAgree: 0, somewhatAgree: 0, neutral: 0, somewhatDisagree: 0, stronglyDisagree: 0, hasVoted: false, userChoice: null } });
-                }} 
-                style={{ padding: '6px 12px', cursor: votes[doc.id]?.hasVoted ? 'not-allowed' : 'pointer', backgroundColor: votes[doc.id]?.hasVoted ? '#6c757d' : '#007bff', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '13px' }}
+                }}
+                style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: votes[doc.id]?.hasVoted ? '#10b981' : '#007bff', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '13px' }}
               >
                 {votes[doc.id]?.hasVoted ? '✓ Registered' : 'Evaluate'}
               </button>
             </div>
           ))
-        )} 
-        keepOpen={keepAccordionsOpen} 
+        )}
+        keepOpen={keepAccordionsOpen}
       />
 
       {/* 📬 CONGRESSIONAL ACTION DELEGATION BANNER SECTION */}
@@ -204,14 +204,13 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="close-btn" style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8' }} onClick={() => setModalData(null)}>x</button>
             <h3 style={{ margin: '0 0 4px 0', color: '#1e3a8a' }}>{modalData.title}</h3>
-            
+
             {/* Injects the manifest.json "desc" value directly beneath the title heading */}
             <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.5', margin: '0 0 20px 0', fontStyle: 'italic', backgroundColor: '#f8fafc', padding: '12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
               {modalData.desc || "No survey statement summary provided."}
             </p>
-            
-            {/* Replaced legacy raw "Loading document..." tracker placeholder line block */}
-            {/* 🚀 FIXED: Renders a closed accordion housing the custom For/Against arguments parsed from your manifest file mapping under a neat "Details" layout card panel trigger link */}
+
+            {/* 🚀 SUB-ACCORDION DETAILS PANEL: Displays For and Against arguments */}
             <div style={{ marginBottom: '20px' }}>
               <Accordion
                 keepOpen={false}
@@ -239,13 +238,12 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
 
             <HtmlDocViewer url={modalData.url} />
             <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
-            
+
             {/* Formal 5-point Likert Scale voting prompt grid layout */}
             <div className="likert-vote-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              
+
               {!votes[modalData.id]?.hasVoted ? (
                 <>
-                  {/* 🚀 FIXED: Custom nested Details sub-accordion sits directly above this line block section inside the view template layout container card */}
                   <span style={{ fontSize: '14.5px', fontWeight: 'bold', color: '#1e293b' }}>Select your position on this initiative statement:</span>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
                     {[
@@ -257,7 +255,15 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
                     ].map((opt) => (
                       <button
                         key={opt.text}
-                        onClick={() => handleVote(modalData.id, opt.text)}
+                        onClick={() => {
+                          // 🚀 SECURITY SHIELD GUEST INTERCEPTOR LOCKOUT
+                          if (!isLoggedIn) {
+                            alert("🔒 Authentication Required: You are welcome to browse the details of this policy, but you must register or sign in to vote on public initiatives.");
+                            setModalData(null); // Close the survey details window safely
+                            return;
+                          }
+                          handleVote(modalData.id, opt.text);
+                        }}
                         style={{
                           padding: '10px 16px',
                           textAlign: 'left',
@@ -296,7 +302,6 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
           </div>
         </div>
       )}
-
       {/* Render the sub-modal container independently outside your markup flow blocks */}
       <CongressmenModal isOpen={showCongress} onClose={() => setShowCongress(false)} />
     </div>

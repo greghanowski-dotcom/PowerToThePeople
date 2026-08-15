@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+import ResetPasswordModal from './modals/ResetPasswordModal';
 
 export default function TwoFactorLogin({ onAuthSuccess }) {
     const [view, setView] = useState('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
     const [otpCode, setOtpCode] = useState('');
     
@@ -15,6 +15,9 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
     
     // Password Visibility State Hook
     const [showPasswordText, setShowPasswordText] = useState(false);
+    
+    // Recovery Password Reset Modal Visibility Layer Hook
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     
     const [userId, setUserId] = useState(null);
 
@@ -29,7 +32,7 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
     const apiBaseUrl = `${getBaseUrl()}/api/auth`;
 
     const handleActionSubmit = async (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         setErrorMessage('');
         setSuccessMessage('');
         setShowOptionsNotice(false);
@@ -59,16 +62,16 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
                     return;
                 }
                 
-                // 🚀 FIXED SCOPE: Store all profile attributes safely into session storage right here where loginData is active!
                 // Phase 2 Login Success: Store all attributes safely inside browser memory cache
                 setUserId(loginData.userId);
                 sessionStorage.setItem('currentUserId', loginData.userId);
                 sessionStorage.setItem('currentUserEmail', loginData.email || '');
-                             sessionStorage.setItem('currentUserName', loginData.name || '');
+                sessionStorage.setItem('currentUserName', loginData.name || '');
                 sessionStorage.setItem('currentUserAddress', loginData.address || '');
                 sessionStorage.setItem('currentUserGender', loginData.gender || '');
                 sessionStorage.setItem('currentUserAge', loginData.age || '');
                 sessionStorage.setItem('currentUserPartyAffiliation', loginData.party || 'Independent');
+                
                 const rawRecord = typeof loginData.voting_record === 'string'
                     ? loginData.voting_record
                     : JSON.stringify(loginData.voting_record || []);
@@ -93,10 +96,11 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
             } 
             
             else if (view === 'register') {
+                // 🚀 USERNAME COMPONENT REMOVED NATIVELY FROM THE API CALL
                 const res = await fetch(`${apiBaseUrl}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password, phone }),
+                    body: JSON.stringify({ email, password, phone }),
                 });
                 const data = await res.json();
                 if (!res.ok || data.error) return setErrorMessage(data.error || 'Registration failed.');
@@ -133,128 +137,136 @@ export default function TwoFactorLogin({ onAuthSuccess }) {
         setShowOptionsNotice(false);
         setView(targetView);
     };
+  return (
+    <div style={{ maxWidth: '420px', width: '100%', margin: '0 auto', padding: '30px', border: '1px solid #ddd', borderRadius: '8px', fontFamily: 'sans-serif', backgroundColor: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+      <h2 style={{ marginBottom: '20px', textTransform: 'capitalize', color: '#111', marginTop: '0', fontSize: '22px', textAlign: 'center' }}>
+        Voter {view.replace('-', ' ')} Gateway
+      </h2>
 
-    return (
-        <div style={{ maxWidth: '420px', width: '100%', margin: '0 auto', padding: '30px', border: '1px solid #ddd', borderRadius: '8px', fontFamily: 'sans-serif', backgroundColor: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-            <h2 style={{ marginBottom: '20px', textTransform: 'capitalize', color: '#111', marginTop: '0', fontSize: '22px', textAlign: 'center' }}>
-                Voter {view.replace('-', ' ')} Gateway
-            </h2>
-
-            {errorMessage && (
-                <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #fca5a5', lineHeight: '1.4' }}>
-                    {errorMessage}
-                </div>
-            )}
-
-            {successMessage && (
-                <div style={{ padding: '12px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #a7f3d0' }}>
-                    {successMessage}
-                </div>
-            )}
-
-            {showOptionsNotice && (
-                <div style={{ padding: '15px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', color: '#374151' }}>
-                    <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>Available Recovery Actions:</p>
-                    <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', listStyleType: 'square' }}>
-                        <li>
-                            <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>
-                                Try Entering Credentials Again
-                            </span>
-                        </li>
-                        <li>
-                            <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => alert('Password reset initialization pipeline triggered.')}>
-                                Reset Account Password
-                            </span>
-                        </li>
-                        <li>
-                            <span style={{ color: '#10b981', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>
-                                Register as a New Voter Profile
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            )}
-
-            {view !== '2fa' ? (
-                <form onSubmit={handleActionSubmit}>
-                    {view === 'register' && (
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Username</label>
-                            <input type="text" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={username} onChange={(e) => setUsername(e.target.value)} />
-                        </div>
-                    )}
-
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Email Address</label>
-                        <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
-                    </div>
-
-                    {(view === 'login' || view === 'register') && (
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Password</label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type={showPasswordText ? 'text' : 'password'}
-                                    required
-                                    style={{ width: '100%', padding: '8px', paddingRight: '40px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <span
-                                    onClick={() => setShowPasswordText(!showPasswordText)}
-                                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '16px', userSelect: 'none', color: '#666' }}
-                                    title={showPasswordText ? 'Hide Password' : 'Show Password'}
-                                >
-                                    {showPasswordText ? '👁️' : '🙈'}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {view === 'register' && (
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Mobile Phone Number</label>
-                            <input type="tel" required placeholder="303-555-0199" style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={view === 'login' && (!email.trim() || !password.trim())}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            backgroundColor: (view === 'login' && (!email.trim() || !password.trim())) ? '#cbd5e1' : '#0070f3',
-                            color: (view === 'login' && (!email.trim() || !password.trim())) ? '#64748b' : '#fff',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontWeight: 'bold',
-                            cursor: (view === 'login' && (!email.trim() || !password.trim())) ? 'not-allowed' : 'pointer',
-                            fontSize: '15px',
-                            marginTop: '10px'
-                        }}
-                    >
-                        Continue to {view}
-                    </button>
-                </form>
-            ) : (
-                <div>
-                    <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', lineHeight: '1.4', textAlign: 'center' }}>A secure 6-digit access code has been dispatched. Please check your mobile lock screen text notifications.</p>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold' }}>Secure Verification Token</label>
-                        <input type="text" maxLength="6" placeholder="000000" required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', fontSize: '20px', letterSpacing: '4px', textAlign: 'center' }} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} />
-                    </div>
-                    <button type="button" onClick={handleActionSubmit} style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Verify Secure Token Code</button>
-                </div>
-            )}
-
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
-                {view !== 'login' ? (
-                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>Back to Sign In Form</span>
-                ) : (
-                    <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>Create an Account / Register</span>
-                )}
-            </div>
+      {errorMessage && (
+        <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #fca5a5', lineHeight: '1.4' }}>
+          {errorMessage}
         </div>
-    );
+      )}
+
+      {successMessage && (
+        <div style={{ padding: '12px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #a7f3d0' }}>
+          {successMessage}
+        </div>
+      )}
+
+      {showOptionsNotice && (
+        <div style={{ padding: '15px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', color: '#374151' }}>
+          <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>Available Recovery Actions:</p>
+          <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', listStyleType: 'square' }}>
+            <li>
+              <button 
+                type="button"
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} 
+                onClick={(e) => { e.stopPropagation(); handleNavigationSwitch('login'); }}
+              >
+                Try Entering Credentials Again
+              </button>
+            </li>
+            <li>
+              <button 
+                type="button"
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} 
+                onClick={(e) => { e.stopPropagation(); setIsResetModalOpen(true); }}
+              >
+                Reset Account Password
+              </button>
+            </li>
+            <li>
+              <button 
+                type="button"
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#10b981', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} 
+                onClick={(e) => { e.stopPropagation(); handleNavigationSwitch('register'); }}
+              >
+                Register as a New Voter Profile
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {view !== '2fa' ? (
+        <form onSubmit={handleActionSubmit}>
+          {/* 🚀 PURGED: The username state field container is completely erased from this rendering block */}
+
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Email Address</label>
+            <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+
+          {(view === 'login' || view === 'register') && (
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPasswordText ? 'text' : 'password'}
+                  required
+                  style={{ width: '100%', padding: '8px', paddingRight: '40px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <span
+                  onClick={() => setShowPasswordText(!showPasswordText)}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '16px', userSelect: 'none', color: '#666' }}
+                  title={showPasswordText ? 'Hide Password' : 'Show Password'}
+                >
+                  {showPasswordText ? '👁️' : '🙈'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {view === 'register' && (
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Mobile Phone Number</label>
+              <input type="tel" required placeholder="303-555-0199" style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={view === 'login' && (!email.trim() || !password.trim())}
+            style={{
+              width: '100%',
+              padding: '10px',
+              backgroundColor: (view === 'login' && (!email.trim() || !password.trim())) ? '#cbd5e1' : '#0070f3',
+              color: (view === 'login' && (!email.trim() || !password.trim())) ? '#64748b' : '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              fontWeight: 'bold',
+              cursor: (view === 'login' && (!email.trim() || !password.trim())) ? 'not-allowed' : 'pointer',
+              fontSize: '15px',
+              marginTop: '10px'
+            }}
+          >
+            Continue to {view}
+          </button>
+        </form>
+      ) : (
+        <div>
+          <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', lineHeight: '1.4', textAlign: 'center' }}>A secure 6-digit access code has been dispatched. Please check your mobile lock screen text notifications.</p>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold' }}>Secure Verification Token</label>
+            <input type="text" maxLength="6" placeholder="000000" required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', fontSize: '20px', letterSpacing: '4px', textAlign: 'center' }} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} />
+          </div>
+          <button type="button" onClick={handleActionSubmit} style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Verify Secure Token Code</button>
+        </div>
+      )}
+
+      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+        {view !== 'login' ? (
+          <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>Back to Sign In Form</span>
+        ) : (
+          <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>Create an Account / Register</span>
+        )}
+      </div>
+
+      <ResetPasswordModal isOpen={isResetModalOpen} onClose={() => setIsResetModalOpen(false)} />
+    </div>
+  );
 }

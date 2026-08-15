@@ -80,19 +80,19 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: 'Security Alert: Database login failure.' });
         }
 
-        return res.json({ 
-            success: true, 
-            userId: user.id, 
+        return res.json({
+            success: true,
+            userId: user.id,
             username: user.username,
             email: user.email,
             phone: user.phone,
-            address: user.address, 
+            address: user.address,
             gender: user.gender,
             age: user.age,
             party: user.party_affiliation,
             voting_record: user.voting_record,
             // 🚀 FIXED: Pass down the name row parameter safely
-            name: user.name 
+            name: user.name
         });
     } catch (err) {
         return res.status(500).json({ error: 'Internal validation pipeline failure.' });
@@ -106,16 +106,16 @@ app.post('/api/auth/send-2fa', async (req, res) => {
     try {
         console.log("\n=== 🔐 TWO-FACTOR SECURITY SMS DISPATCH PIPELINE ===");
         const { userId, phone } = req.body;
-        
+
         if (!userId || !phone) {
             return res.status(400).json({ error: 'Missing core identity metrics parameters.' });
         }
 
         const cleanPhoneDigits = phone.toString().replace(/\D/g, '');
-        
+
         // 🚀 Generate a random secure 6-digit access pin token code
         const secureCode = Math.floor(100000 + Math.random() * 900000).toString();
-        
+
         // Store it inside your server memory cache map for upcoming verification steps
         localTwoFactorCache.set(userId.toString(), secureCode);
 
@@ -142,7 +142,7 @@ app.post('/api/auth/send-2fa', async (req, res) => {
 
         console.log("============================================================\n");
         return res.json({ success: true, message: 'Security pin code texted to your screen successfully!' });
-        
+
     } catch (err) {
         console.error("[BACKEND 2FA CRASH]:", err.message);
         return res.status(500).json({ error: 'Failed to process verification alerts routing.' });
@@ -215,7 +215,7 @@ app.get('/api/get_user/:email', async (req, res) => {
 app.post('/api/save_vote', async (req, res) => {
     try {
         const { userId, issueId, voteType } = req.body; // voteType format: 'Strongly Agree'
-        
+
         // Dynamic input safety array validator check
         const validScales = ['Strongly Agree', 'Somewhat Agree', 'Neutral', 'Somewhat Disagree', 'Strongly Disagree'];
         if (!userId || !issueId || !validScales.includes(voteType)) {
@@ -241,7 +241,7 @@ app.post('/api/save_vote', async (req, res) => {
         // Commit the raw text choice to the user's voting record column array
         currentRecord.push({ issue_id: issueId, vote: voteType });
         await db.query('UPDATE users SET voting_record = ? WHERE id = ?', [JSON.stringify(currentRecord), userId]);
-        
+
         return res.json({ success: true, message: 'Likert response securely committed to the ledger schema!' });
     } catch (err) {
         return res.status(500).json({ error: 'Failed to write voting parameter data to the database.' });
@@ -255,7 +255,7 @@ app.get('/api/global_votes', async (req, res) => {
     try {
         // Query users with a non-empty voting record column
         const [rows] = await db.query('SELECT address, voting_record FROM users WHERE voting_record IS NOT NULL');
-        
+
         const consensus = {
             national: {},
             state: {}
@@ -312,6 +312,76 @@ app.get('/api/global_votes', async (req, res) => {
     }
 });
 
+/* ==========================================================================
+   🚀 NEW POST ROUTE: REQUEST ACCOUNT PASSWORD RESET PIN CODE VIA SMS
+   ========================================================================== */
+app.post('/api/auth/request-reset', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Account email address is required.' });
+
+        // Verify the voter profile exists in our user database table ledger lines
+        const [rows] = await db.query('SELECT id, phone FROM users WHERE LOWER(email) = ?', [email.trim().toLowerCase()]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'No voter account is registered to that email address.' });
+        }
+
+        const user = rows[0];
+        const cleanPhoneDigits = user.phone.replace(/\D/g, '');
+        const secureResetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Save into your existing memory cache map using a composite key
+        localTwoFactorCache.set(`reset_${email.trim().toLowerCase()}`, secureResetCode);
+
+        console.log(`\n[RECOVERY] Generated Reset Token for ${email}: [ ${secureResetCode} ]`);
+
+        // Transmit out to Twilio cellular communication channels
+        try {
+            await twilioClient.messages.create({
+                body: `[Voter Security Reset] Your temporary password recovery access pin code token is: ${secureResetCode}.`,
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: `+1${cleanPhoneDigits}`
+            });
+        } catch (twilioErr) {
+            console.warn(`[DEVELOPER NOTICE] Twilio failed. Use recovery token ---> ${secureResetCode} <--- in your browser window.`);
+        }
+
+        return res.json({ success: true, message: 'Recovery parameter token texted cleanly!' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to process account recovery parameters pipeline routing.' });
+    }
+});
+
+/* ==========================================================================
+   🚀 NEW POST ROUTE: VERIFY RECOVERY TOKENS AND SAVE REWRITTEN BCRYPT STRINGS
+   ========================================================================== */
+app.post('/api/auth/confirm-reset', async (req, res) => {
+    try {
+        const { email, token, newPassword } = req.body;
+        if (!email || !token || !newPassword) {
+            return res.status(400).json({ error: 'Missing mandatory validation matrix parameters fields.' });
+        }
+
+        const cachedCode = localTwoFactorCache.get(`reset_${email.trim().toLowerCase()}`);
+        if (!cachedCode || cachedCode !== token.toString()) {
+            return res.status(401).json({ error: 'Security Alert: Recovery token validation mismatch.' });
+        }
+
+        // Token is good! Hash the fresh credentials password string defensively using bcrypt
+        const salt = await bcrypt.genSalt(10);
+        const newHashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update database table row records indexes
+        await db.query('UPDATE users SET password = ? WHERE LOWER(email) = ?', [newHashedPassword, email.trim().toLowerCase()]);
+
+        // Clear memory cache keys
+        localTwoFactorCache.delete(`reset_${email.trim().toLowerCase()}`);
+
+        return res.json({ success: true, message: 'Account credentials password row rewritten cleanly!' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Internal system credentials rewriting pipeline failure.' });
+    }
+});
 
 
 /* ==========================================================================
@@ -335,7 +405,7 @@ app.post('/api/lookup_politicians', async (req, res) => {
         // 🚀 CRITICAL FIX: Explicit path target layout variables matching your successful cURL call!
         //const queryUrl = `https://geocod.io/v2/geocode?q=${encodeURIComponent(address.trim())}&fields=cd&api_key=${apiKey}`;
         const queryUrl = `https://api.geocod.io/v2/geocode?q=465+Lorraway+Dr,+Castle+Rock,+CO+80108&country=USA&fields=cd&api_key=17d112a3106ff6d0da703b71a76770b0131f30b`;
- 
+
         const fetchGeocodioDataNatively = () => {
             return new Promise((resolve, reject) => {
                 const options = {
@@ -360,25 +430,25 @@ app.post('/api/lookup_politicians', async (req, res) => {
         };
 
         const resultWrapper = await fetchGeocodioDataNatively();
-        
+
         if (resultWrapper.status !== 200 || !resultWrapper.data || !resultWrapper.data.results || resultWrapper.data.results.length === 0) {
             return res.status(404).json({ error: 'Address validation failed. Could not isolate district parameters.' });
         }
 
         // 🚀 SAFE ACCUMULATORS: Target array index 0 to parse fields
-        const bestMatch = resultWrapper.data.results[0]; 
+        const bestMatch = resultWrapper.data.results[0];
         const fields = bestMatch?.fields;
         const cdField = fields?.congressional_districts;
-        
+
         if (!cdField) {
             return res.status(404).json({ error: 'Could not resolve federal legislative district fields.' });
         }
 
-        const congressionalData = Array.isArray(cdField) ? cdField[0] : cdField; 
-        
+        const congressionalData = Array.isArray(cdField) ? cdField[0] : cdField;
+
         // 🚀 FIXED: Explicitly target index [0] of the results array to read components!
-        const stateCode = bestMatch[0]?.address_components?.state || 'CO'; 
-        
+        const stateCode = bestMatch[0]?.address_components?.state || 'CO';
+
         const districtNumber = congressionalData.district_number || '';
         const legislators = congressionalData.current_legislators || [];
 
@@ -387,7 +457,7 @@ app.post('/api/lookup_politicians', async (req, res) => {
         const mappedPoliticians = legislators.map(rep => {
             const isRepresentative = rep.type === 'representative';
             const addressObj = rep.contact?.address || {};
-            const displayAddress = addressObj.street 
+            const displayAddress = addressObj.street
                 ? `${addressObj.street}, ${addressObj.city || 'Washington'}, ${addressObj.state || 'DC'} ${addressObj.zip || ''}`
                 : rep.contact?.address || 'Washington, DC Office';
 
@@ -432,10 +502,10 @@ app.post('/api/dispatch_letter', async (req, res) => {
             [userId, recipientName.trim(), recipientRole.trim(), letterText.trim()]
         );
 
-        return res.json({ 
-            success: true, 
-            message: 'Advocacy statement securely logged to tracking database tables!', 
-            letterId: result.insertId 
+        return res.json({
+            success: true,
+            message: 'Advocacy statement securely logged to tracking database tables!',
+            letterId: result.insertId
         });
 
     } catch (err) {
@@ -450,7 +520,7 @@ app.post('/api/dispatch_letter', async (req, res) => {
 app.get('/api/letter_history/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         if (!userId) {
             return res.status(400).json({ error: 'Missing core user identification parameters.' });
         }

@@ -100,52 +100,52 @@ export default function App() {
         return <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>Verifying Device Identity Security...</div>;
     }
 
-    /* 🛡️ SECURITY SHIELD: If unverified, block all routes and force 2FA input */
-    if (!isLoggedIn) {
-        return (
-            <div className="security-auth-container" style={{ padding: '20px', minHeight: '100vh', display: 'flex', alignItems: 'center', backgroundColor: '#f9fafb' }}>
-                <TwoFactorLogin onAuthSuccess={handleAuthSuccess} apiBaseUrl={GLOBAL_API_URL} />
-            </div>
-        );
-    }
-
     /* 🚀 ROUTING ARCHITECTURE: Only rendered if device authorization passes */
-    return (
-        <div className="app-container">
-            {/* Header now receives a customized logout injection loop to wipe local tokens safely */}
-            <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} />
+/* 🚀 UPDATED RETURN LAYOUT FOR APP.JSX */
+return (
+    <div className="app-container">
+        <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} />
 
-            <main className="content-area">
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/polls" element={<Polls />} />
-                    <Route path="/surveys" element={<Surveys keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} />
-                    <Route path="/news" element={<News />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/details/:slug" element={<DynamicContentPage />} />
-                    {/* Catch-all safety redirect route */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </main>
+        <main className="content-area">
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/polls" element={<Polls />} />
+                {/* Passes down login status directly into your surveys container */}
+                <Route path="/surveys" element={<Surveys keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/details/:slug" element={<DynamicContentPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </main>
 
-            {/* Modal Control Layer */}
-            {/* 🚀 THE FIXED SELF-HEALING SWITCH WRAPPER: Matches whichever string layout state maps down */}
-            {/* 🚀 FIXED: Passes the explicit isOpen gate property so the modals can paint onto the DOM screen */}
-            {activeModal && (
-                <div className="global-modal-manager">
-                    {activeModal === 'profile' && (
-                        <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
-                    )}
+        {/* Modal Control Layer */}
+        {activeModal && (
+            <div className="global-modal-manager">
+                {/* 🚀 NEW: Authenticated login modal overlay for guests */}
+                {activeModal === 'auth-gate' && (
+                    <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', width: '100%' }}>
+                            <button className="close-btn" style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8' }} onClick={() => setActiveModal(null)}>x</button>
+                            <TwoFactorLogin onAuthSuccess={(uid) => { handleAuthSuccess(uid); setActiveModal(null); }} />
+                        </div>
+                    </div>
+                )}
 
-                    {activeModal === 'account' && (
-                        <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
-                    )}
+                {activeModal === 'profile' && (
+                    <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
+                )}
 
-                    {activeModal === 'preferences' && (
-                        <PreferencesModal isOpen={true} onClose={() => setActiveModal(null)} />
-                    )}
-                </div>
-            )}
-        </div>
-    );
+                {activeModal === 'account' && (
+                    <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
+                )}
+
+                {activeModal === 'preferences' && (
+                    <PreferencesModal prefs={preferences} setPrefs={setPreferences} onClose={() => setActiveModal(null)} />
+                )}
+            </div>
+        )}
+    </div>
+);
+
 }

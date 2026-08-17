@@ -8,10 +8,7 @@ import Surveys from './pages/Surveys';
 import News from './pages/News';
 import About from './pages/About';
 import DynamicContentPage from './pages/DynamicContentPage';
-import DiscussionModal from './components/modals/DiscussionModal';
-import ConsensusModal from './components/modals/ConsensusModal';
 import ProfileModal from './components/modals/ProfileModal';
-import VoteModal from './components/modals/VoteModal';
 import AccountModal from './components/modals/AccountModal';
 import PreferencesModal from './components/modals/PreferencesModal';
 
@@ -24,19 +21,16 @@ export default function App() {
     const [userId, setUserId] = useState(null);
     const [isAppLoading, setIsAppLoading] = useState(true);
 
-    // Modal and accordion panel states
+    // Modal and accordion panel state configurations
     const [activeModal, setActiveModal] = useState(null);
-    const [openPanels, setOpenPanels] = useState([]);
-    const [keepAccordionsOpen, setKeepAccordionsOpen] = useState(false);
     const [preferences, setPreferences] = useState({ keepAccordionsOpen: true, notifications: true });
     const [votes, setVotes] = useState({});
 
-    // 1. DEVICE RECOGNITION TIMELINE CHECK
+    // 1. DEVICE RECOGNITION TIMELINE CHECK [INDEX]
     useEffect(() => {
         const verifyExistingDeviceToken = () => {
             const token = localStorage.getItem('voter_token');
             const savedUid = localStorage.getItem('voter_uid');
-
             if (token && savedUid) {
                 // Device recognized! Authorize the dashboard views instantly
                 setUserId(savedUid);
@@ -47,19 +41,34 @@ export default function App() {
         verifyExistingDeviceToken();
     }, []);
 
-    // 2. BACKEND DATABASE SNAPSHOT HYDRATION LOOP
+    // 2. BACKEND DATABASE SNAPSHOT HYDRATION LOOP [INDEX]
     useEffect(() => {
         const storedVotingRecord = sessionStorage.getItem('currentUserVotingRecord');
         if (isLoggedIn && storedVotingRecord) {
             try {
                 const votingHistory = JSON.parse(storedVotingRecord);
-                const initializedVotes = votingHistory.reduce((acc, currentVote) => {
-                    const issueId = currentVote.issue_id;
-                    const voteType = currentVote.vote;
-                    acc[issueId] = { up: voteType === 'up' ? 1 : 0, down: voteType === 'down' ? 1 : 0, hasVoted: true };
-                    return acc;
-                }, {});
-                setVotes(initializedVotes);
+                if (Array.isArray(votingHistory)) {
+                    // 🚀 FIXED: Dynamic parsing maps 5-point Likert scale positions [INDEX]
+                    const initializedVotes = votingHistory.reduce((acc, currentVote) => {
+                        const issueId = currentVote.issue_id;
+                        const voteType = currentVote.vote; // 'Strongly Agree', 'Neutral', etc.
+
+                        // Standardize string casing mapping key helper conversion
+                        const internalKey = voteType.charAt(0).toLowerCase() + voteType.slice(1).replace(/\s+/g, '');
+
+                        acc[issueId] = {
+                            stronglyAgree: internalKey === 'stronglyAgree' ? 1 : 0,
+                            somewhatAgree: internalKey === 'somewhatAgree' ? 1 : 0,
+                            neutral: internalKey === 'neutral' ? 1 : 0,
+                            somewhatDisagree: internalKey === 'somewhatDisagree' ? 1 : 0,
+                            stronglyDisagree: internalKey === 'stronglyDisagree' ? 1 : 0,
+                            hasVoted: true,
+                            userChoice: voteType
+                        };
+                        return acc;
+                    }, {});
+                    setVotes(initializedVotes);
+                }
             } catch (error) {
                 console.error("Failed to parse loaded database voting records:", error);
             }
@@ -68,8 +77,7 @@ export default function App() {
         }
     }, [isLoggedIn]);
 
-    console.log("[APP CORE] Current activeModal state string position value:", activeModal);
-    // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK
+    // 3. SECURE AUTHENTICATION RECOGNITION CALLBACK [INDEX]
     const handleAuthSuccess = (authenticatedUserId) => {
         localStorage.setItem('voter_token', 'secure-device-verified-token');
         localStorage.setItem('voter_uid', authenticatedUserId);
@@ -77,7 +85,7 @@ export default function App() {
         setIsLoggedIn(true);
     };
 
-    // 4. SECURE LOGOUT TERMINATION HANDLER
+    // 4. SECURE LOGOUT TERMINATION HANDLER [INDEX]
     const handleLogout = () => {
         localStorage.removeItem('voter_token');
         localStorage.removeItem('voter_uid');
@@ -87,65 +95,85 @@ export default function App() {
         setActiveModal(null);
     };
 
-    const togglePanel = (panelId) => {
-        if (keepAccordionsOpen) {
-            setOpenPanels(prev => prev.includes(panelId) ? prev.filter(id => id !== panelId) : [...prev, panelId]);
-        } else {
-            setOpenPanels(prev => prev.includes(panelId) ? [] : [panelId]);
-        }
-    };
-
-    // Delay render if the device is currently analyzing its localStorage tokens
+    // Delay render if the device is currently analyzing its localStorage tokens [INDEX]
     if (isAppLoading) {
-        return <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>Verifying Device Identity Security...</div>;
+        return (
+            <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif', fontSize: '15px', color: '#475569' }}>
+                ⏳ Verifying Device Identity Security...
+            </div>
+        );
     }
 
-    /* 🚀 ROUTING ARCHITECTURE: Only rendered if device authorization passes */
-/* 🚀 UPDATED RETURN LAYOUT FOR APP.JSX */
-return (
-    <div className="app-container">
-        <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} />
 
-        <main className="content-area">
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/polls" element={<Polls />} />
-                {/* Passes down login status directly into your surveys container */}
-                <Route path="/surveys" element={<Surveys keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />} />
-                <Route path="/news" element={<News />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/details/:slug" element={<DynamicContentPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </main>
+    /* ==========================================================================
+       🏛️ RESPONSIVE APPLICATION SHELL ROUTING MATRIX & VIEW CANVAS
+       ========================================================================== */
+    return (
+        <div className="app-container">
 
-        {/* Modal Control Layer */}
-        {activeModal && (
-            <div className="global-modal-manager">
-                {/* 🚀 NEW: Authenticated login modal overlay for guests */}
-                {activeModal === 'auth-gate' && (
-                    <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-                        <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', width: '100%' }}>
-                            <button className="close-btn" style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8' }} onClick={() => setActiveModal(null)}>x</button>
-                            <TwoFactorLogin onAuthSuccess={(uid) => { handleAuthSuccess(uid); setActiveModal(null); }} />
+            {/* Universal Sticky Page Header Navigation */}
+            <Header isLoggedIn={isLoggedIn} setIsLoggedIn={handleLogout} openModal={setActiveModal} />
+
+            {/* Liquid Page Wrapper Container */}
+            <main className="content-area">
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/polls" element={<Polls />} />
+
+                    {/* Passes down login status directly into your surveys container [INDEX] */}
+                    <Route
+                        path="/surveys"
+                        element={<Surveys keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />}
+                    />
+
+                    <Route path="/news" element={<News />} />
+                    <Route path="/about" element={<About />} />
+
+                    {/* Dynamic full-screen policy article rendering route channel [INDEX] */}
+                    <Route path="/details/:slug" element={<DynamicContentPage />} />
+
+                    {/* Catch-all redirect keeps user navigation path safe [INDEX] */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </main>
+
+            {/* ==========================================================================
+         🖼️ GLOBAL MODAL OVERLAY MANAGER LAYER
+         ========================================================================== */}
+            {activeModal && (
+                <div className="global-modal-manager">
+
+                    {/* Authenticated 2FA gateway form login modal for guests [INDEX] */}
+                    {activeModal === 'auth-gate' && (
+                        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', width: '100%', position: 'relative' }}>
+                                <button
+                                    className="close-btn"
+                                    onClick={() => setActiveModal(null)}
+                                    style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8' }}
+                                >
+                                    x
+                                </button>
+                                <TwoFactorLogin onAuthSuccess={(uid) => { handleAuthSuccess(uid); setActiveModal(null); }} />
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {activeModal === 'profile' && (
-                    <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
-                )}
+                    {activeModal === 'profile' && (
+                        <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />
+                    )}
 
-                {activeModal === 'account' && (
-                    <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
-                )}
+                    {activeModal === 'account' && (
+                        <AccountModal isOpen={true} onClose={() => setActiveModal(null)} />
+                    )}
 
-                {activeModal === 'preferences' && (
-                    <PreferencesModal prefs={preferences} setPrefs={setPreferences} onClose={() => setActiveModal(null)} />
-                )}
-            </div>
-        )}
-    </div>
-);
+                    {activeModal === 'preferences' && (
+                        <PreferencesModal prefs={preferences} setPrefs={setPreferences} onClose={() => setActiveModal(null)} />
+                    )}
 
+                </div>
+            )}
+        </div>
+    );
 }
+

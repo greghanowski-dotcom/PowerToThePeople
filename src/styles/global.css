@@ -1,234 +1,263 @@
-/* Global CSS variables and resets */
+/* ==========================================================================
+   ⚙️ MASTER DESIGN SYSTEM VARIABLES & GLOBAL RESETS (PART 1)
+   ========================================================================== */
 :root {
-    --primary: #1e3a8a;
-    --secondary: #0d9488;
-    --background: #f8fafc;
-    --text: #0f172a;
-    --card-bg: #ffffff;
-    --border: #cbd5e1;
+  --primary: #1e3a8a;
+  --secondary: #0d9488;
+  --background: #f8fafc;
+  --text: #6b6375;
+  --text-h: #08060d;
+  --card-bg: #ffffff;
+  --border: #cbd5e1;
+  --text-muted: #475569;
+  --bg-main: #f9fafb;
+
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Global Styles --- */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* 🌗 AUTOMATIC SYSTEM-WIDE DARK MODE THEME REWRITES */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --background: #16171d;
+    --border: #2e303a;
+    --card-bg: #1f2028;
+  }
 }
 
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--sans);
 }
 
 body {
-    background-color: var(--background);
-    color: var(--text);
-    padding-bottom: 40px;
+  background-color: var(--background);
+  color: var(--text);
+  padding-bottom: 40px;
+  text-align: left;
 }
 
-/* Core Main Structural Grid */
-main {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+/* ==========================================================================
+   🏛️ FLUID RESPONSIVE CONTAINERS & MASTER CORE LAYOUTS
+   ========================================================================== */
+#root {
+  width: 100%; /* 🚀 FIXED: Spans the full horizontal window fluidly */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
-/* Header & Control Panel Layout layout mechanics */
-header {
-    background-color: var(--primary);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Master liquid layout area for all page frameworks */
+main, .content-area, .polls-page, .ideas-page, .accordion-panel {
+  width: 100%;
+  max-width: 1200px; /* 🚀 FIXED: Liquid desktop width ceiling */
+  margin: 20px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  text-align: left;
 }
 
-header nav a {
-    color: #ecf0f1;
-    /* High contrast white-ish color */
-    text-decoration: none;
-    margin-left: 20px;
-    font-weight: 500;
+/* Base application wrapping layout box rules from old App.css */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-main);
 }
 
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+}
+
+/* Decorative alignment line markers container style row elements */
+.ticks {
+  position: relative;
+  width: 100%;
+}
+
+.ticks::before,
+.ticks::after {
+  content: '';
+  position: absolute;
+  top: -4.5px;
+  border: 5px solid transparent;
+}
+.ticks::before { left: 0; border-left-color: var(--border); }
+.ticks::after { right: 0; border-right-color: var(--border); }
+
+/* Typography Standardizations */
 ul {
-    padding-left: 40px;
-    /* Explicitly restores browser default indentation space */
-    list-style-type: disc;
-    /* Ensures bullets appear alongside the indent */
+  padding-left: 30px;
+  list-style-type: disc;
 }
 
-/* Power To the People! Header */
-@page {
-    size: 8.5in 11in;
-    margin: 0.79in
+li {
+  margin-bottom: 6px;
 }
 
 p {
-    margin-bottom: 12px;
-    line-height: 115%;
-    background: transparent;
-    font-size: 1.1rem;
+  margin-bottom: 14px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+  font-weight: bold;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 3.2rem;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
 }
 
 h2 {
-    margin-top: 0.14in;
-    margin-bottom: 0.08in;
-    background: transparent;
-    page-break-after: avoid
+  font-size: 1.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.24px;
+  margin-bottom: 12px;
 }
 
-h2.western {
-    font-family: "Times New Roman", serif;
-    font-size: 18pt;
-    font-weight: bold
-}
-
-h2.cjk {
-    font-family: "NSimSun";
-    font-size: 18pt;
-    font-weight: bold
-}
-
-h2.ctl {
-    font-family: "Arial";
-    font-size: 18pt;
-    font-weight: bold
-}
-
-/* 🌍 GLOBAL HEADING LAYOUT OVERRIDES */
 h3 {
-    margin-top: 20px;
-    /* Preserves a clean separation from elements above */
-    margin-bottom: 10px !important;
-    /* Tucks paragraphs tightly beneath the header */
-    background: transparent;
-    page-break-after: avoid
-}
-
-h3.western {
-    font-family: "Times New Roman", serif;
-    font-size: 14pt;
-    font-weight: bold
-}
-
-h3.cjk {
-    font-family: "NSimSun";
-    font-size: 14pt;
-    font-weight: bold
-}
-
-h3.ctl {
-    font-family: "Arial";
-    font-size: 14pt;
-    font-weight: bold
+  font-size: 1.4rem;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 h4 {
-    margin-top: 30px;  /* Preserves a clean separation from elements above */
-    margin-bottom: 5px;  /* Tucks paragraphs tightly beneath the header */
-    background: transparent;
-    page-break-after: avoid
+  font-size: 1.15rem;
+  margin-top: 18px;
+  margin-bottom: 6px;
 }
 
-h4.western {
-    font-family: "Times New Roman", serif;
-    font-size: 12pt;
-    font-weight: bold
+code {
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.4;
+  padding: 4px 8px;
+  background: var(--border);
+  color: var(--text-h);
+  border-radius: 4px;
+  display: inline-flex;
+}
+/* ==========================================================================
+   🧭 SITE HEADER & CONTROL PANEL CORES (PART 2)
+   ========================================================================== */
+header {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-h4.cjk {
-    font-family: "NSimSun";
-    font-size: 12pt;
-    font-weight: bold
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-h4.ctl {
-    font-family: "Arial";
-    font-size: 12pt;
-    font-weight: bold
+.brand-icon {
+  font-size: 1.5rem;
 }
 
-nav {
-    display: flex;
-    gap: 15px;
-}
-
-nav a {
-    color: #e2e8f0;
-    text-decoration: none;
-    font-size: 0.95rem;
-}
-
-nav a:hover {
-    color: white;
+.brand-title {
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
 }
 
 .control-panel {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-left: auto;
-    /* Forces everything in control-panel to the right */
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.main-container {
-    display: flex;
-    height: calc(100vh - 70px);
+nav {
+  display: flex;
+  gap: 15px;
 }
 
-.left-panel {
-    flex: 0 0 250px;
-    /* Locked width for a narrow sidebar */
-    border-right: 1px solid #ddd;
-    padding: 20px;
-    background: white;
+nav a {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: color 0.2s ease;
 }
 
-.right-panel {
-    flex: 1;
-    /* Takes up remaining space */
-    padding: 20px;
-    overflow-y: auto;
+nav a:hover,
+nav a.active {
+  color: #ffffff;
 }
 
-.topic-btn {
-    margin-left: auto;
-    cursor: pointer;
+.btn-signin,
+.profile-trigger {
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: background-color 0.2s;
 }
 
-/* --- Topics List --- */
-#topic-list {
-    list-style: none;
+.btn-signin:hover {
+  background-color: #0b7a70;
 }
 
-#topic-list li {
-    display: flex;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-/* --- Profile Dropdown --- */
-.profile-container {
-    position: relative;
-}
-
-.dropdown-menu {
-    display: none;/* ==========================================================================
-   🚀 UNIFIED GLOBAL DROPDOWN SYSTEM
-   Every dropdown across your entire project will now inherit this exact layout!
+/* ==========================================================================
+   🚀 UNIFIED PROFILE DROPDOWN MENU
    ========================================================================== */
+.profile-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
 
-/* 1. Base Hidden State (Resting Context) */
+.profile-trigger {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: white;
+  padding: 4px 8px;
+  user-select: none;
+}
+
+.profile-trigger.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .dropdown-menu {
-  display: none; /* Safely hides the element from the viewport layout by default */
+  display: flex; 
   position: absolute;
   right: 0;
   top: 100%;
@@ -240,17 +269,9 @@ nav a:hover {
   flex-direction: column;
   min-width: 180px;
   padding: 6px 0;
-  
-  /* CRITICAL: Ensures every dropdown slices in front of underlying text, grids, or maps */
   z-index: 999999999 !important; 
 }
 
-/* 2. Unified Active Visibility Override State */
-.dropdown-menu.active-visible {
-  display: flex !important; /* Overrides 'display: none' instantly when React applies the class! */
-}
-
-/* 3. Global Nested Dropdown Item Mechanics */
 .dropdown-item {
   padding: 10px 16px;
   font-size: 14px;
@@ -258,559 +279,437 @@ nav a:hover {
   cursor: pointer;
   display: block;
   text-align: left;
+  text-decoration: none;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .dropdown-item:hover {
-  background-color: #f6f8fa;
+  background-color: #f1f5f9;
   color: #0070f3;
+}
+
+.dropdown-item.disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+  background-color: transparent;
+  pointer-events: none;
 }
 
 .dropdown-divider {
   height: 1px;
-  background-color: #eeeeee;
+  background-color: var(--border);
   margin: 6px 0;
 }
 
-/* --- Accordion Styling --- */
-.accordion-item {
-    border: 1px solid #ddd;
-    margin-bottom: 5px;
-    background: white;
+/* ==========================================================================
+   📊 VOTING CARDS & ACTION PRIMITIVES
+   ========================================================================== */
+.card-list, .action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.accordion-header {
-    padding: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.accordion-content {
-    padding: 0 15px;
-    display: none;
-    background: #fafafa;
-}
-
-.accordion-content.active {
-    display: block;
-    padding: 15px;
-}
-
-.arrow {
-    margin-left: auto;
-    transition: transform 0.3s;
-    display: inline-block;
-}
-
-/* --- Mobile Responsiveness --- */
-@media (max-width: 768px) {
-    .main-container {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .left-panel {
-        flex: none;
-        width: 100%;
-        border-right: none;
-        border-bottom: 2px solid #ccc;
-    }
-
-    header {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .control-panel {
-        margin-left: 0;
-    }
-}
-
-/* Responsive break configurations for iOS & Android views */
-@media (max-width: 768px) {
-    main {
-        grid-template-columns: 1fr;
-    }
-
-    header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-    }
-
-    .control-panel {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .action-box {
-        min-height: auto;
-    }
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.brand-icon {
-    font-size: 1.5rem;
-}
-
-.brand-title {
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-.control-panel {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.btn-signin {
-    background-color: var(--secondary);
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-/* Profile Icon dropdown architecture */
-.profile-container {
-    position: relative;
-}
-
-.profile-trigger {
-    background: none;
-    border: none;
-    font-size: 1.4rem;
-    cursor: pointer;
-    color: white;
-}
-
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 35px;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    min-width: 150px;
-    z-index: 100;
-}
-
-.dropdown-menu.show {
-    display: block;
-}
-
-.dropdown-item {
-    padding: 10px 15px;
-    color: var(--text);
-    cursor: pointer;
-    display: block;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.dropdown-item:hover {
-    background-color: #f1f5f9;
-}
-
-.dropdown-divider {
-    height: 1px;
-    background-color: var(--border);
-}
-
-/* Disabled layout adjustments for menu triggers */
-.dropdown-item.disabled {
-    color: #94a3b8;
-    cursor: not-allowed;
-    background-color: transparent;
-    pointer-events: none;
-    /* Disables click processing completely */
-}
-
-/* Layout lists for multi-card support */
-.card-list,
-.action-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.issue-card,
-.action-box {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    min-height: 150px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.issue-card, .action-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 150px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .issue-card h3 {
-    margin-bottom: 10px;
-    color: var(--primary);
+  margin-bottom: 10px;
+  color: var(--primary);
 }
 
-.action-box {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    align-content: center;
+.action-box button, .card-actions button {
+  padding: 10px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background-color: #f1f5f9;
+  transition: background-color 0.2s;
 }
 
-.action-box button {
-    padding: 10px;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background-color: #f1f5f9;
+.action-box button:not(:disabled):hover,
+.card-actions button:not(:disabled):hover {
+  background-color: #e2e8f0;
 }
 
-.action-box button:not(:disabled):hover {
-    background-color: #e2e8f0;
+.action-box button:disabled,
+.card-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.action-box .btn-arg-for {
-    border-left: 4px solid #22c55e;
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
 }
 
-.action-box .btn-arg-against {
-    border-left: 4px solid #ef4444;
+/* ==========================================================================
+   📥 UNIVERSAL ACCORDION LAYOUT SHEETS
+   ========================================================================== */
+.accordion {
+  width: 100%; 
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 20px 0 10px 0; 
+  box-sizing: border-box; 
 }
 
-.action-box .btn-vote,
-.action-box .btn-consensus {
-    grid-column: span 2;
+.accordion-item {
+  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+.accordion-item:last-child { border-bottom: none; }
+
+.accordion-header {
+  width: 100%;
+  padding: 15px;
+  text-align: left;
+  cursor: pointer;
+  background: var(--card-bg);
+  border: none;
+  font-weight: 700 !important;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-h);
+  transition: background-color 0.2s;
+}
+.accordion-header:hover { background-color: #f8fafc; }
+
+.accordion-header::after {
+  content: '\002B'; /* ➕ Standard unicode for plus sign (+) */
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #64748b;
+  transition: transform 0.2s ease;
 }
 
-.action-box button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+/* Toggles automatically to minus sign string when expanded [INDEX] */
+.accordion-header.active::after {
+  content: '\2212'; /* ➖ Standard unicode for formal minus sign (−) [INDEX] */
+  color: var(--primary);
 }
 
-/* Modals overlays & functional states */
+.accordion-content {
+  width: 100%;
+  background: var(--card-bg);
+  padding: 15px 20px 20px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ==========================================================================
+   📥 HORIZONTAL LIKERT SCALE & DETAIL CARD COMPRESSION
+   ========================================================================== */
+
+/* 🚀 FIXED: Compressed spacing gap directly beneath your Details accordion panel */
+.sub-accordion-container {
+  margin-bottom: 0px !important; 
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Targets only the inner accordion container when nested inside your wide 
+   evaluation modal view to crush the internal padding bottleneck [INDEX]. */
+.evaluation-modal-wide .accordion-content,
+.evaluation-modal-wide .sub-accordion-container .accordion,
+.evaluation-modal-wide .sub-accordion-inner-panel {
+  padding-bottom: 0px !important;
+  margin-bottom: 0px !important;
+}
+
+/* Tightens the text brief component layout sitting right below the accordion rows [INDEX] */
+.evaluation-modal-wide .imported-doc-content {
+  margin-top: 5px !important; /* Forces document text to sit neatly near the details border */
+}
+
+/* 🚀 FIXED: Arranges choice boxes horizontally side-by-side */
+.likert-flex-row {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin-top: 10px;
+}
+
+/* Unified square grid properties for horizontal options buttons */
+.likert-flex-row .likert-option-btn {
+  flex: 1 !important;
+  padding: 12px 10px !important;
+  text-align: center !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* Interactive subtle lift animation when hovering options tiles */
+.likert-flex-row .likert-option-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
+}
+
+.likert-icon-span {
+  font-size: 16px !important;
+}
+
+/* ==========================================================================
+   🖼️ REACT MODALS UNIVERSAL BASE STYLE
+   ========================================================================== */
 .modal-overlay {
-    display: none;
-    /* Starts hidden */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-    /* This centers the modal-content */
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100000;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
 }
 
-.modal-overlay.show {
-    display: flex;
-    /* This is the key line! */
+/* ==========================================================================
+   📥 MODAL WORKSPACE EXPANSION & DETAIL TIGHTENING (NO !IMPORTANT)
+   ========================================================================== */
+
+/* The standard dark backdrop curtain filter grid layer */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100000;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
 }
 
+/* Base modal card configuration settings for regular small profile boxes */
 .modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 100%;
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* 🎯 THE SELECTOR TARGETS ONLY THE EVALUATION CARD POPUP: 
+   Because it steps outside the accordion row flow, it can freely expand to full width! */
+.modal-overlay .modal-content.evaluation-modal-wide {
+  max-width: 1200px;
+  width: 94%;
+  padding: 30px 24px 24px 24px;
+}
+
+/* 🚀 ACCORDION WHITESPACE COMPRESSION: Completely zeroes out the bottom gap */
+.compact-modal-accordion .accordion {
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.compact-modal-accordion .accordion-content {
+  padding-bottom: 0px;
+}
+
+/* Snaps your HtmlDocViewer article text tightly against the details accordion line */
+.evaluation-modal-wide .imported-doc-content {
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+/* Clears browser default top margins from the first element inside your raw HTML documents */
+.imported-doc-content > div > *:first-child,
+.imported-doc-content > *:first-child {
+  margin-top: 0px;
 }
 
 .modal-content h4 {
-    margin-bottom: 15px;
-    color: var(--primary);
+  margin-bottom: 15px;
+  color: var(--primary);
 }
 
+/* ==========================================================================
+   🚀 THE EXACT OVERRIDE CHAIN FOR WIDESCREEN RECONCILIATION
+   ========================================================================== */
+
+/* 🎯 FIXED SPECIFICITY GRID: Targets the parent overlay and content containers 
+   whenever they house an internal wide evaluation component block. This forces the 
+   outer shells to expand fluidly, breaking the narrow 500px constraint! */
+.modal-overlay .modal-content:has(.evaluation-modal-wide),
+.modal-overlay .modal-content.evaluation-modal-wide,
+.evaluation-modal-wide,
+.imported-doc-content {
+  width: 95% !important;
+  max-width: 1200px !important; /* 🖥️ Widens only the evaluation workflow panels */
+  max-height: 88vh !important;
+  padding: 30px 24px 24px 24px !important;
+  box-sizing: border-box !important;
+}
+
+/* 🚀 FIXED DOCUMENT WIDTH: Forces all nested paragraphs, containers, and text sheets
+   inside your imported HTML documents to stretch edge-to-edge to match the full wide canvas */
+.evaluation-modal-wide div,
+.evaluation-modal-wide p,
+.imported-doc-content p,
+.imported-doc-content div {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+
 .form-group {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: var(--text-h);
 }
 
 .form-group input[type="text"],
 .form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-}
-
-.radio-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.radio-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 .modal-buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
-.btn-close,
-.btn-save {
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
+.btn-close, .btn-save {
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  border: none;
 }
 
 .btn-close {
-    background: #e2e8f0;
-    border: none;
+  background: #e2e8f0;
+  color: #334155;
 }
 
 .btn-save {
-    background: var(--primary);
-    color: white;
-    border: none;
+  background: var(--primary);
+  color: white;
 }
 
-/* Demographic rows styling definitions */
-.demographic-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 10px;
+/* ==========================================================================
+   👥 DEMOGRAPHIC FILTER GRIDS
+   ========================================================================== */
+.demographic-filters { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+.filter-row:last-child { border-bottom: none; }
+.filter-row.disabled { opacity: 0.4; pointer-events: none; }
+.row-label { font-weight: bold; font-size: 0.85rem; color: #64748b; min-width: 60px; }
+.radio-option { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer; }
+.radio-option input { cursor: pointer; width: 16px; height: 16px; }
+
+/* ==========================================================================
+   📱 APP RESPONSIVENESS OVERRIDES (UN-NESTED CLEAN CODES ONLY) [INDEX]
+   ========================================================================== */
+@media (max-width: 1024px) {
+  :root { font-size: 16px; }
+  h1 { font-size: 2.25rem; margin: 20px 0; }
+  h2 { font-size: 1.35rem; }
+  #center { padding: 32px 20px 24px; gap: 18px; }
 }
 
-.filter-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 15px;
-    padding: 6px 0;
-    border-bottom: 1px dashed #e2e8f0;
+@media (max-width: 768px) {
+  header { flex-direction: column; gap: 15px; text-align: center; padding: 20px 15px; }
+  .control-panel { width: 100%; flex-direction: column; gap: 12px; }
+  nav { flex-wrap: wrap; justify-content: center; gap: 10px; }
+  main, .content-area { padding: 0 15px; margin: 10px auto; }
+  .card-actions { grid-template-columns: 1fr; gap: 8px; }
 }
 
-.filter-row:last-child {
-    border-bottom: none;
+/* ==========================================================================
+   📥 CONSOLIDATED EVALUATION MODAL DESIGN SYSTEM
+   ========================================================================== */
+
+/* 1. Tightens the space directly below your description text block */
+.modal-overlay .evaluation-modal-wide .modal-manifest-description {
+  margin-bottom: 8px;
+  padding-bottom: 0;
 }
 
-/* Disabled row styling state */
-.filter-row.disabled {
-    opacity: 0.4;
-    pointer-events: none;
+/* 2. Compresses the Details accordion margins and internal bottom padding box */
+.evaluation-modal-wide .sub-accordion-container {
+  margin-bottom: 15px;
 }
 
-.row-label {
-    font-weight: bold;
-    font-size: 0.85rem;
-    color: #64748b;
-    min-width: 60px;
+.evaluation-modal-wide .accordion {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
-.radio-option {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
+.evaluation-modal-wide .accordion-content {
+  padding-bottom: 0;
 }
 
-.radio-option input {
-    cursor: pointer;
+/* 3. Horizontal 5-Point Likert Scale flexbox option button grid layout */
+.likert-flex-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  margin-top: 15px;
 }
 
-/* Disabled state style for the profile icon trigger button */
-.profile-trigger.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    pointer-events: none;
-    /* Prevents opening the dropdown completely */
+.likert-flex-row .likert-option-btn {
+  flex: 1;
+  padding: 12px 10px;
+  text-align: center;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Container for the buttons inside the card */
-.card-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    /* 3 equal buttons horizontally */
-    gap: 10px;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border);
+.likert-flex-row .likert-option-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* Ensure buttons inside the card look correct */
-.card-actions button {
-    padding: 10px;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background-color: #f1f5f9;
+.likert-icon-span {
+  font-size: 16px;
 }
 
-/* NEW 1-COLUMN STYLES */
-.content-area {
-    display: block;
-    /* Removes flexbox */
-    width: 100%;
-    /* Ensures it takes up full width */
-    margin: 15px;
-    /* Optional: centers content if you want a max-width */
-}
 
-/* The Arrow Logic */
-/* This adds the arrow automatically via CSS */
-.accordion-header::after {
-    content: '▼';
-    font-size: 0.8em;
-    transition: transform 0.3s;
-}
-
-/* If you want the arrow to rotate when open, you need a class toggle */
-/* Let's keep it simple for now and just use the CSS above */
-
-/* Optional: Rotate arrow when active */
-.accordion-header.active::after {
-    transform: rotate(180deg);
-}
-
-.accordion-item {
-    border: 1px solid #ddd;
-    margin-bottom: 5px;
-}
-
-.accordion-container {
-    width: 100%;
-    margin: 20px auto;
-}
-
-.accordion-item {
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    background: #fff;
-}
-
-.accordion-header {
-    width: 100%;
-    padding: 15px;
-    text-align: left;
-    cursor: pointer;
-    background: #fff;
-    border: none;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* Force content to show temporarily to see if it's there */
-.accordion-content {
-    max-height: 0;
-    /* Starts closed */
-    display: hidden;
-    /* Hidden by default */
-    transition: max-height 0.3s ease-out;
-    overflow: hidden;
-    border: 2px solid rgb(179, 179, 247) !important;
-    /* Visual aid */
-}
-
-.accordion {
-    background-color: #eee;
-    color: #444;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.4s;
-}
-
-.active,
-.accordion:hover {
-    background-color: #ccc;
-}
-
-.accordion:after {
-    content: '\002B';
-    color: #777;
-    font-weight: bold;
-    float: right;
-    margin-left: 5px;
-}
-
-.active:after {
-    content: "\2212";
-}
-
-.panel {
-    padding: 0 18px;
-    background-color: white;
-    max-height: 0;
-    /* CRITICAL: This hides the content when height is 0 */
-    overflow: hidden;
-    /*transition: max-height 0.2s ease-out;*/
-}
-
-.panel.show {
-    /* We use 'none' to allow it to expand fully */
-    max-height: none;
-}
-
-#issuesContainer {
-    display: block;
-    /* Forces the element to exist in the layout */
-}
-
-.button-group {
-    display: flex;
-    gap: 10px;
-    padding: 10px 0;
-}
-
-.action-btn {
-    padding: 8px 16px;
-    cursor: pointer;
-}
-
-.action-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background: white;
-    margin: 10% auto;
-    padding: 20px;
-    width: 50%;
-}

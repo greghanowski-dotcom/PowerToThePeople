@@ -1,17 +1,25 @@
+/* ==========================================================================
+   📦 REFACTORED WORKSPACE MATRIX: Surveys.css
+   ========================================================================== */
+
+.surveys-page-wrapper {
+  position: relative;
+  padding-bottom: 40px; /* Reduced padding area bottom */
+}
+
 .accordion {
-  border: 1px solid #ddd;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  width: 100%;       /* Changed from max-width to width */
-  margin: 20px 0;    /* Remove 'auto' to ensure it uses the full width */
-  box-sizing: border-box; /* Ensures padding doesn't push it beyond 100% width */
+  width: 100%;       
+  margin: 20px 0 10px 0; /* 🚀 FIXED: Margin-bottom compressed from 20px to 10px */
+  box-sizing: border-box; 
 }
 
 .accordion-header {
   width: 100%;
-  padding: 8px 15px; 
-  background: #f8f9fa;
+  padding: 12px 15px; 
+  background: #f8fafc;
   border: none;
-  border-bottom: 1px solid #ddd;
   text-align: left;
   font-size: 0.95rem; 
   font-weight: bold;
@@ -23,72 +31,266 @@
 
 .accordion-content {
   padding: 15px;
-  background: white;
-  border-bottom: 1px solid #ddd;
+  background: #ffffff;
   width: 100%;
   box-sizing: border-box;
 }
 
 .solution-row {
-    display: flex;
-    justify-content: space-between; /* Pushes the button to the far right */
-    align-items: center;
-    padding: 8px;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Ensure this is the top layer */
+.solution-row:last-child {
+  border-bottom: none;
 }
 
-.modal {
-    position: relative; /* This is crucial: sets the container for the absolute button */
-    background: white;
-    padding: 30px 20px 20px 20px; /* Extra padding on top for the button */
-    border-radius: 8px;    background: white; /* Crucial: hide everything behind the modal */
-    width: 90%;
-    max-width: 800px;
-    max-height: 80vh;  /* Limits modal height */
-    overflow-y: auto;  /* Allows scrolling inside the modal */
-    padding: 20px;
-    border-radius: 8px;
-    z-index: 1001;     /* Higher than the overlay */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+.solution-title-text {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.solution-evaluate-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   📬 CONGRESSIONAL BANNER INLINE CLASSES EXPORTED
+   ========================================================================== */
+.congress-action-banner {
+  margin-top: 15px; /* 🚀 FIXED: Compressed gap down from 40px to 15px */
+  padding: 25px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.congress-banner-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.congress-banner-description {
+  margin: 0 auto 20px auto;
+  font-size: 14px;
+  color: #475569;
+  max-width: 500px;
+  line-height: 1.4;
+}
+
+.congress-portal-trigger-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 15px;
+  transition: background-color 0.2s;
+}
+
+.congress-error-warning {
+  color: #ef4444;
+  display: block;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   📥 VOTING MODAL OVERLAYS & LIKERT RESPONSES
+   ========================================================================== */
+/* ==========================================================================
+   📥 MASTER MODAL OVERRIDE SPECIFICITY ENGINE: Surveys.css
+   ========================================================================== */
+
+/* 🚀 ROOT CAUSE ARRESTED: Tells the compiler to look inside the active overlay,
+   find the target modal-content layout card, and force it wide across the screen. */
+.modal-overlay .modal-content.evaluation-modal-wide {
+  position: relative; 
+  background: #ffffff;
+  border-radius: 10px;
+  
+  /* 🖥️ Force wide layout to ignore parent 500px caps natively */
+  width: 95% !important;
+  max-width: 1200px !important; 
+  
+  max-height: 85vh;  
+  overflow-y: auto;  
+  padding: 30px 24px 24px 24px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+
+.modal-content {
+  position: relative; 
+  background: #ffffff;
+  border-radius: 8px;
+  width: 95% !important;        /* 🚀 Forces fluid mobile padding expansion */
+  max-width: 1100px !important;  /* 🚀 FIXED: The !important flag crushes the global.css 500px constraint! */
+  max-height: 85vh;      
+  overflow-y: auto;  
+  padding: 30px 24px 24px 24px;
+  z-index: 100001;     
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  box-sizing: border-box;
 }
 
 .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #333;
-    font-weight: bold;
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #94a3b8;
 }
 
 .close-btn:hover {
-    color: #ff0000;
+  color: #ef4444;
 }
 
-.vote-group {
+.modal-issue-heading {
+  margin: 0 0 4px 0;
+  color: #1e3a8a;
+}
+
+.modal-manifest-description {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+  font-style: italic;
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.modal-content-divider {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sub-accordion-container {
+  margin-bottom: 20px;
+}
+
+.sub-accordion-inner-panel {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 15px;
+  flex-direction: column;
+  gap: 14px;
+  padding: 5px 0;
+}
+
+.argument-card-for {
+  padding: 12px;
+  background-color: #f0fdf4;
+  border-radius: 6px;
+  border-left: 4px solid #16a34a;
+}
+
+.argument-card-against {
+  padding: 12px;
+  background-color: #fef2f2;
+  border-radius: 6px;
+  border-left: 4px solid #dc2626;
+}
+
+.argument-title-for {
+  display: block;
+  color: #14803d;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+
+.argument-title-against {
+  display: block;
+  color: #b91c1c;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+
+.argument-text-body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.argument-text-for {
+  color: #166534;
+}
+
+.argument-text-against {
+  color: #991b1b;
+}
+
+.likert-vote-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.likert-prompt-text {
+  font-size: 14.5px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.likert-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.likert-option-btn {
+  padding: 10px 16px;
+  text-align: left;
+  border-radius: 6px;
+  font-weight: 600;
+  fontSize: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.vote-success-block {
+  margin-top: 5px;
+  text-align: center;
 }
 
 .voted-msg {
+  margin: 0 0 12px 0;
+  font-weight: bold;
+  color: #16a34a;
+  font-size: 15px;
+}
+
+.global-stats-banner {
+  display: block;
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  color: #334155;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.stats-banner-title {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13.5px;
+  color: #1e3a8a;
   text-align: center;
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 10px;
 }

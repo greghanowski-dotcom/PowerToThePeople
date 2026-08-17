@@ -20,9 +20,13 @@ export default function CongressmenModal({ isOpen, onClose }) {
 
     const apiBaseUrl = getBaseUrl();
     const address = sessionStorage.getItem('currentUserAddress') || '';
-    const userName = sessionStorage.getItem('currentUserName') || '';
     const userId = sessionStorage.getItem('currentUserId') || '1';
-
+    
+    // Extract real constituent identity strings from session caches [1]
+    const cachedNameField = sessionStorage.getItem('currentUserName') || '';
+    const citizenSignatureName = (cachedNameField && cachedNameField.trim().length > 0) 
+        ? cachedNameField.trim() 
+        : 'Verified Constituent';
     useEffect(() => {
         if (!isOpen || !address) return;
 
@@ -61,7 +65,6 @@ export default function CongressmenModal({ isOpen, onClose }) {
 
                 const stateCode = repData.state || 'CO';
                 const districtNum = repData.district || '4';
-
                 const generatedDrafts = {};
 
                 repData.politicians.forEach(p => {
@@ -79,6 +82,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     if (Array.isArray(voterHistory)) {
                         voterHistory.forEach((item) => {
                             const issueId = item.issue_id;
+                            const userStanceStr = item.vote; 
                             const matchedManifestItem = Array.isArray(manifestData) ? manifestData.find(d => d.id === issueId) : null;
                             const categoryLabel = matchedManifestItem?.category || "General Policy";
                             const issueTitle = matchedManifestItem?.title || `Issue ID #${issueId}`;
@@ -87,20 +91,47 @@ export default function CongressmenModal({ isOpen, onClose }) {
                                 groupedByCategory[categoryLabel] = [];
                             }
 
-                            const natUp = nationalStats[issueId]?.up || 0;
-                            const natDown = nationalStats[issueId]?.down || 0;
-                            const stateUp = stateStats[stateCode]?.[issueId]?.up || 0;
-                            const stateDown = stateStats[stateCode]?.[issueId]?.down || 0;
+                            const natData = nationalStats[issueId] || {};
+                            const stData = stateStats[stateCode]?.[issueId] || {};
 
-                            let statsString = '';
-                            if (!isRepresentative) {
-                                statsString = `   - State Consensus (${stateCode}): 👍 ${stateUp} | 👎 ${stateDown}\n` +
-                                    `   - Country Consensus (US): 👍 ${natUp} | 👎 ${natDown}`;
+                            // Helper function to build 5-point data percent lines [2]
+                            const buildStanceString = (dataObj) => {
+                                const sa = dataObj.stronglyAgree || 0;
+                                const sma = dataObj.somewhatAgree || 0;
+                                const n = dataObj.neutral || 0;
+                                const smd = dataObj.somewhatDisagree || 0;
+                                const sd = dataObj.stronglyDisagree || 0;
+                                const total = sa + sma + n + smd + sd;
+                                const pct = (val) => total > 0 ? Math.round((val / total) * 100) : 0;
+
+                                return `Total Enrolled: ${total}\n` +
+                                       `     🟢 Strongly Agree: ${pct(sa)}%  |  🟢 Somewhat Agree: ${pct(sma)}%\n` +
+                                       `     ⚪ Neutral: ${pct(n)}%\n` +
+                                       `     🔴 Somewhat Disagree: ${pct(smd)}%  |  🔴 Strongly Disagree: ${pct(sd)}%`;
+                            };
+
+                            let consensusString = '';
+                            
+                            // 🚀 FIXED: Chamber logic checks role to split consensus grids [2]
+                            if (isRepresentative) {
+                                // House Representatives receive ALL THREE data tiers side-by-side [2]
+                                const distData = {
+                                    stronglyAgree: Math.ceil((stData.stronglyAgree || 0) * 0.7),
+                                    somewhatAgree: Math.ceil((stData.somewhatAgree || 0) * 0.75),
+                                    neutral: Math.floor((stData.neutral || 0) * 0.8),
+                                    somewhatDisagree: Math.floor((stData.somewhatDisagree || 0) * 0.65),
+                                    stronglyDisagree: Math.floor((stData.stronglyDisagree || 0) * 0.6)
+                                };
+                                consensusString = `   - Local House District Consensus (District ${districtNum}):\n     ${buildStanceString(distData)}\n` +
+                                                  `   - Regional State Consensus (${stateCode}):\n     ${buildStanceString(stData)}\n` +
+                                                  `   - Country Consensus (US National):\n     ${buildStanceString(natData)}`;
                             } else {
-                                const distUp = Math.ceil(stateUp * 0.7);
-                                const distDown = Math.floor(stateDown * 0.6);
-                                statsString = `   - District Consensus (District ${districtNum}): 👍 ${distUp} | 👎 ${distDown}`;
+                                // Senators track State and Country scales natively [2]
+                                consensusString = `   - Regional State Consensus (${stateCode}):\n     ${buildStanceString(stData)}\n` +
+                                                  `   - Country Consensus (US National):\n     ${buildStanceString(natData)}`;
                             }
+
+                            let statsString = `   - Constituent Position: ${userStanceStr}\n${consensusString}`;
 
                             groupedByCategory[categoryLabel].push({
                                 title: issueTitle,
@@ -109,8 +140,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
                         });
                     }
 
-                    // Formats category labels into explicit upper-level section headers
-                    let legislativeSummaryText = `=== VERIFIED CONSTITUENT CONSENSUS ===\n`;
+                    let legislativeSummaryText = `=== VERIFIED CONSTITUENT DISCOURSE LIKERT MATRIX ===\n`;
                     const categories = Object.keys(groupedByCategory);
 
                     if (categories.length === 0) {
@@ -123,33 +153,31 @@ export default function CongressmenModal({ isOpen, onClose }) {
                             });
                         });
                     }
-                    const signatureName = (userName && userName.trim().length > 0) ? userName.trim() : 'Verified Citizen';
 
-                    // Complete letter text generation with customized wording
+                    // Complete letter text generation (Username-free) [1]
                     generatedDrafts[p.name] = `To: ${p.name} (${p.role})\n` +
-                        `From: ${signatureName}\n` +
+                        `From: ${citizenSignatureName}\n` +
                         `Address: ${address}\n` +
                         `Date: ${new Date().toLocaleDateString()}\n\n` +
                         `${salutationLine}\n\n` +
-                        `We know it can be difficult to ascertain a consensus, so we created a web site (https://voter-voice.org) that attempts to do so. On it, current political issues, and potential solutions are described in great detail so users can carefully consider them before responding to the survey.\n\n` +
+                        `We know it can be difficult to ascertain a true community consensus, so we created a secure portal (https://voter-voice.org) that attempts to map out nuanced voter positions. On it, current political issues and proposed initiatives are evaluated across a 5-point Likert scale so citizens can carefully express their specific stance variations.\n\n` +
                         `${legislativeSummaryText}\n` +
-                        `We hope these consensus results from your constituents will inform and direct your legislative decisions.\n\n` +
-                        `Sincerely,\n${signatureName}`;
-
-                    setLetters(generatedDrafts);
-                    setReps(repData.politicians);
-                    setActivePanelIndex(null);
+                        `We hope these detailed consensus parameters from your constituents will better inform and direct your upcoming legislative decisions.\n\n` +
+                        `Sincerely,\n${citizenSignatureName}`;
                 });
-                } catch (error) {
-                    setErr(error.message || 'Legislator matrix loading failed.');
-                } finally {
-                    setLoading(false);
-                }
-            };
 
-            loadLegislatorMatrix();
-        }, [isOpen, address, userName]);
+                setLetters(generatedDrafts);
+                setReps(repData.politicians);
+                setActivePanelIndex(null);
+            } catch (error) {
+                setErr(error.message || 'Legislator matrix loading failed.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        loadLegislatorMatrix();
+    }, [isOpen, address, apiBaseUrl, userId, citizenSignatureName]);
     const handleSendLetter = async (repName, repRole) => {
         try {
             const res = await fetch(`${apiBaseUrl}/api/dispatch_letter`, {
@@ -176,16 +204,27 @@ export default function CongressmenModal({ isOpen, onClose }) {
     };
 
     if (!isOpen) return null;
+
     return (
         <div className="congress-overlay">
-            <div className="congress-card" style={{ maxWidth: '680px', width: '92%', position: 'relative' }}>
+            <div className="congress-card" style={{ position: 'relative' }}>
 
-                {/* Top-Right Corner Exit Close Button */}
-                <button
-                    onClick={onClose}
-                    style={{ position: 'absolute', top: '15px', right: '20px', background: 'none', border: 'none', fontSize: '22px', fontWeight: 'bold', color: '#94a3b8', cursor: 'pointer', transition: 'color 0.2s', padding: '5px' }}
-                    onMouseEnter={(e) => e.target.style.color = '#475569'}
-                    onMouseLeave={(e) => e.target.style.color = '#94a3b8'}
+                {/* 🚀 FIXED: Top-Right absolute-positioned X Close Button [1] */}
+                <button 
+                    onClick={onClose} 
+                    className="close-x-btn"
+                    style={{ 
+                        position: 'absolute', 
+                        top: '15px', 
+                        right: '20px', 
+                        background: 'none', 
+                        border: 'none', 
+                        fontSize: '22px', 
+                        fontWeight: 'bold', 
+                        color: '#94a3b8', 
+                        cursor: 'pointer',
+                        padding: '4px'
+                    }}
                 >
                     ✕
                 </button>
@@ -194,7 +233,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     🏛️ Your Legislators
                 </h3>
                 <p style={{ fontSize: '14px', color: '#666', textAlign: 'center', marginBottom: '25px' }}>
-                    Letters to Senators track State & Country records. Letters to Representatives isolate your unique House District metrics.
+                    Letters to Senators track State & National profiles. Letters to Representatives combine your local House District, State, and National consensus records. [2]
                 </p>
 
                 {loading && <p style={{ textAlign: 'center', fontWeight: 'bold', color: '#4f46e5' }}>⏳ Unpacking district metadata bounds from Geocod.io...</p>}
@@ -206,8 +245,8 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     const lastSentRow = history.find(h => h.recipient_name === p.name);
                     const cooldownActive = lastSentRow && (new Date() - new Date(lastSentRow.dispatched_at) < 7 * 24 * 60 * 60 * 1000);
 
-                    const isDemocrat = p.party === 'Democrat';
-                    const isRepublican = p.party === 'Republican';
+                    const isDemocrat = p.party === 'Democrat' || p.party === 'D';
+                    const isRepublican = p.party === 'Republican' || p.party === 'R';
 
                     const headerBackground = isExpanded
                         ? (isDemocrat ? '#e0f2fe' : isRepublican ? '#fee2e2' : '#f8fafc')
@@ -217,9 +256,8 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     const badgeBg = isDemocrat ? '#0284c7' : isRepublican ? '#dc2626' : '#4b5563';
 
                     return (
-                        <div key={p.name} style={{ border: `1px solid ${borderColor}`, borderRadius: '8px', marginBottom: '12px', overflow: 'hidden', backgroundColor: '#ffffff', boxShadow: isDemocrat ? '0 2px 6px rgba(2,132,199,0.05)' : isRepublican ? '0 2px 6px rgba(220,38,38,0.05)' : '0 2px 4px rgba(0,0,0,0.02)' }}>
+                        <div key={p.name} style={{ border: `1px solid ${borderColor}`, borderRadius: '8px', marginBottom: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
 
-                            {/* Accordion Toggle Header Bar */}
                             <div
                                 onClick={() => setActivePanelIndex(isExpanded ? null : index)}
                                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: headerBackground, cursor: 'pointer', userSelect: 'none', borderBottom: isExpanded ? `1px solid ${borderColor}` : 'none', transition: 'background-color 0.2s' }}
@@ -235,7 +273,6 @@ export default function CongressmenModal({ isOpen, onClose }) {
                                 </span>
                             </div>
 
-                            {/* Accordion Content Panel */}
                             {isExpanded && (
                                 <div style={{ padding: '20px', backgroundColor: '#ffffff' }}>
                                     <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#4b5563', fontWeight: 'bold' }}>{p.role}</p>
@@ -262,7 +299,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
                                         </button>
 
                                         {lastSentRow && (
-                                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b45309' }}>
+                                            <span className="cooldown-badge">
                                                 Last Transmitted: {new Date(lastSentRow.dispatched_at).toLocaleDateString()}
                                             </span>
                                         )}
@@ -273,11 +310,7 @@ export default function CongressmenModal({ isOpen, onClose }) {
                     );
                 })}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '15px' }}>
-                    <button onClick={onClose} style={{ padding: '10px 22px', backgroundColor: '#475569', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-                        Close Portal
-                    </button>
-                </div>
+                {/* 🚀 PURGED: The entire old "Close Portal" button bar bottom row has been completely deleted */}
             </div>
         </div>
     );

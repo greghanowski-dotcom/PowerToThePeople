@@ -56,12 +56,13 @@
     "against": "Requires painful cuts to public programs or unpopular tax hikes."
   },
   {
-    "id": "108",
-    "title": "Universal Healthcare Option",
-    "category": "Healthcare",
-    "desc": "The government should establish a universal public healthcare option to guarantee basic medical coverage and lower patient costs for all citizens.",
-    "for": "Guarantees healthcare access for all income brackets and removes medical debt.",
-    "against": "Significantly raises government spending and disrupts private insurance options."
+    "id": "universal-healthcare",
+    "title": "Universal Healthcare",
+    "category": "Healthcare Policy",
+    "desc": "The federal government should implement structural reforms to reduce healthcare costs and expand primary care access.",
+    "summary": "This comprehensive reform initiative addresses the U.S. healthcare cost crisis by eliminating the artificial scarcity of physicians and reducing structural overhead. By removing the 1997 federal caps on residency slots and dissolving anti-competitive lobbying barriers, this policy opens the medical labor pool to free-market supply and demand. Furthermore, it analyzes how the U.S. healthcare model is inflated by an average student medical debt of $200,000 and high commercial property rents. In contrast, it highlights how government-subsidized education and lower operational overhead allow cross-border medical clinics to deliver equivalent care at a 50% to 80% discount. Proactive, accessible primary care reduces expensive Emergency Room dependencies and proprietary billing monopolies, saving taxpayers and patients an estimated $800 billion annually.",
+    "for": "Removes anti-competitive doctor shortages, balances specialist salaries through open-market supply, lowers commercial clinical overhead, and expands independent primary care access to eliminate costly emergency hospital dependency.",
+    "against": "Could risk supplier-induced demand where a surplus of providers recommend unneeded testing to maintain income, increases pressure on medical licensing boards, and lowers standard doctor compensation brackets."
   },
   {
     "id": "109",

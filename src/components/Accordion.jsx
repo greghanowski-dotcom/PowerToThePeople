@@ -1,51 +1,46 @@
-import { useState, useEffect } from 'react';
-import '../styles/Accordion.css';
+// src/components/Accordion.jsx
+import React, { useState } from 'react';
 
-export default function Accordion({ items, renderContent, keepOpen = false}) {
-  console.log('keepOpen prop is:', keepOpen);
-  // Store an array of open indices instead of a single index
+export default function Accordion({ items, renderContent, keepOpen = false }) {
+  // 🚀 FIXED: Local self-managed state tracking handles open panels internally 
   const [openIndices, setOpenIndices] = useState([]);
 
-// RESET logic: If keepOpen is turned off, collapse everything except the first one
-  useEffect(() => {
-    if (!keepOpen && openIndices.length > 1) {
-      setOpenIndices([openIndices[0]]); 
-    }
-  }, [keepOpen]);
-
-  const toggle = (index) => {
-    if (keepOpen) {
-      // MULTI-SELECT logic
-      setOpenIndices((prev) =>
-        prev.includes(index)
-          ? prev.filter((idx) => idx !== index) // Close if already open
-          : [...prev, index]                    // Add to open list
-      );
+  const togglePanel = (idx) => {
+    if (openIndices.includes(idx)) {
+      // If already open, close it by filtering it out of the array
+      setOpenIndices(openIndices.filter(i => i !== idx));
     } else {
-      // SINGLE-SELECT logic (original behavior)
-      setOpenIndices((prev) => (prev.includes(index) ? [] : [index]));
+      // If closed, add it to the array. If keepOpen is false, close others first.
+      setOpenIndices(keepOpen ? [...openIndices, idx] : [idx]);
     }
   };
 
   return (
     <div className="accordion">
-      {items.map((item, idx) => (
-        <div key={idx} className="accordion-item">
-          <button
-            className="accordion-header"
-            onClick={() => toggle(idx)}
-          >
-            {item.title}
-            <span>{openIndices.includes(idx) ? '−' : '+'}</span>
-          </button>
+      {items.map((item, idx) => {
+        const isOpen = openIndices.includes(idx);
+        
+        return (
+          <div key={idx} className="accordion-item">
+            {/* 🚀 FIXED: Calls local togglePanel click handler string mappings */}
+            <button
+              type="button"
+              className={`accordion-header ${isOpen ? 'active' : ''}`}
+              onClick={() => togglePanel(idx)}
+            >
+              {item.title}
+            </button>
 
-          {openIndices.includes(idx) && (
-            <div className="accordion-content">
-              {renderContent(item)}
-            </div>
-          )}
-        </div>
-      ))}
+            {/* 🚀 FIXED: The structural box vanishes from your page layout completely when closed,
+                leaving absolutely zero empty space or structural layout gaps behind! */}
+            {isOpen && (
+              <div className="accordion-content">
+                {renderContent(item)}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

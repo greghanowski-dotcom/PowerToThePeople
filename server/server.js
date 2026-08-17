@@ -545,6 +545,50 @@ app.get('/api/letter_history/:userId', async (req, res) => {
     }
 });
 
+app.get('/api/initiatives', async (req, res) => {
+  try {
+    // Gathers active initiatives from your MySQL tables, sorted by category headers
+    const [rows] = await db.query(
+      'SELECT id, title, category, description, summary, full_content_html FROM policy_initiatives WHERE is_active = TRUE ORDER BY category, title'
+    );
+    
+    // Returns the clean list array directly back to your React app frontend components
+    res.json(rows);
+  } catch (error) {
+    console.error('[DATABASE ERROR] Failed to fetch initiatives:', error);
+    res.status(500).json({ error: 'Internal server error while retrieving policy records.' });
+  }
+});
+
+// ==========================================================================
+// ✍️ ENDPOINT B: SAVE OR UPDATE MARKDOWN POLICY TEXT FROM THE ADMIN UTILITY
+// ==========================================================================
+// server/server.js
+app.post('/api/update_policy', async (req, res) => {
+  const { id, content } = req.body;
+
+  if (!id || content === undefined) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
+
+  try {
+    // 🚀 FIXED: Changed full_content_markdown to full_content_html to match your database change!
+    const [result] = await db.query(
+      'UPDATE policy_initiatives SET full_content_html = ? WHERE id = ?',
+      [content, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: `No active policy row matched the system ID: "${id}".` });
+    }
+
+    res.json({ success: true, message: 'Policy HTML data synchronized instantly!' });
+  } catch (error) {
+    console.error('[DATABASE ERROR] Failed to update HTML text block:', error);
+    res.status(500).json({ error: 'Internal database error.' });
+  }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`[BACKEND SERVER MASTER RUNNING ON LIVE DEVELOPMENT PORT :${PORT}]`);

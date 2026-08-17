@@ -26,7 +26,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 🌗 AUTOMATIC SYSTEM-WIDE DARK MODE THEME REWRITES */
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
@@ -55,24 +54,22 @@ body {
    🏛️ FLUID RESPONSIVE CONTAINERS & MASTER CORE LAYOUTS
    ========================================================================== */
 #root {
-  width: 100%; /* 🚀 FIXED: Spans the full horizontal window fluidly */
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
 
-/* Master liquid layout area for all page frameworks */
 main, .content-area, .polls-page, .ideas-page, .accordion-panel {
   width: 100%;
-  max-width: 1200px; /* 🚀 FIXED: Liquid desktop width ceiling */
+  max-width: 1200px;
   margin: 20px auto;
   padding: 0 20px;
   box-sizing: border-box;
   text-align: left;
 }
 
-/* Base application wrapping layout box rules from old App.css */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -89,7 +86,6 @@ main, .content-area, .polls-page, .ideas-page, .accordion-panel {
   flex-grow: 1;
 }
 
-/* Decorative alignment line markers container style row elements */
 .ticks {
   position: relative;
   width: 100%;
@@ -105,527 +101,84 @@ main, .content-area, .polls-page, .ideas-page, .accordion-panel {
 .ticks::before { left: 0; border-left-color: var(--border); }
 .ticks::after { right: 0; border-right-color: var(--border); }
 
-/* Typography Standardizations */
-ul {
-  padding-left: 30px;
-  list-style-type: disc;
-}
-
-li {
-  margin-bottom: 6px;
-}
-
-p {
-  margin-bottom: 14px;
-  font-size: 1.05rem;
-  line-height: 1.6;
-}
-
-h1, h2, h3, h4 {
-  font-weight: bold;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 3.2rem;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-}
-
-h2 {
-  font-size: 1.6rem;
-  line-height: 1.2;
-  letter-spacing: -0.24px;
-  margin-bottom: 12px;
-}
-
-h3 {
-  font-size: 1.4rem;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-h4 {
-  font-size: 1.15rem;
-  margin-top: 18px;
-  margin-bottom: 6px;
-}
-
-code {
-  font-family: var(--mono);
-  font-size: 15px;
-  line-height: 1.4;
-  padding: 4px 8px;
-  background: var(--border);
-  color: var(--text-h);
-  border-radius: 4px;
-  display: inline-flex;
-}
 /* ==========================================================================
-   🧭 SITE HEADER & CONTROL PANEL CORES (PART 2)
+   🔤 STANDARD GLOBAL TYPOGRAPHY
    ========================================================================== */
-header {
-  background-color: var(--primary);
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-icon {
-  font-size: 1.5rem;
-}
-
-.brand-title {
-  font-weight: 700;
-  color: white;
-  text-decoration: none;
-}
-
-.control-panel {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-nav {
-  display: flex;
-  gap: 15px;
-}
-
-nav a {
-  color: #e2e8f0;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 700;
-  transition: color 0.2s ease;
-}
-
-nav a:hover,
-nav a.active {
-  color: #ffffff;
-}
-
-.btn-signin,
-.profile-trigger {
-  background-color: var(--secondary);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.btn-signin:hover {
-  background-color: #0b7a70;
-}
+ul { padding-left: 30px; list-style-type: disc; }
+li { margin-bottom: 6px; }
+p { margin-bottom: 14px; font-size: 1.05rem; line-height: 1.6; }
+h1, h2, h3, h4 { font-weight: bold; color: var(--text-h); }
+h1 { font-size: 3.2rem; letter-spacing: -1.68px; margin: 32px 0; }
+h2 { font-size: 1.6rem; line-height: 1.2; letter-spacing: -0.24px; margin-bottom: 12px; }
+h3 { font-size: 1.4rem; margin-top: 20px; margin-bottom: 10px; }
+h4 { font-size: 1.15rem; margin-top: 18px; margin-bottom: 6px; }
+code { font-family: var(--mono); font-size: 15px; line-height: 1.4; padding: 4px 8px; background: var(--border); color: var(--text-h); border-radius: 4px; display: inline-flex; }
 
 /* ==========================================================================
-   🚀 UNIFIED PROFILE DROPDOWN MENU
+   🧭 SITE HEADER & CONTROL PANEL CORES
    ========================================================================== */
-.profile-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
+header { background-color: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon { font-size: 1.5rem; }
+.brand-title { font-weight: 700; color: white; text-decoration: none; }
+.control-panel { display: flex; align-items: center; gap: 20px; }
+nav { display: flex; gap: 15px; }
+nav a { color: #e2e8f0; text-decoration: none; font-size: 0.95rem; font-weight: 700; transition: color 0.2s ease; }
+nav a:hover, nav a.active { color: #ffffff; }
+.btn-signin, .profile-trigger { background-color: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 14px; transition: background-color 0.2s; }
+.btn-signin:hover { background-color: #0b7a70; }
 
-.profile-trigger {
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: white;
-  padding: 4px 8px;
-  user-select: none;
-}
-
-.profile-trigger.disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.dropdown-menu {
-  display: flex; 
-  position: absolute;
-  right: 0;
-  top: 100%;
-  margin-top: 8px;
-  background-color: #ffffff;
-  border: 1px solid #dddddd;
-  border-radius: 6px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
-  flex-direction: column;
-  min-width: 180px;
-  padding: 6px 0;
-  z-index: 999999999 !important; 
-}
-
-.dropdown-item {
-  padding: 10px 16px;
-  font-size: 14px;
-  color: #333333;
-  cursor: pointer;
-  display: block;
-  text-align: left;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.dropdown-item:hover {
-  background-color: #f1f5f9;
-  color: #0070f3;
-}
-
-.dropdown-item.disabled {
-  color: #94a3b8;
-  cursor: not-allowed;
-  background-color: transparent;
-  pointer-events: none;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background-color: var(--border);
-  margin: 6px 0;
-}
+/* ==========================================================================
+   👥 UNIFIED PROFILE DROPDOWN MENU
+   ========================================================================== */
+.profile-container { position: relative; display: inline-flex; align-items: center; }
+.profile-trigger { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: white; padding: 4px 8px; user-select: none; }
+.profile-trigger.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+.dropdown-menu { display: flex; position: absolute; right: 0; top: 100%; margin-top: 8px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15); flex-direction: column; min-width: 180px; padding: 6px 0; z-index: 999999999 !important; }
+.dropdown-item { padding: 10px 16px; font-size: 14px; color: #333333; cursor: pointer; display: block; text-align: left; text-decoration: none; transition: background-color 0.2s ease, color 0.2s ease; }
+.dropdown-item:hover { background-color: #f1f5f9; color: #0070f3; }
+.dropdown-item.disabled { color: #94a3b8; cursor: not-allowed; background-color: transparent; pointer-events: none; }
+.dropdown-divider { height: 1px; background-color: var(--border); margin: 6px 0; }
 
 /* ==========================================================================
    📊 VOTING CARDS & ACTION PRIMITIVES
    ========================================================================== */
-.card-list, .action-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.issue-card, .action-box {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  min-height: 150px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.issue-card h3 {
-  margin-bottom: 10px;
-  color: var(--primary);
-}
-
-.action-box button, .card-actions button {
-  padding: 10px;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background-color: #f1f5f9;
-  transition: background-color 0.2s;
-}
-
-.action-box button:not(:disabled):hover,
-.card-actions button:not(:disabled):hover {
-  background-color: #e2e8f0;
-}
-
-.action-box button:disabled,
-.card-actions button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.card-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid var(--border);
-}
-
+.card-list, .action-list { display: flex; flex-direction: column; gap: 20px; }
+.issue-card, .action-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; min-height: 150px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+.issue-card h3 { margin-bottom: 10px; color: var(--primary); }
+.action-box button, .card-actions button { padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background-color: #f1f5f9; transition: background-color 0.2s; }
+.action-box button:not(:disabled):hover, .card-actions button:not(:disabled):hover { background-color: #e2e8f0; }
+.action-box button:disabled, .card-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+.card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); }
 /* ==========================================================================
    📥 UNIVERSAL ACCORDION LAYOUT SHEETS
    ========================================================================== */
-.accordion {
-  width: 100%; 
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin: 20px 0 10px 0; 
-  box-sizing: border-box; 
-}
-
-.accordion-item {
-  border-bottom: 1px solid var(--border);
-  background: var(--card-bg);
-}
+.accordion { width: 100%; border: 1px solid var(--border); border-radius: 8px; margin: 20px 0 10px 0; box-sizing: border-box; }
+.accordion-item { border-bottom: 1px solid var(--border); background: var(--card-bg); }
 .accordion-item:last-child { border-bottom: none; }
-
-.accordion-header {
-  width: 100%;
-  padding: 15px;
-  text-align: left;
-  cursor: pointer;
-  background: var(--card-bg);
-  border: none;
-  font-weight: 700 !important;
-  font-size: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--text-h);
-  transition: background-color 0.2s;
-}
+.accordion-header { width: 100%; padding: 15px; text-align: left; cursor: pointer; background: var(--card-bg); border: none; font-weight: 700 !important; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-h); transition: background-color 0.2s; }
 .accordion-header:hover { background-color: #f8fafc; }
-
-.accordion-header::after {
-  content: '\002B'; /* ➕ Standard unicode for plus sign (+) */
-  font-size: 1.1em;
-  font-weight: bold;
-  color: #64748b;
-  transition: transform 0.2s ease;
-}
-
-/* Toggles automatically to minus sign string when expanded [INDEX] */
-.accordion-header.active::after {
-  content: '\2212'; /* ➖ Standard unicode for formal minus sign (−) [INDEX] */
-  color: var(--primary);
-}
-
-.accordion-content {
-  width: 100%;
-  background: var(--card-bg);
-  padding: 15px 20px 20px 20px;
-  border-top: 1px solid var(--border);
-}
-
-/* ==========================================================================
-   📥 HORIZONTAL LIKERT SCALE & DETAIL CARD COMPRESSION
-   ========================================================================== */
-
-/* 🚀 FIXED: Compressed spacing gap directly beneath your Details accordion panel */
-.sub-accordion-container {
-  margin-bottom: 0px !important; 
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Targets only the inner accordion container when nested inside your wide 
-   evaluation modal view to crush the internal padding bottleneck [INDEX]. */
-.evaluation-modal-wide .accordion-content,
-.evaluation-modal-wide .sub-accordion-container .accordion,
-.evaluation-modal-wide .sub-accordion-inner-panel {
-  padding-bottom: 0px !important;
-  margin-bottom: 0px !important;
-}
-
-/* Tightens the text brief component layout sitting right below the accordion rows [INDEX] */
-.evaluation-modal-wide .imported-doc-content {
-  margin-top: 5px !important; /* Forces document text to sit neatly near the details border */
-}
-
-/* 🚀 FIXED: Arranges choice boxes horizontally side-by-side */
-.likert-flex-row {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: stretch !important;
-  gap: 10px !important;
-  width: 100% !important;
-  margin-top: 10px;
-}
-
-/* Unified square grid properties for horizontal options buttons */
-.likert-flex-row .likert-option-btn {
-  flex: 1 !important;
-  padding: 12px 10px !important;
-  text-align: center !important;
-  border-radius: 6px !important;
-  font-weight: 700 !important;
-  font-size: 13.5px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-}
-
-/* Interactive subtle lift animation when hovering options tiles */
-.likert-flex-row .likert-option-btn:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
-}
-
-.likert-icon-span {
-  font-size: 16px !important;
-}
+.accordion-header::after { content: '\002B'; font-size: 1.1em; font-weight: bold; color: #64748b; transition: transform 0.2s ease; }
+.accordion-header.active::after { content: '\2212'; color: var(--primary); }
+.accordion-content { width: 100%; background: var(--card-bg); padding: 15px 20px 20px 20px; border-top: 1px solid var(--border); }
 
 /* ==========================================================================
    🖼️ REACT MODALS UNIVERSAL BASE STYLE
    ========================================================================== */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 100000;
-  display: flex; 
-  justify-content: center;
-  align-items: center;
-}
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); z-index: 100000; display: flex; justify-content: center; align-items: center; }
+.modal-content { background: var(--card-bg); padding: 25px; border-radius: 10px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); }
+.modal-content h4 { margin-bottom: 15px; color: var(--primary); }
 
 /* ==========================================================================
-   📥 MODAL WORKSPACE EXPANSION & DETAIL TIGHTENING (NO !IMPORTANT)
+   📝 FORMS & DEMOGRAPHIC UTILITIES
    ========================================================================== */
-
-/* The standard dark backdrop curtain filter grid layer */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 100000;
-  display: flex; 
-  justify-content: center;
-  align-items: center;
-}
-
-/* Base modal card configuration settings for regular small profile boxes */
-.modal-content {
-  background: var(--card-bg);
-  padding: 25px;
-  border-radius: 10px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* 🎯 THE SELECTOR TARGETS ONLY THE EVALUATION CARD POPUP: 
-   Because it steps outside the accordion row flow, it can freely expand to full width! */
-.modal-overlay .modal-content.evaluation-modal-wide {
-  max-width: 1200px;
-  width: 94%;
-  padding: 30px 24px 24px 24px;
-}
-
-/* 🚀 ACCORDION WHITESPACE COMPRESSION: Completely zeroes out the bottom gap */
-.compact-modal-accordion .accordion {
-  margin-top: 10px;
-  margin-bottom: 0px;
-}
-
-.compact-modal-accordion .accordion-content {
-  padding-bottom: 0px;
-}
-
-/* Snaps your HtmlDocViewer article text tightly against the details accordion line */
-.evaluation-modal-wide .imported-doc-content {
-  margin-top: 0px;
-  padding-top: 0px;
-}
-
-/* Clears browser default top margins from the first element inside your raw HTML documents */
-.imported-doc-content > div > *:first-child,
-.imported-doc-content > *:first-child {
-  margin-top: 0px;
-}
-
-.modal-content h4 {
-  margin-bottom: 15px;
-  color: var(--primary);
-}
-
-/* ==========================================================================
-   🚀 THE EXACT OVERRIDE CHAIN FOR WIDESCREEN RECONCILIATION
-   ========================================================================== */
-
-/* 🎯 FIXED SPECIFICITY GRID: Targets the parent overlay and content containers 
-   whenever they house an internal wide evaluation component block. This forces the 
-   outer shells to expand fluidly, breaking the narrow 500px constraint! */
-.modal-overlay .modal-content:has(.evaluation-modal-wide),
-.modal-overlay .modal-content.evaluation-modal-wide,
-.evaluation-modal-wide,
-.imported-doc-content {
-  width: 95% !important;
-  max-width: 1200px !important; /* 🖥️ Widens only the evaluation workflow panels */
-  max-height: 88vh !important;
-  padding: 30px 24px 24px 24px !important;
-  box-sizing: border-box !important;
-}
-
-/* 🚀 FIXED DOCUMENT WIDTH: Forces all nested paragraphs, containers, and text sheets
-   inside your imported HTML documents to stretch edge-to-edge to match the full wide canvas */
-.evaluation-modal-wide div,
-.evaluation-modal-wide p,
-.imported-doc-content p,
-.imported-doc-content div {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-  color: var(--text-h);
-}
-
-.form-group input[type="text"],
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.modal-buttons {
-  margin-top: 24px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.btn-close, .btn-save {
-  padding: 10px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  border: none;
-}
-
-.btn-close {
-  background: #e2e8f0;
-  color: #334155;
-}
-
-.btn-save {
-  background: var(--primary);
-  color: white;
-}
-
-/* ==========================================================================
-   👥 DEMOGRAPHIC FILTER GRIDS
-   ========================================================================== */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-h); }
+.form-group input[type="text"], .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+.modal-buttons { margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; }
+.btn-close, .btn-save { padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; border: none; }
+.btn-close { background: #e2e8f0; color: #334155; }
+.btn-save { background: var(--primary); color: white; }
 .demographic-filters { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
 .filter-row:last-child { border-bottom: none; }
@@ -635,7 +188,85 @@ nav a.active {
 .radio-option input { cursor: pointer; width: 16px; height: 16px; }
 
 /* ==========================================================================
-   📱 APP RESPONSIVENESS OVERRIDES (UN-NESTED CLEAN CODES ONLY) [INDEX]
+   🖥️ CONSOLIDATED WIDESCREEN EVALUATION MODAL SYSTEM
+   ========================================================================== */
+.modal-overlay .evaluation-modal-wide {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 10px;
+  width: 94%;
+  max-width: 1200px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.eval-modal-header {
+  padding: 24px 24px 12px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  position: relative;
+}
+
+.eval-modal-header h3 { margin: 0 0 6px 0; color: #1e3a8a; font-size: 20px; font-weight: bold; }
+.eval-modal-header p { margin: 0; font-size: 14px; color: #475569; line-height: 1.4; }
+.eval-modal-header .close-btn { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 18px; cursor: pointer; color: #94a3b8; }
+
+.modal-scrollable-body {
+  padding: 20px 24px;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(85vh - 200px);
+  background-color: #ffffff;
+}
+
+.eval-summary-card-box {
+  padding: 14px 16px;
+  background-color: #f8fafc;
+  border-left: 4px solid #64748b;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.eval-summary-card-box strong { display: block; color: #334155; font-size: 14.5px; font-weight: bold; margin-bottom: 4px; font-family: sans-serif; }
+
+.eval-likert-flex-row { display: flex; flex-direction: row; justify-content: space-between; gap: 10px; width: 100%; }
+.eval-likert-flex-row .likert-option-btn {
+  flex: 1; padding: 10px; text-align: center; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; flexDirection: column; align-items: center; gap: 4px; font-family: sans-serif; transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.eval-likert-flex-row .likert-option-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06); }
+
+.eval-frozen-voting-footer { padding: 20px 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+.eval-vote-prompt-label { font-size: 14px; font-weight: bold; color: #1e293b; font-family: sans-serif; display: block; margin-bottom: 10px; }
+
+.eval-vote-success-block { text-align: center; font-family: sans-serif; }
+.eval-vote-success-block .voted-msg { margin: 0 0 10px 0; font-weight: bold; color: #16a34a; font-size: 14.5px; }
+.eval-global-stats-banner { display: block; background-color: #ffffff; padding: 10px 14px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; color: #334155; text-align: left; line-height: 1.5; }
+.eval-global-stats-banner strong { display: block; margin-bottom: 4px; color: #1e3a8a; text-align: center; }
+.eval-stats-grid-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
+
+.eval-toggle-row-left { display: flex !important; justify-content: flex-start !important; width: 100%; margin-top: 8px; }
+.eval-toggle-action-btn { background: none !important; border: none !important; color: #0070f3 !important; font-size: 13.5px !important; font-weight: bold !important; text-decoration: underline !important; padding: 0 !important; cursor: pointer !important; font-family: sans-serif !important; }
+.eval-expanded-content-view { animation: fadeIn 0.2s ease-out; }
+
+/* ==========================================================================
+   🧼 UNIFORM RICH-TEXT TYPOGRAPHY SANITIZER ENGINE
+   ========================================================================== */
+div.eval-summary-card-box p, .eval-summary-card-box p, .database-html-renderer p, .database-html-renderer li, .database-html-renderer span, .database-html-renderer div, .database-html-renderer table, .database-html-renderer th, .database-html-renderer td {
+  font-size: 16px !important; color: #334155 !important; line-height: 1.6 !important; font-family: sans-serif !important;
+}
+
+.database-html-renderer h1, .database-html-renderer h2, .database-html-renderer h3 { font-family: sans-serif !important; color: #1e3a8a !important; font-size: 22px !important; margin-top: 24px !important; margin-bottom: 10px !important; font-weight: bold !important; }
+
+.database-html-renderer table { width: 100% !important; border-collapse: collapse !important; margin: 16px 0 !important; }
+.database-html-renderer th { font-weight: bold !important; color: #1e3a8a !important; background-color: #f8fafc !important; text-align: left !important; padding: 10px 12px !important; border-bottom: 2px solid #e2e8f0 !important; }
+.database-html-renderer td { padding: 10px 12px !important; border-bottom: 1px solid #f1f5f9 !important; }
+
+/* ==========================================================================
+   📱 APP RESPONSIVENESS OVERRIDES
    ========================================================================== */
 @media (max-width: 1024px) {
   :root { font-size: 16px; }
@@ -652,64 +283,7 @@ nav a.active {
   .card-actions { grid-template-columns: 1fr; gap: 8px; }
 }
 
-/* ==========================================================================
-   📥 CONSOLIDATED EVALUATION MODAL DESIGN SYSTEM
-   ========================================================================== */
-
-/* 1. Tightens the space directly below your description text block */
-.modal-overlay .evaluation-modal-wide .modal-manifest-description {
-  margin-bottom: 8px;
-  padding-bottom: 0;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-/* 2. Compresses the Details accordion margins and internal bottom padding box */
-.evaluation-modal-wide .sub-accordion-container {
-  margin-bottom: 15px;
-}
-
-.evaluation-modal-wide .accordion {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.evaluation-modal-wide .accordion-content {
-  padding-bottom: 0;
-}
-
-/* 3. Horizontal 5-Point Likert Scale flexbox option button grid layout */
-.likert-flex-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 10px;
-  width: 100%;
-  margin-top: 15px;
-}
-
-.likert-flex-row .likert-option-btn {
-  flex: 1;
-  padding: 12px 10px;
-  text-align: center;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 13.5px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.likert-flex-row .likert-option-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
-}
-
-.likert-icon-span {
-  font-size: 16px;
-}
-
-

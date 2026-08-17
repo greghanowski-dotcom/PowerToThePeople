@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import Accordion from '../components/Accordion';
-import EvaluateModal from '../components/modals/EvaluateModal'; 
-import CongressmenModal from '../components/modals/CongressmenModal'; 
+import EvaluateModal from '../components/modals/EvaluateModal';
+import CongressmenModal from '../components/modals/CongressmenModal';
 //import '../styles/Surveys.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
-  const [groupedDocs, setGroupedDocs] = useState({}); 
+  const [groupedDocs, setGroupedDocs] = useState({});
   const [modalData, setModalData] = useState(null);
   const [votes, setVotes] = useState({});
   const [showCongress, setShowCongress] = useState(false);
 
+  // src/pages/Surveys.jsx
   useEffect(() => {
-    // Pipeline A: Ingest catalog document lists parameters
-    fetch('/html-docs/manifest.json')
-      .then(res => res.json())
+    // ==========================================================================
+    // 🚀 PIPELINE A: LOAD INITIATIVES LIVE FROM YOUR MYSQL DATABASE ENDPOINT
+    // ==========================================================================
+    fetch(`${API_URL}/initiatives`)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to connect to the live initiatives catalog API.");
+        return res.json();
+      })
       .then(data => {
+        // Group the incoming database table rows by their category fields dynamically
         const grouped = data.reduce((acc, doc) => {
           const category = doc.category || "Uncategorized";
           if (!acc[category]) acc[category] = [];
@@ -25,9 +32,11 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
         }, {});
         setGroupedDocs(grouped);
       })
-      .catch(err => console.error("Error loading manifest:", err));
+      .catch(err => console.error("Database connection failure:", err));
 
-    // Pipeline B: Gather user voting history records arrays
+    // ==========================================================================
+    // 📦 PIPELINE B: GATHER LOCAL USER VOTING HISTORY RECORDS ARRAYS
+    // ==========================================================================
     let localHistoryMap = {};
     const storedVotingRecord = sessionStorage.getItem('currentUserVotingRecord');
 
@@ -35,11 +44,12 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       try {
         const votingHistory = JSON.parse(storedVotingRecord);
         if (Array.isArray(votingHistory)) {
+          // Dynamic parsing maps 5-point Likert scale history strings safely
           localHistoryMap = votingHistory.reduce((acc, currentVote) => {
             const issueId = currentVote.issue_id;
             const voteType = currentVote.vote;
             const internalKey = voteType.charAt(0).toLowerCase() + voteType.slice(1).replace(/\s+/g, '');
-            
+
             acc[issueId] = {
               stronglyAgree: internalKey === 'stronglyAgree' ? 1 : 0,
               somewhatAgree: internalKey === 'somewhatAgree' ? 1 : 0,
@@ -59,7 +69,9 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
 
     setVotes(localHistoryMap);
 
-    // Pipeline C: Pull live aggregate server data metrics on port 5000
+    // ==========================================================================
+    // 📊 PIPELINE C: PULL LIVE AGGREGATE PUBLIC SERVER METRICS FOR CONSENSUS
+    // ==========================================================================
     fetch(`${API_URL}/global_votes`)
       .then(res => res.json())
       .then(globalData => {
@@ -82,8 +94,9 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
           return updatedVotes;
         });
       })
-      .catch(err => console.error("Error connecting to public votes:", err));
+      .catch(err => console.error("Error connecting to public votes tracker:", err));
   }, [isLoggedIn]);
+
 
   const handleVote = async (id, chosenPositionString) => {
     if (votes[id]?.hasVoted) return;
@@ -139,70 +152,70 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
 
   const hasSavedAddress = !!sessionStorage.getItem('currentUserAddress') || !!sessionStorage.getItem('currentUserEmail');
 
-/* 🚀 FIXED ACCORDION MOUNT IN SURVEYS.JSX */
-return (
-  <div className="surveys-page-wrapper">
-    
-    {/* 🟢 FIXED: Removed keepOpen={keepAccordionsOpen} loop variables.
+  /* 🚀 FIXED ACCORDION MOUNT IN SURVEYS.JSX */
+  return (
+    <div className="surveys-page-wrapper">
+
+      {/* 🟢 FIXED: Removed keepOpen={keepAccordionsOpen} loop variables.
         Passing keepOpen={true} allows multiple category sheets to expand and stay open together fluidly! */}
-    <Accordion 
-      items={Object.keys(groupedDocs).map(category => ({ title: category, content: groupedDocs[category] }))} 
-      renderContent={(item) => (
-        item.content.map(doc => (
-          <div key={doc.id} className="solution-row">
-            <span className="solution-title-text">{doc.title}</span>
-            <button 
-              onClick={() => {
-                setModalData({ ...doc, votes: votes[doc.id] || { stronglyAgree: 0, somewhatAgree: 0, neutral: 0, somewhatDisagree: 0, stronglyDisagree: 0, hasVoted: false, userChoice: null } });
-              }} 
-              className="solution-evaluate-btn"
-              style={{ 
-                cursor: 'pointer',
-                backgroundColor: votes[doc.id]?.hasVoted ? '#10b981' : '#007bff', 
-                color: 'white' 
-              }}
-            >
-              {votes[doc.id]?.hasVoted ? '✓ Registered' : 'Evaluate'}
-            </button>
-          </div>
-        ))
-      )} 
-      keepOpen={true} 
-    />
+      <Accordion
+        items={Object.keys(groupedDocs).map(category => ({ title: category, content: groupedDocs[category] }))}
+        renderContent={(item) => (
+          item.content.map(doc => (
+            <div key={doc.id} className="solution-row">
+              <span className="solution-title-text">{doc.title}</span>
+              <button
+                onClick={() => {
+                  setModalData({ ...doc, votes: votes[doc.id] || { stronglyAgree: 0, somewhatAgree: 0, neutral: 0, somewhatDisagree: 0, stronglyDisagree: 0, hasVoted: false, userChoice: null } });
+                }}
+                className="solution-evaluate-btn"
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: votes[doc.id]?.hasVoted ? '#10b981' : '#007bff',
+                  color: 'white'
+                }}
+              >
+                {votes[doc.id]?.hasVoted ? '✓ Registered' : 'Evaluate'}
+              </button>
+            </div>
+          ))
+        )}
+        keepOpen={true}
+      />
 
-    {/* 📬 CONGRESSIONAL ACTION DELEGATION BANNER SECTION */}
-    <div className="congress-action-banner">
-      <h4 className="congress-banner-title">📬 Engage with your Congressional Delegation</h4>
-      <p className="congress-banner-description">
-        Generate dynamic advocacy letter updates sharing your private ballot alignments and platform consensus statistics to send directly to your lawmakers.
-      </p>
-      <button
-        type="button"
-        disabled={!hasSavedAddress || !isLoggedIn}
-        onClick={() => setShowCongress(true)}
-        className="congress-portal-trigger-btn"
-        style={{ 
-          backgroundColor: (hasSavedAddress && isLoggedIn) ? '#6366f1' : '#cbd5e1', 
-          cursor: (hasSavedAddress && isLoggedIn) ? 'pointer' : 'not-allowed' 
-        }}
-      >
-        🏛️ See your Legislators
-      </button>
+      {/* 📬 CONGRESSIONAL ACTION DELEGATION BANNER SECTION */}
+      <div className="congress-action-banner">
+        <h4 className="congress-banner-title">📬 Engage with your Congressional Delegation</h4>
+        <p className="congress-banner-description">
+          Generate dynamic advocacy letter updates sharing your private ballot alignments and platform consensus statistics to send directly to your lawmakers.
+        </p>
+        <button
+          type="button"
+          disabled={!hasSavedAddress || !isLoggedIn}
+          onClick={() => setShowCongress(true)}
+          className="congress-portal-trigger-btn"
+          style={{
+            backgroundColor: (hasSavedAddress && isLoggedIn) ? '#6366f1' : '#cbd5e1',
+            cursor: (hasSavedAddress && isLoggedIn) ? 'pointer' : 'not-allowed'
+          }}
+        >
+          🏛️ See your Legislators
+        </button>
+      </div>
+
+      {/* Slide-out evaluation workflow panels */}
+      <EvaluateModal
+        isOpen={modalData !== null}
+        modalData={modalData}
+        votes={votes}
+        handleVote={handleVote}
+        isLoggedIn={isLoggedIn}
+        onClose={() => setModalData(null)}
+      />
+
+      <CongressmenModal isOpen={showCongress} onClose={() => setShowCongress(false)} />
     </div>
-
-    {/* Slide-out evaluation workflow panels */}
-    <EvaluateModal 
-      isOpen={modalData !== null}
-      modalData={modalData}
-      votes={votes}
-      handleVote={handleVote}
-      isLoggedIn={isLoggedIn}
-      onClose={() => setModalData(null)}
-    />
-
-    <CongressmenModal isOpen={showCongress} onClose={() => setShowCongress(false)} />
-  </div>
-);
+  );
 
 
 }

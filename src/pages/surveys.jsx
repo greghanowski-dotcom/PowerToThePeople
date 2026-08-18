@@ -184,25 +184,21 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       />
 
       {/* 📬 CONGRESSIONAL ACTION DELEGATION BANNER SECTION */}
-      <div className="congress-action-banner">
-        <h4 className="congress-banner-title">📬 Engage with your Congressional Delegation</h4>
-        <p className="congress-banner-description">
+      <div className="eval-advocacy-section-block">
+
+        {/* 1. Header Stack (Stays grouped vertically) */}
+        <h4 className="eval-advocacy-title">📬 Engage with your Congressional Delegation</h4>
+        <p className="eval-advocacy-description">
           Generate dynamic advocacy letter updates sharing your private ballot alignments and platform consensus statistics to send directly to your lawmakers.
         </p>
-        <button
-          type="button"
-          disabled={!hasSavedAddress || !isLoggedIn}
-          onClick={() => setShowCongress(true)}
-          className="congress-portal-trigger-btn"
-          style={{
-            backgroundColor: (hasSavedAddress && isLoggedIn) ? '#6366f1' : '#cbd5e1',
-            cursor: (hasSavedAddress && isLoggedIn) ? 'pointer' : 'not-allowed'
-          }}
-        >
-          🏛️ See your Legislators
-        </button>
-      </div>
 
+        {/* 2. Independent Parent Row Box (Forces button to center axis safely below text) */}
+        <div className="eval-toggle-row-center">
+          <button type="button" className="eval-legislators-btn">
+            🏛️ See your Legislators
+          </button>
+        </div>
+      </div>
       {/* Slide-out evaluation workflow panels */}
       <EvaluateModal
         isOpen={modalData !== null}
@@ -216,6 +212,4 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
       <CongressmenModal isOpen={showCongress} onClose={() => setShowCongress(false)} />
     </div>
   );
-
-
 }

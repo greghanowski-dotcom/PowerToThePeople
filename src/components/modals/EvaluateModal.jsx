@@ -51,8 +51,7 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
             <strong>📝 Issue Summary:</strong>
             <p>{modalData.summary}</p>
             
-            {/* 🚀 FIXED TOP TOGGLE: Only renders "more ▼". When clicked, 
-                it hides completely from the top card, clearing out all layout gaps! */}
+            {/* DYNAMIC TOP TOGGLE: Only renders "more ▼". When clicked, it hides completely */}
             {!isExpanded && (
               <div className="eval-toggle-row-left">
                 <button 
@@ -70,7 +69,7 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
           {isExpanded && (
             <div className="eval-expanded-content-view">
               
-              {/* THE HTML BOX LAYER: Reverted back to your clean original HTML injection layout format */}
+              {/* THE HTML BOX LAYER: Safely renders your database raw HTML columns */}
               <div 
                 className="database-html-renderer" 
                 dangerouslySetInnerHTML={{ __html: modalData.full_content_html || "No document text stored in database." }} 
@@ -85,9 +84,7 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
            ========================================================================== */}
         <div className="eval-frozen-voting-footer">
           
-          {/* 🚀 FIXED BOTTOM LESS LINK: Placed in a left-aligned row block inside 
-              the frozen container shell so it aligns perfectly with your text column. 
-              Since the footer is frozen, this link stays locked in view at all times! */}
+          {/* FIXED BOTTOM LESS LINK: Placed in a left-aligned row block inside the frozen footer */}
           {isExpanded && (
             <div className="eval-toggle-row-left" style={{ marginBottom: '15px' }}>
               <button
@@ -106,19 +103,45 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
 
           {!votes[modalData.id]?.hasVoted ? (
             <div>
-              <span className="eval-vote-prompt-label">Select your position on this initiative statement:</span>
+              <span className="eval-vote-prompt-label">Do you agree with implementing this low-cost premium and private safety valve healthcare blueprint?</span>
               
               {/* Horizontal Choice Flex Box Row Grid */}
               <div className="eval-likert-flex-row">
                 {[
-                  { text: 'Strongly Agree', color: '#16a34a', bg: '#f0fdf4' },
-                  { text: 'Somewhat Agree', color: '#15803d', bg: '#f0fdf4' },
-                  { text: 'Neutral', color: '#475569', bg: '#f8fafc' },
-                  { text: 'Somewhat Disagree', color: '#b91c1c', bg: '#fef2f2' },
-                  { text: 'Strongly Disagree', color: '#dc2626', bg: '#fef2f2' }
+                  { 
+                    text: 'Strongly Agree', 
+                    color: '#16a34a', 
+                    bg: '#f0fdf4',
+                    tooltip: 'This plan fixes the core issues and protects my wallet.' 
+                  },
+                  { 
+                    text: 'Somewhat Agree', 
+                    color: '#15803d', 
+                    bg: '#f0fdf4',
+                    tooltip: 'I support the cost cuts but have a few questions about the transition.' 
+                  },
+                  { 
+                    text: 'Neutral', 
+                    color: '#475569', 
+                    bg: '#f8fafc',
+                    tooltip: 'I need more information before making a choice.' 
+                  },
+                  { 
+                    text: 'Somewhat Disagree', 
+                    color: '#b91c1c', 
+                    bg: '#fef2f2',
+                    tooltip: "I worry about changing the current system or the government's role." 
+                  },
+                  { 
+                    text: 'Strongly Disagree', 
+                    color: '#dc2626', 
+                    bg: '#fef2f2',
+                    tooltip: 'I do not support this hybrid utility model.' 
+                  }
                 ].map((opt) => (
                   <button
                     key={opt.text}
+                    data-tooltip={opt.tooltip} /* 🚀 FIXED TOOLTIP POINTER: Stores the text safely for your stylesheet to map natively! */
                     onClick={() => {
                       if (!isLoggedIn) {
                         alert("🔒 Authentication Required: You must register or sign in to vote on public initiatives.");

@@ -11,6 +11,8 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
   const [modalData, setModalData] = useState(null);
   const [votes, setVotes] = useState({});
   const [showCongress, setShowCongress] = useState(false);
+  const isCongressOpen = showCongress;
+  const setIsCongressOpen = setShowCongress;
 
   // src/pages/Surveys.jsx
   useEffect(() => {
@@ -185,20 +187,23 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
 
       {/* 📬 CONGRESSIONAL ACTION DELEGATION BANNER SECTION */}
       <div className="eval-advocacy-section-block">
-
-        {/* 1. Header Stack (Stays grouped vertically) */}
         <h4 className="eval-advocacy-title">📬 Engage with your Congressional Delegation</h4>
         <p className="eval-advocacy-description">
           Generate dynamic advocacy letter updates sharing your private ballot alignments and platform consensus statistics to send directly to your lawmakers.
         </p>
 
-        {/* 2. Independent Parent Row Box (Forces button to center axis safely below text) */}
+        {/* Horizontal Axis Row holding your premium center button */}
         <div className="eval-toggle-row-center">
-          <button type="button" className="eval-legislators-btn">
-            🏛️ See your Legislators
+          <button
+            type="button"
+            className="eval-legislators-btn"
+            onClick={() => setIsCongressOpen(true)} /* Opens your state handler natively on click */
+          >
+            See your legislators
           </button>
         </div>
       </div>
+
       {/* Slide-out evaluation workflow panels */}
       <EvaluateModal
         isOpen={modalData !== null}
@@ -208,8 +213,12 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
         isLoggedIn={isLoggedIn}
         onClose={() => setModalData(null)}
       />
-
-      <CongressmenModal isOpen={showCongress} onClose={() => setShowCongress(false)} />
+      <CongressmenModal
+        isOpen={isCongressOpen}
+        show={isCongressOpen}
+        showModal={isCongressOpen}
+        onClose={() => setIsCongressOpen(false)}
+      />
     </div>
   );
 }

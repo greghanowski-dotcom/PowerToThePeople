@@ -60,7 +60,7 @@ body {
 
 main, .content-area, .polls-page, .ideas-page, .accordion-panel {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 20px auto;
   padding: 0 20px;
   box-sizing: border-box;
@@ -147,7 +147,20 @@ nav a:hover, nav a.active { color: #ffffff; }
 .accordion-header.active::after { content: '\2212'; color: var(--primary); }
 .accordion-content { width: 100%; background: var(--card-bg); padding: 15px 20px 20px 20px; border-top: 1px solid var(--border); }
 
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); z-index: 100000; display: flex; justify-content: center; align-items: center; }
+.modal-overlay { 
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+  background: rgba(0, 0, 0, 0.6); z-index: 100000; 
+  display: flex; justify-content: center; align-items: center; 
+}
+
+/* Forces the legislators modal layout card to float safely on top of all other 
+   layers, instantly breaking through the invisible mouse click block */
+.modal-overlay,
+.modal-overlay * {
+  z-index: 100000 !important; /* Forces all popup click paths to remain fully open */
+}
+
+
 .modal-content { background: var(--card-bg); padding: 25px; border-radius: 10px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); }
 .modal-content h4 { margin-bottom: 15px; color: var(--primary); }
 /* ==========================================================================
@@ -174,7 +187,7 @@ nav a:hover, nav a.active { color: #ffffff; }
   background-color: #ffffff !important;
   border-radius: 10px !important;
   width: 94% !important;
-  max-width: 1200px !important;
+  max-width: 1080px !important;
   height: 85vh !important;
   display: flex !important;
   flex-direction: column !important;
@@ -184,8 +197,47 @@ nav a:hover, nav a.active { color: #ffffff; }
   box-sizing: border-box !important;
   margin-bottom: 40px !important;
 }
+/* Changes the height to auto so the outer frame contracts cleanly when collapsed,
+   completely destroying the empty space gap below your voting buttons! */
+.modal-overlay div.modal-content.evaluation-modal-wide,
+.modal-overlay .modal-content.evaluation-modal-wide,
+.evaluation-modal-wide {
+  position: relative !important;
+  background-color: #ffffff !important;
+  border-radius: 10px !important;
+  width: 94% !important;
+  max-width: 1200px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25) !important;
+  box-sizing: border-box !important;
+  /* Dynamically changes based on your layout text content footprint bounds */
+  height: max-content !important;
+  max-height: 85vh !important; 
+}
 
-.eval-modal-header { padding: 24px 24px 12px 24px; border-bottom: 1px solid #f1f5f9; position: relative; }
+/* The exact second the rich-text document spans into the page view layers, 
+   this forces the outer modal box container to safely extend to full view height! */
+.modal-overlay div.modal-content.evaluation-modal-wide:has(.eval-expanded-content-view),
+.modal-overlay div.modal-content.evaluation-modal-wide:has(.database-html-renderer),
+.evaluation-modal-wide:has(.eval-expanded-content-view) {
+  height: 85vh !important;
+}
+
+/* 🚀 EXTEND HEIGHT SAFELY ONLY WHEN EXPANDED VIEWS ARE CO-PRESENTED */
+.evaluation-modal-wide:not(:has(.eval-toggle-action-btn)) {
+  height: 85vh !important;
+}
+
+.eval-modal-header {
+  padding: 24px 24px 12px 24px !important;
+  border-bottom: 1px solid #f1f5f9;
+  position: relative;
+  flex-shrink: 0 !important; /* Prevents the top row from shrinking */
+}
+
 .eval-modal-header h3 { margin: 0 0 6px 0; color: #1e3a8a; font-size: 20px; font-weight: bold; }
 .eval-modal-header p { margin: 2px 0 0 0 !important; font-size: 18px !important; color: var(--text-muted) !important; line-height: 1.4 !important; }
 
@@ -204,8 +256,34 @@ nav a:hover, nav a.active { color: #ffffff; }
 }
 .eval-modal-header .close-btn:hover { color: #64748b; transform: scale(1.1); }
 
-.modal-scrollable-body { padding: 20px 24px 60px 24px !important; flex-grow: 1; overflow-y: auto; max-height: calc(85vh - 200px); background-color: #ffffff; }
-.eval-summary-card-box { padding: 14px 16px; background-color: #f8fafc; border-left: 4px solid #64748b; border-radius: 6px; margin-top: 5px !important; margin-bottom: 25px !important; }
+/* Scrollable middle container text panel viewport */
+.modal-scrollable-body {
+  flex-grow: 1 !important;
+  overflow-y: auto !important;           
+  overflow-x: hidden !important;
+  background-color: #ffffff;
+  box-sizing: border-box !important;
+  padding: 20px 24px !important;
+  height: auto !important;
+}
+
+/* Collapsed view space adjustments */
+.modal-scrollable-body .eval-summary-card-box {
+  margin-bottom: 0 !important;
+  padding-bottom: 4px !important;
+}
+
+/* Trims out the excess bottom padding inside the summary box card so the base 
+   floor clamps tightly right beneath your "more ▼" row link trigger! */
+.eval-summary-card-box {
+  padding: 14px 16px 4px 16px !important; /* Drops bottom padding box tightly */
+  background-color: #f8fafc;
+  border-left: 4px solid #64748b;
+  border-radius: 6px;
+  margin-top: 5px !important;
+  margin-bottom: 12px !important; /* 🚀 Decreases the spacer gap separating it from lower sections */
+}
+
 .eval-summary-card-box strong { display: block; color: #334155; font-size: 14.5px; font-weight: bold; margin-bottom: 4px; font-family: sans-serif; }
 /* ==========================================================================
    🧼 RICH-TEXT TYPOGRAPHY, ADVOCACY SCORINGS & HOVER BUBBLES (PART 4 OF 4)
@@ -217,7 +295,16 @@ nav a:hover, nav a.active { color: #ffffff; }
 }
 .eval-likert-flex-row .likert-option-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06); }
 
-.eval-frozen-voting-footer { padding: 20px 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+/* Tightens the spacing box directly below your 5-point choice buttons */
+.eval-frozen-voting-footer {
+  padding: 16px 24px 20px 24px !important; 
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important; 
+}
+
 .eval-vote-prompt-label { font-size: 16px; font-weight: bold; color: var(--text); display: block; margin-bottom: 20px; text-align: center; }
 
 .eval-vote-success-block { text-align: center; font-family: sans-serif; }
@@ -226,9 +313,71 @@ nav a:hover, nav a.active { color: #ffffff; }
 .eval-global-stats-banner strong { display: block; margin-bottom: 4px; color: #1e3a8a; text-align: center; }
 .eval-stats-grid-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
 
-.eval-toggle-row-left { display: flex !important; justify-content: flex-start !important; width: 100%; margin-top: 8px; }
+/* 🚀 TIGHTEN TOP TOGGLE LINE ADJUSTMENTS */
+.eval-toggle-row-left {
+  display: flex !important;
+  justify-content: flex-start !important;
+  width: 100%;
+  margin-top: 2px !important;
+  margin-bottom: 0 !important; /* Eliminates the lower edge padding track */
+  padding-bottom: 0 !important;
+}
+
 .eval-toggle-action-btn { background: none !important; border: none !important; color: #0070f3 !important; font-size: 13.5px !important; font-weight: bold !important; text-decoration: underline !important; padding: 0 !important; cursor: pointer !important; font-family: sans-serif !important; }
-.eval-expanded-content-view { animation: fadeIn 0.2s ease-out; }
+
+/* The exact second the text spans into view, this overrides the clamp and 
+   restores full widescreen scrolling capacity natively with 100% guarantee */
+.modal-scrollable-body {
+  flex-grow: 1 !important;
+  overflow-y: auto !important;           
+  overflow-x: hidden !important;
+  max-height: calc(85vh - 220px) !important; 
+  padding: 20px 24px;
+  background-color: #ffffff;
+  box-sizing: border-box !important;
+}
+
+/* This targets your expanded text block immediately when it enters the viewport. 
+   It uses a high-priority layout pull to close up the initial whitespace gap */
+.eval-expanded-content-view,
+.modal-scrollable-body .eval-expanded-content-view {
+  display: block !important;
+  width: 100% !important;
+  /* Physically forces the long database text to sit tightly beneath your "more ▼" link trigger, completely destroying the floating layout gap */
+  margin-top: -10px !important; 
+  padding-top: 0px !important;
+  box-sizing: border-box !important;
+}
+/* Forces the scroll viewport to stay completely tight and compact when collapsed, 
+   flattening any hidden blank spacers underneath your "more ▼" link text! */
+.modal-scrollable-body:not(:has(.eval-expanded-content-view)),
+.modal-scrollable-body:not(:has(.database-html-renderer)) {
+  height: auto !important;
+  max-height: max-content !important;
+  padding-bottom: 12px !important; /* Tightens the card floor baseline padding */
+}
+
+/* Strips out default margins from any stray child containers inside the text viewport */
+/* Extends structural layout width fluidity across your expanded text viewport */
+.eval-expanded-content-view {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 15px !important; 
+  padding-top: 0px !important;
+  box-sizing: border-box !important;
+}
+
+/* Zeros out default browser spacing values from the first header inside your text */
+.eval-expanded-content-view > *:first-child,
+.database-html-renderer > *:first-child,
+.database-html-renderer h2:first-child {
+  margin-top: 0px !important;
+  padding-top: 0px !important;
+}
+
+.database-html-renderer > *:first-child {
+  margin-top: 0px !important;
+}
 
 div.eval-summary-card-box p, .eval-summary-card-box p, .database-html-renderer p, .database-html-renderer li, .database-html-renderer span, .database-html-renderer div, .database-html-renderer table, .database-html-renderer th, .database-html-renderer td {
   font-size: 16px !important; color: #334155 !important; line-height: 1.6 !important; font-family: sans-serif !important;
@@ -322,6 +471,7 @@ div.eval-summary-card-box p, .eval-summary-card-box p, .database-html-renderer p
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
   transition: all 0.2s ease-in-out !important;
 }
+
 .eval-legislators-btn:hover:not(:disabled) { transform: translateY(-1.5px) !important; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25) !important; filter: brightness(1.08) !important; }
 .eval-legislators-btn:active:not(:disabled) { transform: translateY(0) !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; }
 

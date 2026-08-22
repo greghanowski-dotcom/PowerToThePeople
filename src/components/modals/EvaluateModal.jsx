@@ -26,6 +26,7 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
 
   // Safety gate: block rendering entirely if state is closed or missing
   if (!isOpen || !modalData) return null;
+  console.log("Rendering EvaluateModal with modalData:", modalData);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -39,7 +40,6 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
         <div className="eval-modal-header">
           <button className="close-btn" onClick={onClose}>x</button>
           <h3>{modalData.title}</h3>
-          <p>{modalData.desc}</p>
         </div>
         {/* ==========================================================================
            📜 MIDDLE CONTENT SECTION (INDEPENDENT TEXT VIEWPORT SCROLL AREA)
@@ -103,7 +103,7 @@ export default function EvaluateModal({ isOpen, modalData, votes, handleVote, is
 
           {!votes[modalData.id]?.hasVoted ? (
             <div>
-              <span className="eval-vote-prompt-label">Do you agree with implementing this low-cost premium and private safety valve healthcare blueprint?</span>
+              <span className="eval-vote-prompt-label">{modalData.poll_question}</span>
               
               {/* Horizontal Choice Flex Box Row Grid */}
               <div className="eval-likert-flex-row">

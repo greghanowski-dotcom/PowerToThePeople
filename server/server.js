@@ -549,7 +549,7 @@ app.get('/api/initiatives', async (req, res) => {
   try {
     // Gathers active initiatives from your MySQL tables, sorted by category headers
     const [rows] = await db.query(
-      'SELECT id, title, category, description, summary, full_content_html FROM policy_initiatives WHERE is_active = TRUE ORDER BY category, title'
+      'SELECT id, title, category, poll_question, summary, full_content_html FROM policy_initiatives WHERE is_active = TRUE ORDER BY category, title'
     );
     
     // Returns the clean list array directly back to your React app frontend components

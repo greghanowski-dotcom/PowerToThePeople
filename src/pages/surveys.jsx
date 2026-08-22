@@ -25,11 +25,13 @@ export default function Surveys({ keepAccordionsOpen, isLoggedIn }) {
         return res.json();
       })
       .then(data => {
+        console.log("Fetched initiatives data:", data);
         // Group the incoming database table rows by their category fields dynamically
         const grouped = data.reduce((acc, doc) => {
           const category = doc.category || "Uncategorized";
           if (!acc[category]) acc[category] = [];
           acc[category].push(doc);
+          console.log(`Added document ${doc} to category "${category}".`);
           return acc;
         }, {});
         setGroupedDocs(grouped);

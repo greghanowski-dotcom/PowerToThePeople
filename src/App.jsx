@@ -11,6 +11,7 @@ import DynamicContentPage from './pages/DynamicContentPage';
 import ProfileModal from './components/modals/ProfileModal';
 import AccountModal from './components/modals/AccountModal';
 import PreferencesModal from './components/modals/PreferencesModal';
+import StandardLoginGateway from './components/modals/StandardLoginGateway'; 
 
 // Adaptive endpoint URL: uses local environment variables or falls back to production Nginx routes
 const GLOBAL_API_URL = import.meta.env?.VITE_API_URL || '/api';
@@ -144,20 +145,25 @@ export default function App() {
                 <div className="global-modal-manager">
 
                     {/* Authenticated 2FA gateway form login modal for guests [INDEX] */}
+                    {/* 🎛️ REPLACED INSIDE APP.JSX WITHIN THE ACTIVE_MODAL GRID */}
+                    {/* 🎛️ CLEAN OVERLAY CONTAINER INSIDE APP.JSX */}
                     {activeModal === 'auth-gate' && (
-                        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-                            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', width: '100%', position: 'relative' }}>
+                        <div className="modal-overlay" onClick={() => setActiveModal(null)} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999999 }}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: '#fff', padding: '10px', borderRadius: '10px', position: 'relative' }}>
                                 <button
                                     className="close-btn"
                                     onClick={() => setActiveModal(null)}
-                                    style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8' }}
+                                    style={{ position: 'absolute', top: '12px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94a3b8', zIndex: 100 }}
                                 >
                                     x
                                 </button>
-                                <TwoFactorLogin onAuthSuccess={(uid) => { handleAuthSuccess(uid); setActiveModal(null); }} />
+                                {/* 🚀 Clean, un-nested implementation mounting standard routes! */}
+                                <StandardLoginGateway onAuthSuccess={(uid) => { handleAuthSuccess(uid); setActiveModal(null); }} />
                             </div>
                         </div>
                     )}
+
+
 
                     {activeModal === 'profile' && (
                         <ProfileModal isOpen={true} onClose={() => setActiveModal(null)} />

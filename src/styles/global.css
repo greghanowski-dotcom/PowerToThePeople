@@ -488,3 +488,20 @@ div.eval-summary-card-box p, .eval-summary-card-box p, .database-html-renderer p
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes bubbleFadeIn { from { opacity: 0; transform: translate(-50%, 4px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* 🚀 THE DEFINITIVE FIREWALL OVERRIDE: Forces left-justification even on browser autofill elements! */
+.modal-form-body input,
+.auth-wrapper-container input,
+input[type="password"] {
+    text-align: left !important;
+}
+
+/* 🧼 REMOVE PHANTOM BROWSER OVERFLOW SPACERS */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+    text-align: left !important;
+    -webkit-text-fill-color: #334155 !important;
+    box-shadow: 0 0 0px 1000px #ffffff inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}

@@ -55,7 +55,7 @@
 }
 
 /* Ensure the profile container acts as the anchor for the dropdown */
-..profile-container {
+.profile-container {
   position: relative !important;
   display: inline-flex !important;
   align-items: center;
@@ -138,4 +138,227 @@
 
 .diagnostic-led-inactive {
   background-color: #6b7280; /* Standard latent resting grey state */
+}
+
+/* ==========================================================================
+   🔐 UNIFIED AUTHENTICATION GATEWAY STYLES (CLUTTER-FREE)
+   ========================================================================== */
+
+.voter-gateway-card {
+    max-width: 380px;
+    width: 100%;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 8px;
+    font-family: sans-serif;
+    box-sizing: border-box;
+    margin: 0 auto;
+    display: block;
+}
+
+.voter-gateway-card h3 {
+    text-align: center;
+    margin: 0 0 20px 0;
+    text-transform: capitalize;
+    color: #1e3a8a;
+    font-size: 20px;
+}
+
+.auth-alert-banner {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    box-sizing: border-box;
+}
+
+.auth-alert-banner.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.auth-alert-banner.success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.auth-field-wrapper {
+    margin-bottom: 15px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-field-wrapper label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 13px;
+    color: #334155;
+}
+
+.auth-field-wrapper label.success-glow {
+    color: #10b981;
+}
+
+.password-input-track {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 🐒 THE MONKEY ICON BASE CONFIGURATION */
+.password-input-track .monkey-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 16px;
+    z-index: 10;
+    user-select: none;
+    transition: opacity 0.2s;
+}
+
+.password-input-track .monkey-icon.faded {
+    opacity: 0.4;
+}
+
+/* 👁️ THE PASSWORD EYE TOGGLE BUTTON */
+.password-input-track .eye-toggle {
+    position: absolute;
+    right: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+    z-index: 11;
+    transition: opacity 0.2s;
+}
+
+.password-input-track .eye-toggle.disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+/* 🚀 THE FIXED LEFT-ALIGN INPUT FIELDS */
+.auth-field-wrapper input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: left !important; /* 🔑 BREAKS THE EMBEDDED PASSWORD DOTS CENTERING BLOCK! */
+}
+
+.password-input-track input {
+    padding: 10px 10px 10px 10px;
+    transition: all 0.2s;
+}
+
+.password-input-track input.success-glow {
+    border: 2px solid #10b981;
+}
+
+.password-input-track input:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.auth-field-wrapper input.verification-pin-box {
+    border: 2px solid #0070f3;
+    text-align: center !important; /* Retain centering ONLY for the numeric code block fields */
+    font-size: 18px;
+    letter-spacing: 4px;
+    font-weight: bold;
+    background-color: #f8fafc;
+}
+
+.auth-field-wrapper input.verification-pin-box.success-glow {
+    border: 2px solid #10b981;
+}
+
+.btn-auth-submit {
+    width: 100%;
+    padding: 11px;
+    background-color: #0070f3;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0, 112, 243, 0.2);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.btn-auth-submit:disabled {
+    background-color: #cbd5e1;
+    color: #64748b;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-auth-submit.success-glow {
+    background-color: #10b981;
+}
+
+.auth-nav-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 15px;
+    box-sizing: border-box;
+}
+
+.auth-nav-footer span {
+    color: #0070f3;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.auth-nav-footer span.forgot-link {
+    color: #64748b;
+}
+.voter-gateway-card .password-input-track input[type="password"],
+.password-input-track input,
+input[type="password"] {
+    text-align: left !important;
+}
+
+/* 2. Target the browser's hidden security mask text tracks specifically */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    text-align: left !important;
+}
+
+/* 3. Force alignment compliance even when browser autofill caches are active */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+    text-align: left !important;
+}
+
+/* ==========================================================================
+   🚀 THE UNIFIED GATEWAY PASSWORD LEFT-ALIGN ENFORCER
+   ========================================================================== */
+
+/* This specifically targets input fields within your password container track, 
+   forcing left-justification whether the type is "password" or "text"! */
+.voter-gateway-card .password-input-track input,
+.password-input-track input[type="password"],
+.password-input-track input[type="text"] {
+    text-align: left !important;
+}
+
+/* Forces alignment compliance on mobile browser security tracks */
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    text-align: left !important;
 }

@@ -1,272 +1,110 @@
 import React, { useState } from 'react';
-import ResetPasswordModal from './modals/ResetPasswordModal';
 
-export default function TwoFactorLogin({ onAuthSuccess }) {
-    const [view, setView] = useState('login');
+export default function VoterLoginGateway({ onAuthSuccess }) {
+    const [view, setView] = useState('login'); // 'login', 'register', or 'forgot'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
-    const [otpCode, setOtpCode] = useState('');
-    
-    // Status message trackers
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [showOptionsNotice, setShowOptionsNotice] = useState(false);
-    
-    // Password Visibility State Hook
+    const [message, setMessage] = useState({ text: '', type: '' });
     const [showPasswordText, setShowPasswordText] = useState(false);
-    
-    // Recovery Password Reset Modal Visibility Layer Hook
-    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-    
-    const [userId, setUserId] = useState(null);
 
-    // ZERO HARDCODING: Auto-detects local vs remote hosting without manual code changes
-    const getBaseUrl = () => {
-        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-            return 'http://localhost:5000';
-        }
-        return '';
-    };
-
-    const apiBaseUrl = `${getBaseUrl()}/api/auth`;
-
-    const handleActionSubmit = async (e) => {
-        if (e && e.preventDefault) e.preventDefault();
-        setErrorMessage('');
-        setSuccessMessage('');
-        setShowOptionsNotice(false);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage({ text: '', type: '' });
 
         try {
+            // STANDARD LOGIN PIPE
             if (view === 'login') {
-                // Phase 1: Verify email exists in the system
-                const lookupRes = await fetch(`${getBaseUrl()}/api/get_user/${encodeURIComponent(email.trim().toLowerCase())}`);
-                
-                if (!lookupRes.ok) {
-                    setErrorMessage('Your credentials failed. Please select an action below to proceed.');
-                    setShowOptionsNotice(true);
-                    return;
-                }
-
-                // Phase 2: Verify account password matches table records
-                const loginRes = await fetch(`${apiBaseUrl}/login`, {
+                const res = await fetch('http://localhost:5000/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email.trim(), password }),
+                    body: JSON.stringify({ email: email.trim().toLowerCase(), password })
                 });
-                const loginData = await loginRes.json();
+                const data = await res.json();
+                if (!res.ok) return setMessage({ text: data.error || 'Invalid credentials.', type: 'error' });
                 
-                if (!loginRes.ok || loginData.error) {
-                    setErrorMessage('Your credentials failed. Please select an action below to proceed.');
-                    setShowOptionsNotice(true);
-                    return;
-                }
-                
-                // Phase 2 Login Success: Store all attributes safely inside browser memory cache
-                setUserId(loginData.userId);
-                sessionStorage.setItem('currentUserId', loginData.userId);
-                sessionStorage.setItem('currentUserEmail', loginData.email || '');
-                sessionStorage.setItem('currentUserName', loginData.name || '');
-                sessionStorage.setItem('currentUserAddress', loginData.address || '');
-                sessionStorage.setItem('currentUserGender', loginData.gender || '');
-                sessionStorage.setItem('currentUserAge', loginData.age || '');
-                sessionStorage.setItem('currentUserPartyAffiliation', loginData.party || 'Independent');
-                
-                const rawRecord = typeof loginData.voting_record === 'string'
-                    ? loginData.voting_record
-                    : JSON.stringify(loginData.voting_record || []);
-                sessionStorage.setItem('currentUserVotingRecord', rawRecord);
-
-                // Phase 3: Trigger the 2FA token generation sequence
-                const sendOtpRes = await fetch(`${apiBaseUrl}/send-2fa`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        userId: loginData.userId, 
-                        phone: loginData.phone 
-                    }),
-                });
-
-                if (!sendOtpRes.ok) {
-                    setErrorMessage('Failed to initialize two-factor verification sequence.');
-                    return;
-                }
-
-                setView('2fa'); // Transition over to the 6-digit pin screen
+                // Success: Hydrate browser memory cache strings
+                sessionStorage.setItem('currentUserVotingRecord', JSON.stringify(data.voting_record || []));
+                onAuthSuccess(data.userId);
             } 
-            
+            // STANDARD REGISTRATION PIPE (Locks phone uniquely)
             else if (view === 'register') {
-                // 🚀 USERNAME COMPONENT REMOVED NATIVELY FROM THE API CALL
-                const res = await fetch(`${apiBaseUrl}/register`, {
+                const res = await fetch('http://localhost:5000/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, phone }),
+                    body: JSON.stringify({ email: email.trim(), password, phone: phone.trim() })
                 });
                 const data = await res.json();
-                if (!res.ok || data.error) return setErrorMessage(data.error || 'Registration failed.');
+                if (!res.ok) return setMessage({ text: data.error || 'Registration failed.', type: 'error' });
                 
-                setSuccessMessage('Registration successful! You can now log in.');
+                setMessage({ text: '🎉 Registration successful! You can now log in.', type: 'success' });
                 setView('login');
-            } 
-            
-            else if (view === '2fa') {
-                const res = await fetch(`${apiBaseUrl}/verify-2fa`, {
+            }
+            // STANDARD PASSWORD RESET PIPE
+            else if (view === 'forgot') {
+                const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        userId: userId, 
-                        token: otpCode 
-                    }),
+                    body: JSON.stringify({ email: email.trim() })
                 });
-                const data = await res.json();
+                if (!res.ok) return setMessage({ text: 'Failed to send recovery email.', type: 'error' });
                 
-                if (!res.ok || data.error) return setErrorMessage(data.error || 'Invalid code.');
-                
-                if (onAuthSuccess) {
-                    onAuthSuccess(userId);
-                }
+                setMessage({ text: '📩 If that account exists, a reset link has been dispatched!', type: 'success' });
             }
         } catch (err) {
-            setErrorMessage('Network connection failure. Transaction aborted.');
+            setMessage({ text: 'Connection failure. Please try again.', type: 'error' });
         }
     };
 
-    const handleNavigationSwitch = (targetView) => {
-        setErrorMessage('');
-        setSuccessMessage('');
-        setShowOptionsNotice(false);
-        setView(targetView);
-    };
-  return (
-    <div style={{ maxWidth: '420px', width: '100%', margin: '0 auto', padding: '30px', border: '1px solid #ddd', borderRadius: '8px', fontFamily: 'sans-serif', backgroundColor: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-      <h2 style={{ marginBottom: '20px', textTransform: 'capitalize', color: '#111', marginTop: '0', fontSize: '22px', textAlign: 'center' }}>
-        Voter {view.replace('-', ' ')} Gateway
-      </h2>
+    return (
+        <div style={{ maxWidth: '380px', width: '100%', padding: '30px', background: '#fff', borderRadius: '8px', fontFamily: 'sans-serif' }}>
+            <h3 style={{ textAlign: 'center', margin: '0 0 20px 0', textTransform: 'capitalize', color: '#1e3a8a' }}>Voter {view} Gateway</h3>
 
-      {errorMessage && (
-        <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #fca5a5', lineHeight: '1.4' }}>
-          {errorMessage}
-        </div>
-      )}
+            {message.text && (
+                <div style={{ padding: '10px', marginBottom: '15px', borderRadius: '4px', fontSize: '14px', backgroundColor: message.type === 'error' ? '#fee2e2' : '#d1fae5', color: message.type === 'error' ? '#991b1b' : '#065f46' }}>
+                    {message.text}
+                </div>
+            )}
 
-      {successMessage && (
-        <div style={{ padding: '12px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', border: '1px solid #a7f3d0' }}>
-          {successMessage}
-        </div>
-      )}
+            <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold', fontSize: '14px' }}>Email Address</label>
+                    <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
 
-      {showOptionsNotice && (
-        <div style={{ padding: '15px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', color: '#374151' }}>
-          <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>Available Recovery Actions:</p>
-          <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', listStyleType: 'square' }}>
-            <li>
-              <button 
-                type="button"
-                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} 
-                onClick={(e) => { e.stopPropagation(); handleNavigationSwitch('login'); }}
-              >
-                Try Entering Credentials Again
-              </button>
-            </li>
-            <li>
-              <button 
-                type="button"
-                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} 
-                onClick={(e) => { e.stopPropagation(); setIsResetModalOpen(true); }}
-              >
-                Reset Account Password
-              </button>
-            </li>
-            <li>
-              <button 
-                type="button"
-                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#10b981', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} 
-                onClick={(e) => { e.stopPropagation(); handleNavigationSwitch('register'); }}
-              >
-                Register as a New Voter Profile
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
+                {view !== 'forgot' && (
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold', fontSize: '14px' }}>Password</label>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <span style={{ position: 'absolute', left: '10px', fontSize: '16px', zIndex: 10 }}>🙈</span>
+                            <input 
+                                type={showPasswordText ? 'text' : 'password'} 
+                                required 
+                                style={{ width: '100%', padding: '8px 8px 8px 34px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} 
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                            />
+                        </div>
+                    </div>
+                )}
 
-      {view !== '2fa' ? (
-        <form onSubmit={handleActionSubmit}>
-          {/* 🚀 PURGED: The username state field container is completely erased from this rendering block */}
+                {view === 'register' && (
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold', fontSize: '14px' }}>Phone Number (For Ballot Security Check)</label>
+                        <input type="tel" required placeholder="303-555-0199" style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    </div>
+                )}
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Email Address</label>
-            <input type="email" required style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
+                <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', marginTop: '10px' }}>
+                    Continue
+                </button>
+            </form>
 
-          {(view === 'login' || view === 'register') && (
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showPasswordText ? 'text' : 'password'}
-                  required
-                  style={{ width: '100%', padding: '8px', paddingRight: '40px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <span
-                  onClick={() => setShowPasswordText(!showPasswordText)}
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '16px', userSelect: 'none', color: '#666' }}
-                  title={showPasswordText ? 'Hide Password' : 'Show Password'}
-                >
-                  {showPasswordText ? '👁️' : '🙈'}
-                </span>
-              </div>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                {view !== 'login' && <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('login')}>Sign In</span>}
+                {view !== 'register' && <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('register')}>Register</span>}
+                {view === 'login' && <span style={{ color: '#64748b', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('forgot')}>Forgot Password?</span>}
             </div>
-          )}
-
-          {view === 'register' && (
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>Mobile Phone Number</label>
-              <input type="tel" required placeholder="303-555-0199" style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={view === 'login' && (!email.trim() || !password.trim())}
-            style={{
-              width: '100%',
-              padding: '10px',
-              backgroundColor: (view === 'login' && (!email.trim() || !password.trim())) ? '#cbd5e1' : '#0070f3',
-              color: (view === 'login' && (!email.trim() || !password.trim())) ? '#64748b' : '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              fontWeight: 'bold',
-              cursor: (view === 'login' && (!email.trim() || !password.trim())) ? 'not-allowed' : 'pointer',
-              fontSize: '15px',
-              marginTop: '10px'
-            }}
-          >
-            Continue to {view}
-          </button>
-        </form>
-      ) : (
-        <div>
-          <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', lineHeight: '1.4', textAlign: 'center' }}>A secure 6-digit access code has been dispatched. Please check your mobile lock screen text notifications.</p>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold' }}>Secure Verification Token</label>
-            <input type="text" maxLength="6" placeholder="000000" required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', fontSize: '20px', letterSpacing: '4px', textAlign: 'center' }} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} />
-          </div>
-          <button type="button" onClick={handleActionSubmit} style={{ width: '100%', padding: '10px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Verify Secure Token Code</button>
         </div>
-      )}
-
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
-        {view !== 'login' ? (
-          <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('login')}>Back to Sign In Form</span>
-        ) : (
-          <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }} onClick={() => handleNavigationSwitch('register')}>Create an Account / Register</span>
-        )}
-      </div>
-
-      <ResetPasswordModal isOpen={isResetModalOpen} onClose={() => setIsResetModalOpen(false)} />
-    </div>
-  );
+    );
 }

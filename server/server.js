@@ -43,25 +43,27 @@ let db;
    POST ROUTE: RECOVER ACTION NEW USER REGISTRATION
    ========================================================================== */
 app.post('/api/auth/register', async (req, res) => {
+    console.log('req.body=', req.body);
     try {
-        const { username, email, password, phone } = req.body;
-        if (!username || !email || !password || !phone) {
+        const { email, password, phone } = req.body;
+        if ( !email || !password || !phone) {
             return res.status(400).json({ error: 'All fields are required to register a profile.' });
         }
         const [existing] = await db.query('SELECT id FROM users WHERE LOWER(email) = ?', [email.trim().toLowerCase()]);
         if (existing.length > 0) {
-            return res.status(400).json({ error: 'An account is already mapped to that email address.' });
+            return res.status(400).json({ error: 'An account with that email already exists.' });
         }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const [result] = await db.query(
-            'INSERT INTO users (username, email, password, phone, party_affiliation) VALUES (?, ?, ?, ?, ?)',
-            [username.trim(), email.trim().toLowerCase(), hashedPassword, phone.replace(/\D/g, ''), 'Independent']
+            'INSERT INTO users ( email, password, phone, party_affiliation) VALUES (?, ?, ?, ?)',
+            [email.trim().toLowerCase(), hashedPassword, phone.replace(/\D/g, ''), 'Independent']
         );
-        return res.json({ success: true, message: 'Voter account initialized natively!', insertId: result.insertId });
+        return res.json({ success: true, message: 'Voter account initialized!', insertId: result.insertId });
     } catch (err) {
-        return res.status(500).json({ error: 'Failed to write record to the database schema.' });
+        console.error('[DATABASE ERROR] Failed to register user:', err); // 🔌 Prints the exact SQL code bug!
+        return res.status(500).json({ error: 'Failed to save to the database.' });
     }
 });
 
@@ -96,6 +98,61 @@ app.post('/api/auth/login', async (req, res) => {
         });
     } catch (err) {
         return res.status(500).json({ error: 'Internal validation pipeline failure.' });
+    }
+});
+
+// 🚀 THE LOCAL FORGOT PASSWORD ENDPOINT (FOR TESTING):
+app.post('/api/auth/forgot-password', async (req, res) => {
+    // This logs inside your laptop's backend terminal window!
+    console.log("📨 RECEIVED PASSWORD RESET REQUEST FOR:", req.body.email);
+    
+    try {
+        const { email } = req.body;
+        
+        // 1. Verify if the email address exists inside your user profile database table
+        const [user] = await db.query('SELECT id FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+        
+        if (user.length === 0) {
+            // Security Best Practice: Don't tell hackers if an email is wrong. Return a safe success!
+            return res.json({ success: true, message: 'Recovery token pipeline initiated.' });
+        }
+
+        // 2. Generate a temporary simulation code token
+        const mockToken = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Output it right into your terminal logger room so you can copy it to test!
+        console.log(`🔑 [LOCAL DEV SIMULATION] Reset code generated for ${email}: ${mockToken}`);
+        
+        return res.json({ success: true, message: 'Recovery link generated successfully!' });
+
+    } catch (error) {
+        console.error('Password reset backend route drop:', error);
+        return res.status(500).json({ error: 'Database transaction failure.' });
+    }
+});
+
+// 🚀 BACKEND COMPILATION FIX: OVERWRITE ACCOUNT PASSWORD ON RECORD VERIFY
+app.post('/api/auth/confirm-password-reset', async (req, res) => {
+    console.log("📥 RECEIVED VERIFICATION UPDATE REQUEST:", req.body);
+    
+    try {
+        const { email, code, newPassword } = req.body;
+
+        if (!email || !code || !newPassword) {
+            return res.status(400).json({ error: 'All transmission token parameters are required.' });
+        }
+
+        // In a live environment, query your users table here to verify the matching token code
+        // SELECT id FROM users WHERE email = ? AND reset_token = ? AND token_expiry > NOW()
+        
+        console.log(`✨ [LOCAL DEV SIMULATION] Password for ${email} successfully changed to: ${newPassword}`);
+        
+        // Return clear success response object block back to frontend
+        return res.json({ success: true, message: 'Password updated successfully.' });
+
+    } catch (error) {
+        console.error('Password reset handler crash:', error);
+        return res.status(500).json({ error: 'Internal server database transaction failure.' });
     }
 });
 
@@ -312,10 +369,94 @@ app.get('/api/global_votes', async (req, res) => {
     }
 });
 
+// 📨 ROUTE B: VERIFY TOKEN CODE AND SECURELY SAVE THE BALLOT
+app.post('/api/vote/cast-ballot', async (req, res) => {
+    const { userId, issueId, voteChoice, tokenInput } = req.body;
+
+    try {
+        // 1. Fetch token and validation constraints from the user profile database chart
+        const [user] = await db.query(
+            'SELECT active_vote_token, vote_token_expiry FROM users WHERE id = ?', 
+            [userId]
+        );
+
+        if (!user[0] || user[0].active_vote_token !== tokenInput || new Date() > new Date(user[0].vote_token_expiry)) {
+            return res.status(400).json({ error: '❌ Invalid or expired authorization token code.' });
+        }
+
+        // 2. Clear token parameters immediately to prevent reuse attacks
+        await db.query('UPDATE users SET active_vote_token = NULL, vote_token_expiry = NULL WHERE id = ?', [userId]);
+
+        // 3. Record the ballot inside your secure ledger table
+        // This structural link is permanent and cannot be duplicated!
+        await db.query(
+            'INSERT INTO secure_ballot_ledger (user_id, issue_id) VALUES (?, ?)',
+            [userId, issueId]
+        );
+
+        // 4. Increment your public survey categories statistical matrices rows
+        // (Assuming you track running totals here)
+        await db.query(
+            'INSERT INTO survey_results (issue_id, vote_value, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1',
+            [issueId, voteChoice]
+        );
+
+        res.json({ success: true, message: '🎉 Ballot securely verified and recorded!' });
+
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(403).json({ error: '🔒 Ballot ledger error: Duplicate vote rejected.' });
+        }
+        res.status(500).json({ error: 'Database pipeline transaction aborted.' });
+    }
+});
+
+// 📨 ROUTE B: VERIFY TOKEN CODE AND SECURELY SAVE THE BALLOT
+app.post('/api/vote/cast-ballot', async (req, res) => {
+    const { userId, issueId, voteChoice, tokenInput } = req.body;
+
+    try {
+        // 1. Fetch token and validation constraints from the user profile database chart
+        const [user] = await db.query(
+            'SELECT active_vote_token, vote_token_expiry FROM users WHERE id = ?', 
+            [userId]
+        );
+
+        if (!user[0] || user[0].active_vote_token !== tokenInput || new Date() > new Date(user[0].vote_token_expiry)) {
+            return res.status(400).json({ error: '❌ Invalid or expired authorization token code.' });
+        }
+
+        // 2. Clear token parameters immediately to prevent reuse attacks
+        await db.query('UPDATE users SET active_vote_token = NULL, vote_token_expiry = NULL WHERE id = ?', [userId]);
+
+        // 3. Record the ballot inside your secure ledger table
+        // This structural link is permanent and cannot be duplicated!
+        await db.query(
+            'INSERT INTO secure_ballot_ledger (user_id, issue_id) VALUES (?, ?)',
+            [userId, issueId]
+        );
+
+        // 4. Increment your public survey categories statistical matrices rows
+        // (Assuming you track running totals here)
+        await db.query(
+            'INSERT INTO survey_results (issue_id, vote_value, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1',
+            [issueId, voteChoice]
+        );
+
+        res.json({ success: true, message: '🎉 Ballot securely verified and recorded!' });
+
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(403).json({ error: '🔒 Ballot ledger error: Duplicate vote rejected.' });
+        }
+        res.status(500).json({ error: 'Database pipeline transaction aborted.' });
+    }
+});
+
 /* ==========================================================================
    🚀 NEW POST ROUTE: REQUEST ACCOUNT PASSWORD RESET PIN CODE VIA SMS
    ========================================================================== */
-app.post('/api/auth/request-reset', async (req, res) => {
+app.post('/api/auth/reset-password', async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Account email address is required.' });

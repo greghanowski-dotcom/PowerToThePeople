@@ -63,7 +63,7 @@ app.post('/api/auth/register', async (req, res) => {
         return res.json({ success: true, message: 'Voter account initialized!', insertId: result.insertId });
     } catch (err) {
         console.error('[DATABASE ERROR] Failed to register user:', err); // 🔌 Prints the exact SQL code bug!
-        return res.status(500).json({ error: 'Failed to save to the database.' });
+        return res.status(500).json({ error: 'Phone number already in use.' });
     }
 });
 

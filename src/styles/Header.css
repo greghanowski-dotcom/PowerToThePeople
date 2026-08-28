@@ -171,6 +171,7 @@
     font-size: 13px;
     line-height: 1.4;
     box-sizing: border-box;
+    text-align: center;
 }
 
 .auth-alert-banner.error {

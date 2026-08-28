@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "server": "node server/server.js",
+    "server": "node backend/server.js",
     "client": "vite --port 3000",
     "dev": "concurrently \"npm run server\" \"npm run client\" --names \"BACKEND,FRONTEND\" --prefix-colors \"blue,green\"",
     "build": "vite build",

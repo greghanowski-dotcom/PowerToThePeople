@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export default function VoterLoginGateway({ onAuthSuccess }) {
-    const [view, setView] = useState('login'); // 'login', 'register', or 'forgot'
+    const [view, setView] = useState('login'); // 'login', 'registration', or 'forgot'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
@@ -28,7 +28,7 @@ export default function VoterLoginGateway({ onAuthSuccess }) {
                 onAuthSuccess(data.userId);
             } 
             // STANDARD REGISTRATION PIPE (Locks phone uniquely)
-            else if (view === 'register') {
+            else if (view === 'registration') {
                 const res = await fetch('http://localhost:5000/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -88,7 +88,7 @@ export default function VoterLoginGateway({ onAuthSuccess }) {
                     </div>
                 )}
 
-                {view === 'register' && (
+                {view === 'registration' && (
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold', fontSize: '14px' }}>Phone Number (For Ballot Security Check)</label>
                         <input type="tel" required placeholder="303-555-0199" style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -102,7 +102,7 @@ export default function VoterLoginGateway({ onAuthSuccess }) {
 
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
                 {view !== 'login' && <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('login')}>Sign In</span>}
-                {view !== 'register' && <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('register')}>Register</span>}
+                {view !== 'registration' && <span style={{ color: '#0070f3', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('registration')}>Register</span>}
                 {view === 'login' && <span style={{ color: '#64748b', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setView('forgot')}>Forgot Password?</span>}
             </div>
         </div>

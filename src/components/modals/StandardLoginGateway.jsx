@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import '../../styles/globals.css';
 
 export default function StandardLoginGateway({ onAuthSuccess }) {
-    const [view, setView] = useState('login'); // 'login', 'register', 'forgot', or 'verify-reset'
+    const [view, setView] = useState('login'); // 'login', 'registration', 'forgot', or 'verify-reset'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
@@ -39,7 +40,7 @@ export default function StandardLoginGateway({ onAuthSuccess }) {
                 sessionStorage.setItem('currentUserVotingRecord', JSON.stringify(data.voting_record || []));
                 onAuthSuccess(data.userId);
             } 
-            else if (view === 'register') {
+            else if (view === 'registration') {
                 const res = await fetch(`${baseUrl}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -118,7 +119,7 @@ export default function StandardLoginGateway({ onAuthSuccess }) {
 
     return (
         <div className="voter-gateway-card">
-            <h3>Voter {view === 'verify-reset' ? 'Verification' : view} Gateway</h3>
+            <h3>Voter {view === 'verify-reset' ? 'Verification' : view}</h3>
 
             {message.text && (
                 <div className={`auth-alert-banner ${message.type}`}>
@@ -166,21 +167,25 @@ export default function StandardLoginGateway({ onAuthSuccess }) {
                     </div>
                 )}
 
-                {view === 'register' && (
+                {view === 'registration' && (
                     <div className="auth-field-wrapper">
-                        <label>Mobile Phone Number (Required for Voting Security)</label>
-                        <input type="tel" required placeholder="303-555-0199" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        <label>Mobile Phone Number
+                            <span className="tooltipContainer" data-tooltip="Optional, but needed for voting so no one can try to stack the deck.">
+                                ❓
+                            </span>
+                        </label>
+                        <input type="tel" required placeholder="123-456-7890" value={phone} onChange={(e) => setPhone(e.target.value)} />
                     </div>
                 )}
 
                 <button type="submit" disabled={view === 'verify-reset' && !isCodeValidated} className={`btn-auth-submit ${isCodeValidated ? 'success-glow' : ''}`}>
-                    {view === 'login' ? 'Sign In Securely' : view === 'register' ? 'Register Profile' : view === 'forgot' ? 'Send Reset Token' : 'Confirm Password Update'}
+                    {view === 'login' ? 'Sign In Securely' : view === 'registration' ? 'Register Profile' : view === 'forgot' ? 'Send Reset Token' : 'Confirm Password Update'}
                 </button>
             </form>
 
             <div className="auth-nav-footer">
                 {view !== 'login' && <span onClick={() => handleSwitchView('login')}>Sign In Instead</span>}
-                {view !== 'register' && <span onClick={() => handleSwitchView('register')}>Register Account</span>}
+                {view !== 'registration' && <span onClick={() => handleSwitchView('registration')}>Register Account</span>}
                 {view === 'login' && <span className="forgot-link" onClick={() => handleSwitchView('forgot')}>Forgot Password?</span>}
             </div>
         </div>

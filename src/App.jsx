@@ -4,14 +4,15 @@ import TwoFactorLogin from './components/TwoFactorLogin';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Polls from './pages/Polls';
-import Surveys from './pages/Surveys';
+import Issues from './pages/Issues';
+import Survey from './pages/Survey';
 import News from './pages/News';
 import About from './pages/About';
 import DynamicContentPage from './pages/DynamicContentPage';
 import ProfileModal from './components/modals/ProfileModal';
 import AccountModal from './components/modals/AccountModal';
 import PreferencesModal from './components/modals/PreferencesModal';
-import StandardLoginGateway from './components/modals/StandardLoginGateway'; 
+import StandardLoginGateway from './components/modals/StandardLoginGateway';
 
 // Adaptive endpoint URL: uses local environment variables or falls back to production Nginx routes
 const GLOBAL_API_URL = import.meta.env?.VITE_API_URL || '/api';
@@ -123,10 +124,13 @@ export default function App() {
 
                     {/* Passes down login status directly into your surveys container [INDEX] */}
                     <Route
-                        path="/surveys"
-                        element={<Surveys keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />}
+                        path="/issues"
+                        element={<Issues keepAccordionsOpen={preferences.keepAccordionsOpen} isLoggedIn={isLoggedIn} />}
                     />
-
+                    <Route
+                        path="/survey"
+                        element={<Survey isLoggedIn={isLoggedIn} openModal={setActiveModal} />}
+                    />
                     <Route path="/news" element={<News />} />
                     <Route path="/about" element={<About />} />
 

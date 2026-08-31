@@ -40,7 +40,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, openModal }) => {
 
             <div className="control-panel">
                 <nav className="nav-menu">
-                    {['home', 'polls', 'surveys', 'news', 'about'].map((page) => (
+                    {['home', 'issues', 'polls', 'survey', 'news', 'about'].map((page) => (
                         <NavLink
                             key={page}
                             to={page === 'home' ? '/' : `/${page}`}

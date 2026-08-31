@@ -1,0 +1,196 @@
+/* ==========================================================================
+   🗳️ CIVIC BALLOT SURVEY PAGE LAYOUT STRUCTURE
+   ========================================================================== */
+
+.survey-page-container {
+    max-width: 600px;
+    width: 100%;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+
+.survey-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+    margin-bottom: 24px;
+}
+
+.survey-card h2 {
+    color: #1e3a8a;
+    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.survey-question-prompt {
+    font-size: 16px;
+    font-weight: bold;
+    color: #334155;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* 🎚️ HORIZONTAL LETTER GRADE BOX MATRIX GRID */
+.survey-grades-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* 📦 SEPARATE INDEPENDENT OPTION BOX HOOKS */
+.survey-box-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1e293b;
+    background-color: #ffffff;
+    user-select: none;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 🔄 INTERACTIVE VISUAL SELECTION COLOR HOOKS */
+.survey-box-option:hover {
+    background-color: #f8fafc;
+    border-color: #0070f3;
+}
+
+.survey-box-option.selected-box {
+    background-color: #0070f3; /* Bright, standard signature blue color */
+    border-color: #0070f3;
+    color: #ffffff; /* Flips text row to crisp white for clear contrast */
+}
+
+/* 🗳️ FULL WIDTH UNSURE LAYOUT CONTAINER ROW */
+.unsure-wrapper-row {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.btn-survey-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: #0070f3;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 112, 243, 0.2);
+    transition: background-color 0.2s;
+}
+
+.btn-survey-submit:disabled {
+    background-color: #cbd5e1;
+    color: #64748b;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+/* 📝 OPEN-ENDED SURVEY TEXT BOX CONTROLS */
+.survey-text-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+}
+
+/* ==========================================================================
+   🧱 EXPANDED INPUT VIEWPORTS & 3-ISSUE MULTI-SELECT MATRIX GRIDS
+   ========================================================================== */
+
+.survey-text-box {
+    width: 100%;
+    min-height: 180px; /* 🚀 FIXED: Height expanded from 100px to 180px for a taller typing frame! */
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: sans-serif;
+    color: #1e293b;
+    box-sizing: border-box;
+    resize: vertical;
+    text-align: left;
+    transition: border-color 0.2s;
+}
+
+/* 🗳️ THE RESPONSIVE 3-COLUMN ISSUES MATRIX CONTAINER GRID */
+.survey-issues-matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+    .survey-issues-matrix-grid {
+        grid-template-columns: repeat(2, 1fr); /* Automatically drops to 2 columns on mobile device frames */
+    }
+}
+
+.survey-text-box:focus {
+    outline: none;
+    border-color: #0070f3;
+    background-color: #f8fafc;
+}
+
+/* ==========================================================================
+   📦 FLEX-WRAP PANEL SYSTEM FOR AUTO-SISING ISSUE BOXES
+   ========================================================================== */
+
+.survey-issues-wrap-panel {
+    display: flex !important;
+    flex-wrap: wrap !important; /* Allows button boxes to wrap cleanly to the next row */
+    gap: 10px !important;       /* Consistent spacing separating adjacent boxes */
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 24px !important;
+}
+
+/* Ensure the issue option boxes scale precisely to their text layout footprints */
+.survey-issues-wrap-panel .survey-issue-flex-box {
+    flex: 0 1 auto !important;   /* 🚀 Prevents stretching: forces boxes to only stay as wide as their text! */
+    padding: 10px 18px !important; /* Balanced side padding context around word content */
+    font-size: 14.5px !important;
+    white-space: nowrap !important; /* Prevents long words like "Immigration & Border" from splitting awkwardly */
+}
+/* ==========================================================================
+   📦 HIGH-SPECIFICITY FLEX-WRAP PANEL SYSTEM FOR ISSUE BOXES
+   ========================================================================== */
+
+/* The extended parent selector chain forces the browser to ignore global .card-list constraints */
+div.survey-page-container div.survey-card form div.survey-issues-wrap-panel {
+    display: flex !important;
+    flex-wrap: wrap !important;      /* Unlocks multi-line wrapping */
+    flex-direction: row !important;
+    justify-content: flex-start !important; /* Clusters buttons tightly at stage-left */
+    align-items: center !important;
+    gap: 10px !important;            /* Clean spatial gaps between adjacent items */
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 24px !important;
+}
+
+/* Forces individual issue boxes to drop the 100% width lock and collapse snugly around text */
+div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box {
+    display: inline-flex !important;
+    width: auto !important;          /* 🚀 CRITICAL OVERRIDE: Shatters the full-width stretching bug! */
+    flex: 0 1 auto !important;       /* Prevents boxes from auto-expanding to fill empty space */
+    padding: 10px 18px !important;   /* Balanced, clean horizontal whitespace bounds */
+    font-size: 14.5px !important;
+    white-space: nowrap !important;   /* Stops words from breaking awkwardly into two rows */
+    box-sizing: border-box !important;
+}

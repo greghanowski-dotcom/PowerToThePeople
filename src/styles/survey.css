@@ -112,7 +112,7 @@
 
 .survey-text-box {
     width: 100%;
-    min-height: 180px; /* 🚀 FIXED: Height expanded from 100px to 180px for a taller typing frame! */
+    min-height: 150px; 
     padding: 12px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
@@ -123,6 +123,25 @@
     resize: vertical;
     text-align: left;
     transition: border-color 0.2s;
+}
+/* ==========================================================================
+   🧱 HIGH-SPECIFICITY TEXTBOX ENFORCER (WIPES OUT INLINE CLUTTER)
+   ========================================================================== */
+/* 🚀 Adding the parent chain ensures this beats global.css every single time! */
+div.survey-page-container div.survey-card form textarea.survey-text-box,
+textarea.survey-text-box {
+    width: 100% !important;
+    min-height: 150px !important; /* 🔑 Locks in your perfect spacious height! */
+    padding: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    font-size: 15px !important;
+    font-family: sans-serif !important;
+    color: #1e293b !important;
+    box-sizing: border-box !important;
+    resize: vertical !important;
+    text-align: left !important;
+    display: block !important;
 }
 
 /* 🗳️ THE RESPONSIVE 3-COLUMN ISSUES MATRIX CONTAINER GRID */
@@ -192,5 +211,85 @@ div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box {
     padding: 10px 18px !important;   /* Balanced, clean horizontal whitespace bounds */
     font-size: 14.5px !important;
     white-space: nowrap !important;   /* Stops words from breaking awkwardly into two rows */
+    box-sizing: border-box !important;
+}
+/* ==========================================================================
+   📦 HIGH-SPECIFICITY CLASS OVERRIDES (BYPASSES GLOBAL.CSS RESETS)
+   ========================================================================== */
+
+/* Overrides global flex-direction layout matrices to wrap items naturally */
+div.survey-page-container div.survey-card form div.survey-issues-wrap-panel {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Wipes out the 100% full-width stretching bug on individual button chips */
+div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box {
+    display: inline-flex !important;
+    width: auto !important;
+    flex: 0 1 auto !important;
+    padding: 10px 18px !important;
+    font-size: 14.5px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
+/* ==========================================================================
+   🗳️ HIGH-CONTRAST SURVEY CARD TYPOGRAPHY & BOX LAYOUTS
+   ========================================================================== */
+
+.survey-question-prompt {
+    font-size: 17px !important;
+    font-weight: 800 !important;      /* 🚀 MAXIMUM BOLDNESS: Makes questions stand out instantly */
+    color: #0f172a !important;        /* 🎨 DEEP OBSIDIAN BLACK: Deepest contrast against white card backdrops */
+    margin-bottom: 16px !important;
+    text-align: left !important;
+    line-height: 1.4 !important;
+}
+
+/* 📦 STRUCTURAL OPTION BUTTON BOXES (SOFTENED BACKGROUND FOR HIGHER CONTRAST) */
+.survey-box-option {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;     /* Medium weight: distinct from the heavy black headers above */
+    color: #475569 !important;        /* 🎨 MUTED SLATE GRAY: Steps back visually until selected */
+    background-color: #f8fafc !important; /* 💡 VERY LIGHT TINT: Separates the option card rows from the white form canvas */
+    user-select: none !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* 🔄 HOVER AND SELECTED STATE COLOR ACTIONS */
+.survey-box-option:hover {
+    background-color: #f1f5f9 !important; /* Deepens slightly on hover tracking grids */
+    border-color: #0070f3 !important;
+    color: #0f172a !important;            /* Darkens text on cursor hover entry lanes */
+}
+
+.survey-box-option.selected-box {
+    background-color: #0070f3 !important; /* 🔑 SIGNATURE BLUE: Confirms active click validation */
+    border-color: #0070f3 !important;
+    color: #ffffff !important;            /* Flips text to solid white for maximum contrast visibility */
+    font-weight: 700 !important;
+}
+
+/* Ensure individual text wrap chips match the new contrast matrix */
+div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box {
+    display: inline-flex !important;
+    width: auto !important;
+    flex: 0 1 auto !important;
+    padding: 10px 18px !important;
+    white-space: nowrap !important;
     box-sizing: border-box !important;
 }

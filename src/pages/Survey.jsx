@@ -170,9 +170,11 @@ export default function Survey({ isLoggedIn, openModal }) {
                     {/* ==========================================
                        📝 QUESTION 1-4: GRADE SELECTIONS
                        ========================================== */}
-                    <div style={{ marginBottom: '40px' }}>
-                        <p className="survey-question-prompt">What grade would you give President Trump's job performance?</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                    <div className="survey-card" style={{ marginBottom: '24px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>What grade would you give President Trump's job performance?</strong>
+                        </h4>
+                        <div className="survey-grades-row">
                             {letterGrades.map((grade) => (
                                 <div key={`trump-${grade}`} onClick={() => !isSubmitting && setTrumpGrade(grade)} className={`survey-box-option ${trumpGrade === grade ? 'selected-box' : ''}`}>{grade}</div>
                             ))}
@@ -180,10 +182,14 @@ export default function Survey({ isLoggedIn, openModal }) {
                         <div className="unsure-wrapper-row">
                             <div onClick={() => !isSubmitting && setTrumpGrade('Unsure')} className={`survey-box-option ${trumpGrade === 'Unsure' ? 'selected-box' : ''}`}>Unsure</div>
                         </div>
-                    </div>
-
-                    <div style={{ marginBottom: '40px' }}>
-                        <p className="survey-question-prompt">What grade would you give Congress's job performance?</p>
+                    </div>                    
+                    {/* ==========================================
+                       🗳️ QUESTION 2: US CONGRESS CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>What grade would you give Congress's job performance?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {letterGrades.map((grade) => (
                                 <div key={`congress-${grade}`} onClick={() => !isSubmitting && setCongressGrade(grade)} className={`survey-box-option ${congressGrade === grade ? 'selected-box' : ''}`}>{grade}</div>
@@ -194,8 +200,13 @@ export default function Survey({ isLoggedIn, openModal }) {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '40px' }}>
-                        <p className="survey-question-prompt">What grade would you give the Republican Party?</p>
+                    {/* ==========================================
+                       🗳️ QUESTION 3: REPUBLICAN PARTY CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>What grade would you give the Republican Party?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {letterGrades.map((grade) => (
                                 <div key={`gop-${grade}`} onClick={() => !isSubmitting && setGopGrade(grade)} className={`survey-box-option ${gopGrade === grade ? 'selected-box' : ''}`}>{grade}</div>
@@ -206,8 +217,13 @@ export default function Survey({ isLoggedIn, openModal }) {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '40px' }}>
-                        <p className="survey-question-prompt">What grade would you give the Democratic Party?</p>
+                    {/* ==========================================
+                       🗳️ QUESTION 4: DEMOCRATIC PARTY CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>What grade would you give the Democratic Party?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {letterGrades.map((grade) => (
                                 <div key={`dem-${grade}`} onClick={() => !isSubmitting && setDemGrade(grade)} className={`survey-box-option ${demGrade === grade ? 'selected-box' : ''}`}>{grade}</div>
@@ -217,14 +233,13 @@ export default function Survey({ isLoggedIn, openModal }) {
                             <div onClick={() => !isSubmitting && setDemGrade('Unsure')} className={`survey-box-option ${demGrade === 'Unsure' ? 'selected-box' : ''}`}>Unsure</div>
                         </div>
                     </div>
-
                     {/* ==========================================
-                       📝 QUESTION 5: OPEN TEXT MESSAGE FIELD BOX
+                       📝 QUESTION 5: MESSAGE TO THE PRESIDENT CARD
                        ========================================== */}
-                    <div style={{ marginBottom: '30px', width: '100%', boxSizing: 'border-box' }}>
-                        <p className="survey-question-prompt">
-                            If you could say one thing directly to the President, face-to-face, what would it be?
-                        </p>
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>If you could say one thing directly to the President, face-to-face, what would it be?</strong>
+                        </h4>
                         <div style={{ width: '100%', boxSizing: 'border-box' }}>
                             <textarea
                                 className="survey-text-box"
@@ -237,51 +252,52 @@ export default function Survey({ isLoggedIn, openModal }) {
                             />
                         </div>
                     </div>
-                    {/* ==========================================
-                       🗳️ QUESTION 6: CURRENT ECONOMY RATING
-                       ========================================== */}
-                    <div style={{ marginBottom: '40px' }}>
-                        <p className="survey-question-prompt">
-                            How would you rate the current economy?
-                        </p>
 
+                    {/* ==========================================
+                       🗳️ QUESTION 6: CURRENT ECONOMY RATING CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>How would you rate the current economy?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {economyOptions.map((option) => (
                                 <div key={`economy-${option}`} onClick={() => !isSubmitting && setEconomyRating(option)} className={`survey-box-option ${economyRating === option ? 'selected-box' : ''}`}>{option}</div>
                             ))}
                         </div>
-
                         <div className="unsure-wrapper-row">
                             <div onClick={() => !isSubmitting && setEconomyRating('Unsure')} className={`survey-box-option ${economyRating === 'Unsure' ? 'selected-box' : ''}`}>Unsure</div>
                         </div>
                     </div>
-
                     {/* ==========================================
-                       🗳️ QUESTION 7: 3-ISSUE SELECTION WRAP PANEL
+                       🗳️ QUESTION 7: 3-ISSUE SELECTION CARD
                        ========================================== */}
-                    <div style={{ marginBottom: '40px', width: '100%', boxSizing: 'border-box' }}>
-                        <p className="survey-question-prompt">
-                            Which three issues matter most to you? <span style={{ fontWeight: 'normal', fontSize: '14px', color: '#64748b' }}>(Select exactly 3)</span>
-                        </p>
-
-                        <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Which three issues matter most to you?</strong> <span style={{ fontWeight: 'normal', fontSize: '14px', color: '#64748b' }}>(Select exactly 3)</span>
+                        </h4>
+                        <div className="survey-issues-wrap-panel">
                             {civicIssuesOptions.map((issue) => {
                                 const isSelected = selectedIssues.includes(issue);
                                 return (
-                                    <div key={`issue-${issue}`} onClick={() => handleIssueToggleClick(issue)} className={`survey-box-option ${isSelected ? 'selected-box' : ''}`} style={{ display: 'inline-flex', width: 'auto', minWidth: 'max-content', flex: '0 1 auto', padding: '10px 18px', fontSize: '14.5px', whiteSpace: 'nowrap', boxSizing: 'border-box', cursor: (!isSelected && selectedIssues.length >= 3) ? 'not-allowed' : 'pointer', opacity: (!isSelected && selectedIssues.length >= 3) ? 0.5 : 1 }}>{issue}</div>
+                                    <div 
+                                        key={`issue-${issue}`} 
+                                        onClick={() => handleIssueToggleClick(issue)} 
+                                        className={`survey-box-option survey-issue-flex-box ${isSelected ? 'selected-box' : ''}`}
+                                    >
+                                        {issue}
+                                    </div>
                                 );
                             })}
                         </div>
                     </div>
-
-
                     {/* ==========================================
-                       📝 QUESTION 8: PERSONAL STATEMENT BOX
+                       📝 QUESTION 8: PERSONAL STATEMENT CARD
                        ========================================== */}
-                    <div style={{ marginBottom: '30px', width: '100%', boxSizing: 'border-box' }}>
-                        <p className="survey-question-prompt">
-                            Why do these issues matter to you personally?
-                        </p>
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Why do these issues matter to you personally?</strong>
+                        </h4>
                         <div style={{ width: '100%', boxSizing: 'border-box' }}>
                             <textarea
                                 className="survey-text-box"
@@ -294,55 +310,48 @@ export default function Survey({ isLoggedIn, openModal }) {
                             />
                         </div>
                     </div>
-
-                    {/* ==========================================
-                       🗳️ QUESTION 9: POLITICAL AFFILIATION IDENTITY
+                     {/* ==========================================
+                       🗳️ QUESTION 9: POLITICAL AFFILIATION CARD
                        ========================================== */}
-                    <div className="survey-section-block">
-                        <p className="survey-question-prompt">
-                            What do you identify as politically?
-                        </p>
-
-                        <div className="survey-issues-wrap-panel" style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
-                            {affiliationOptions.map((identity) => {
-                                return (
-                                    <div
-                                        onClick={() => !isSubmitting && setPoliticalIdentity(identity)}
-                                        className={`survey-box-option ${politicalIdentity === identity ? 'selected-box' : ''}`}
-                                        style={{ display: 'inline-flex', width: 'auto', minWidth: 'max-content', flex: '0 1 auto', padding: '10px 18px', fontSize: '14.5px', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
-                                    >
-                                        {identity}
-                                    </div>
-                                );
-                            })}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>What do you identify as politically?</strong>
+                        </h4>
+                        <div className="survey-issues-wrap-panel">
+                            {affiliationOptions.map((identity) => (
+                                <div
+                                    key={`affiliation-${identity}`}
+                                    onClick={() => !isSubmitting && setPoliticalIdentity(identity)}
+                                    className={`survey-box-option survey-issue-flex-box ${politicalIdentity === identity ? 'selected-box' : ''}`}
+                                >
+                                    {identity}
+                                </div>
+                            ))}
                         </div>
-                    </div><br />
-
+                    </div>
                     {/* ==========================================
-                       🗳️ QUESTION 10: SPECIFIC ALIGNMENT ARCHETYPE
+                       🗳️ QUESTION 10: SPECIFIC ALIGNMENT ARCHETYPE CARD
                        ========================================== */}
-                    <div className="survey-section-block">
-                        <p className="survey-question-prompt">
-                            Which of these best describes you?
-                        </p>
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Which of these best describes you?</strong>
+                        </h4>
                         <div className="survey-issues-wrap-panel" style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
                             {identityArchetypes.map((archetype) => (
-                                <div key={`archetype-${archetype}`} onClick={() => !isSubmitting && setPoliticalIdentityLabel(archetype)} className={`survey-box-option ${politicalIdentityLabel === archetype ? 'selected-box' : ''}`} style={{ display: 'inline-flex', width: 'auto', minWidth: 'max-content', flex: '0 1 auto', padding: '10px 18px', fontSize: '14.5px', whiteSpace: 'nowrap', boxSizing: 'border-box' }}>
+                                <div key={`archetype-${archetype}`} onClick={() => !isSubmitting && setPoliticalIdentityLabel(archetype)} className={`survey-box-option survey-issue-flex-box ${politicalIdentityLabel === archetype ? 'selected-box' : ''}`} style={{ display: 'inline-flex', width: 'auto', minWidth: 'max-content', flex: '0 1 auto', padding: '10px 18px', fontSize: '14.5px', whiteSpace: 'nowrap', boxSizing: 'border-box' }}>
                                     {archetype}
                                 </div>
                             ))}
                         </div>
-                    </div><br />
+                    </div>
 
                     {/* ==========================================
-                       🗳️ QUESTION 11: GOVERNMENT SPENDING CUT OPINION
+                       🗳️ QUESTION 11: GOVERNMENT SPENDING CUT OPINION CARD
                        ========================================== */}
-                    <div style={{ marginBottom: '30px' }}>
-                        <p className="survey-question-prompt">
-                            Agree or disagree: Government spending should be cut significantly?
-                        </p>
-
-                        {/* Renders options side-by-side using 5 clean grid boxes */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Agree or disagree: Government spending should be cut significantly?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {agreementScaleOptions.map((option) => (
                                 <div
@@ -356,15 +365,14 @@ export default function Survey({ isLoggedIn, openModal }) {
                             ))}
                         </div>
                     </div>
-                    {/* ==========================================
-                       🗳️ QUESTION 12: FOREIGN WARS OPINION
-                       ========================================== */}
-                    <div style={{ marginBottom: '30px' }}>
-                        <p className="survey-question-prompt">
-                            Agree or disagree: The United States should stay out of foreign wars?
-                        </p>
 
-                        {/* Renders options side-by-side using 5 clean grid boxes */}
+                    {/* ==========================================
+                       🗳️ QUESTION 12: FOREIGN WARS OPINION CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Agree or disagree: The United States should stay out of foreign wars?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {agreementScaleOptions.map((option) => (
                                 <div
@@ -378,15 +386,13 @@ export default function Survey({ isLoggedIn, openModal }) {
                             ))}
                         </div>
                     </div>
-                    {/* ==========================================
-                       🗳️ QUESTION 13: INDEPENDENT VOICES IN CONGRESS OPINION
+                     {/* ==========================================
+                       🗳️ QUESTION 13: INDEPENDENT VOICES CARD
                        ========================================== */}
-                    <div style={{ marginBottom: '30px' }}>
-                        <p className="survey-question-prompt">
-                            Agree or disagree: We need more independent voices in Congress?
-                        </p>
-
-                        {/* Renders options side-by-side using 5 clean grid boxes */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Agree or disagree: We need more independent voices in Congress?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {agreementScaleOptions.map((option) => (
                                 <div
@@ -400,15 +406,14 @@ export default function Survey({ isLoggedIn, openModal }) {
                             ))}
                         </div>
                     </div>
-                    {/* ==========================================
-                       🗳️ QUESTION 14: TWO-PARTY SYSTEM EVALUATION
-                       ========================================== */}
-                    <div style={{ marginBottom: '30px' }}>
-                        <p className="survey-question-prompt">
-                            Which comes closest to your view of the two-party system?
-                        </p>
 
-                        {/* Renders the core views side-by-side in a responsive 3-column row */}
+                    {/* ==========================================
+                       🗳️ QUESTION 14: TWO-PARTY SYSTEM EVALUATION CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Which comes closest to your view of the two-party system?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {systemViewOptions.map((option) => (
                                 <div
@@ -421,8 +426,6 @@ export default function Survey({ isLoggedIn, openModal }) {
                                 </div>
                             ))}
                         </div>
-
-                        {/* Full Width Unsure Button Box Container Row */}
                         <div className="unsure-wrapper-row">
                             <div
                                 onClick={() => !isSubmitting && setTwoPartySystemView('Unsure')}
@@ -432,15 +435,14 @@ export default function Survey({ isLoggedIn, openModal }) {
                             </div>
                         </div>
                     </div>
-                    {/* ==========================================
-                       🗳️ QUESTION 15: GENERAL POLITICS OUTLOOK
-                       ========================================== */}
-                    <div style={{ marginBottom: '30px' }}>
-                        <p className="survey-question-prompt">
-                            When it comes to politics, which comes closest?
-                        </p>
 
-                        {/* Renders the core outlook parameters side-by-side using 3 grid boxes */}
+                    {/* ==========================================
+                       🗳️ QUESTION 15: GENERAL POLITICS OUTLOOK CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>When it comes to politics, which comes closest?</strong>
+                        </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {outlookOptions.map((option) => (
                                 <div
@@ -453,74 +455,6 @@ export default function Survey({ isLoggedIn, openModal }) {
                                 </div>
                             ))}
                         </div>
-                        {/* ==========================================
-                       🗳️ QUESTION 16: PRESIDENT TRUMP FRUSTRATION EVALUATION
-                       ========================================== */}
-                        <div style={{ marginBottom: '30px' }}>
-                            <p className="survey-question-prompt">
-                                When you're frustrated with President Trump, is it mostly because he's gone too far, or not far enough?
-                            </p>
-
-                            {/* Renders the core frustration metrics side-by-side using 4 grid boxes */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
-                                {trumpFrustrationOptions.map((option) => (
-                                    <div
-                                        key={`trump-frustration-${option}`}
-                                        onClick={() => !isSubmitting && setTrumpFrustrationReason(option)}
-                                        className={`survey-box-option ${trumpFrustrationReason === option ? 'selected-box' : ''}`}
-                                        style={{ fontSize: '13px', padding: '14px 4px', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                    >
-                                        {option}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        {/* ==========================================
-                       🗳️ QUESTION 17: INDEPENDENT PARTY LEAN EVALUATION
-                       ========================================== */}
-                        <div style={{ marginBottom: '30px' }}>
-                            <p className="survey-question-prompt">
-                                If you're not a member of the Democratic or Republican parties, do you lean toward either party, even a little?
-                            </p>
-
-                            {/* Renders the core lean options side-by-side using 3 grid boxes */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '10px' }}>
-                                {leanOptions.map((option) => (
-                                    <div
-                                        key={`lean-${option}`}
-                                        onClick={() => !isSubmitting && setPartyLean(option)}
-                                        className={`survey-box-option ${partyLean === option ? 'selected-box' : ''}`}
-                                 style={{ width: '100%', minHeight: '100px', boxSizing: 'border-box' }}
-                                   >
-                                        {option}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        {/* ==========================================
-                       🗳️ QUESTION 18: 2026 CANDIDATE SUPPORT SIMULATION
-                       ========================================== */}
-                        <div style={{ marginBottom: '30px' }}>
-                            <p className="survey-question-prompt">
-                                If your choices in 2026 came down to an independent-leaning Republican and a progressive Democrat, who would you likely support?
-                            </p>
-
-                            {/* Renders the core options side-by-side using 4 grid boxes */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
-                                {support2026Options.map((option) => (
-                                    <div
-                                        key={`support-2026-${option}`}
-                                        onClick={() => !isSubmitting && setCandidateSupport2026(option)}
-                                        className={`survey-box-option ${candidateSupport2026 === option ? 'selected-box' : ''}`}
-                                        style={{ width: '100%', minHeight: '100px', boxSizing: 'border-box' }}
-                                    >
-                                        {option}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Full Width Unsure Button Box Container Row */}
                         <div className="unsure-wrapper-row">
                             <div
                                 onClick={() => !isSubmitting && setPoliticsOutlook('Unsure')}
@@ -530,13 +464,74 @@ export default function Survey({ isLoggedIn, openModal }) {
                             </div>
                         </div>
                     </div>
+
                     {/* ==========================================
-                       📝 QUESTION 19: REASON FOR NON-MEMBERSHIP STATEMENT BOX
+                       🗳️ QUESTION 16: TRUMP FRUSTRATION EVALUATION CARD
                        ========================================== */}
-                    <div style={{ marginBottom: '30px', width: '100%', boxSizing: 'border-box' }}>
-                        <p className="survey-question-prompt">
-                            If you're not a member of the Democratic or Republican parties, why not?
-                        </p>
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>When you're frustrated with President Trump, is it mostly because he's gone too far, or not far enough?</strong>
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                            {trumpFrustrationOptions.map((option) => (
+                                <div
+                                    key={`trump-frustration-${option}`}
+                                    onClick={() => !isSubmitting && setTrumpFrustrationReason(option)}
+                                    className={`survey-box-option ${trumpFrustrationReason === option ? 'selected-box' : ''}`}
+                                    style={{ fontSize: '13px', padding: '14px 4px', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    {option}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {/* ==========================================
+                       🗳️ QUESTION 17: INDEPENDENT PARTY LEAN CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>If you're not a member of the Democratic or Republican parties, do you lean toward either party, even a little?</strong>
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                            {leanOptions.map((option) => (
+                                <div
+                                    key={`lean-${option}`}
+                                    onClick={() => !isSubmitting && setPartyLean(option)}
+                                    className={`survey-box-option ${partyLean === option ? 'selected-box' : ''}`}
+                                    style={{ fontSize: '13px', padding: '14px 4px', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    {option}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ==========================================
+                       🗳️ QUESTION 18: 2026 CANDIDATE SUPPORT SIMULATION CARD
+                       ========================================== */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>If your choices in 2026 came down to an independent-leaning Republican and a progressive Democrat, who would you likely support?</strong>
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                            {support2026Options.map((option) => (
+                                <div
+                                    key={`support-2026-${option}`}
+                                    onClick={() => !isSubmitting && setCandidateSupport2026(option)}
+                                    className={`survey-box-option ${candidateSupport2026 === option ? 'selected-box' : ''}`}
+                                    style={{ fontSize: '13px', padding: '14px 4px', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    {option}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 📝 QUESTION 19: REASON FOR NON-MEMBERSHIP CARD */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>If you're not a member of the Democratic or Republican parties, why not?</strong>
+                        </h4>
                         <div style={{ width: '100%', boxSizing: 'border-box' }}>
                             <textarea
                                 className="survey-text-box"
@@ -544,18 +539,17 @@ export default function Survey({ isLoggedIn, openModal }) {
                                 value={nonMemberReason}
                                 onChange={(e) => setNonMemberReason(e.target.value)}
                                 disabled={isSubmitting}
-                                required
                                 style={{ width: '100%', minHeight: '100px', boxSizing: 'border-box' }}
+                                required
                             />
                         </div>
                     </div>
-                    {/* ==========================================
-                       📝 QUESTION 20: ADDITIONAL COMMENTS STATEMENT BOX
-                       ========================================== */}
-                    <div style={{ marginBottom: '30px', width: '100%', boxSizing: 'border-box' }}>
-                        <p className="survey-question-prompt">
-                            Is there anything else you would like to share?
-                        </p>
+
+                    {/* 📝 QUESTION 20: ADDITIONAL COMMENTS CARD */}
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
+                        <h4 className="survey-question-prompt">
+                            <strong>Is there anything else you would like to share?</strong>
+                        </h4>
                         <div style={{ width: '100%', boxSizing: 'border-box' }}>
                             <textarea
                                 className="survey-text-box"
@@ -563,12 +557,11 @@ export default function Survey({ isLoggedIn, openModal }) {
                                 value={additionalComments}
                                 onChange={(e) => setAdditionalComments(e.target.value)}
                                 disabled={isSubmitting}
-                                required
                                 style={{ width: '100%', minHeight: '100px', boxSizing: 'border-box' }}
+                                required
                             />
                         </div>
                     </div>
-
                     <button
                         type="submit"
                         className="survey-submit-btn"

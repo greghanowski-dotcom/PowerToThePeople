@@ -293,3 +293,29 @@ div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box {
     white-space: nowrap !important;
     box-sizing: border-box !important;
 }
+/* ==========================================================================
+   🧱 INDEPENDENT CARD SPACING MATRIX ENFORCER
+   ========================================================================== */
+
+/* Spreads each separate question container apart cleanly on the layout rows */
+div.survey-page-container div.survey-card,
+.survey-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 30px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 28px !important; /* 🔑 Creates distinct breathing room between questions */
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+/* ==========================================================================
+   ↔️ HORIZONTAL CHIP SPACING SYSTEM (NO INLINE CLUTTER)
+   ========================================================================== */
+
+/* Spreads adjacent button blocks sideways cleanly inside your wrap panel cards */
+div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box,
+.survey-card .survey-box-option {
+    margin-left: 4px !important;   /* 🚀 FIXED: Isolated left breathing room margin */
+    margin-right: 4px !important;  /* 🚀 FIXED: Isolated right breathing room margin */
+}

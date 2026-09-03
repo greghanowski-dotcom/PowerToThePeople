@@ -319,3 +319,34 @@ div.survey-issues-wrap-panel div.survey-box-option.survey-issue-flex-box,
     margin-left: 4px !important;   /* 🚀 FIXED: Isolated left breathing room margin */
     margin-right: 4px !important;  /* 🚀 FIXED: Isolated right breathing room margin */
 }
+/* ==========================================================================
+   🗳️ GLOBAL SURVEY OPTIONAL NOTICE HEADER STYLES (src/styles/Survey.css)
+   ========================================================================== */
+
+.survey-card-notice {
+    background-color: #eff6ff !important; /* Soft, inviting information blue tint */
+    border: 1px solid #bfdbfe !important;
+    border-left: 5px solid #2563eb !important; /* Strong blue accent anchor bar */
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.survey-notice-text {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1e40af !important; /* Sharp, high-contrast dark blue typography */
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+    line-height: 1.4 !important;
+}
+
+/* 🚀 LIBERATED SUBMIT CORE: Restyles button behavior when fields are partially filled */
+.btn-survey-submit:disabled {
+    background-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+}

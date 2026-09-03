@@ -734,3 +734,69 @@ const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`[BACKEND SERVER MASTER RUNNING ON LIVE DEVELOPMENT PORT :${PORT}]`);
 });
+
+/**
+ * 🗳️ SECURE CIVIC BALLOT MULTI-VOTE TRANSACTION LEDGER
+ * PATH: POST /api/vote/cast-ballot-multi
+ * Handles partial, fully customizable, and optional survey submissions smoothly.
+ */
+app.post('/api/cast-ballot-multi', async (req, res) => {
+    const { userId, userChoices } = req.body;
+
+    // 🔒 1. SECURITY FIREWALL VALVE: Validate that a user profile identifier exists
+    if (!userId) {
+        return res.status(400).json({ error: '❌ Security breach. Unauthorized anonymous ballot transmission.' });
+    }
+
+    // 🔒 2. VALIDATE PAYLOAD CONTENT: Check if at least one choice chip was captured
+    if (!userChoices || !Array.isArray(userChoices) || userChoices.length === 0) {
+        return res.status(400).json({ error: '❌ Aborted tracking. Cannot register an empty ballot ledger.' });
+    }
+
+    // If using a SQL pool interface connection (MySQL / PostgreSQL Grid)
+    const connection = await db.getConnection(); // Grab transaction token
+    
+    try {
+        await connection.beginTransaction(); // Lock thread row states safely
+
+        // 🔄 3. GENERATE BATCH PACKET DATA PACKS: Unpack filtered items
+        // Prepares data columns safely: [voter_id, question_metric_id, selected_choice_string]
+        const insertionMatrixValues = userChoices.map(choice => [
+            userId,
+            parseInt(choice.issueId, 10),
+            String(choice.userChoices).trim()
+        ]);
+
+        // ⚡ 4. EXECUTE BULK INSERTS NATIVELY:
+        // Adjust column and table names ('secure_ballot_ledger') to match your schema setup
+        const batchInsertQuery = `
+            INSERT INTO survey_answers (user_id, issue_id, user_choices) 
+            VALUES ?
+            ON DUPLICATE KEY UPDATE user_choices = VALUES(user_choices), updated_at = NOW()
+        `;
+
+        // Fires all rows simultaneously straight to your local disk tracks
+        const [result] = await connection.query(batchInsertQuery, [insertionMatrixValues]);
+
+        await connection.commit(); // Permanent storage verification lock
+        
+        console.log(`🎉 Securely synchronized ${result.affectedRows} ballot slots for User ID: ${userId}`);
+        
+        return res.status(200).json({ 
+            success: true, 
+            message: '🎉 Ballot packet entries written successfully!',
+            savedCount: userChoices.length 
+        });
+
+    } catch (error) {
+        // Roll back if data lines get truncated or corrupted midway
+        await connection.rollback();
+        console.error('💥 Database serialization pipeline catastrophic failure:', error);
+        
+        return res.status(500).json({ 
+            error: '❌ Internal relational storage ledger error. Transmission aborted cleanly.' 
+        });
+    } finally {
+        connection.release(); // Return active socket connection back to pool
+    }
+});

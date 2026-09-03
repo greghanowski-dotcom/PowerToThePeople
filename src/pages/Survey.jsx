@@ -1,102 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Survey.css'; // 🚀 CRITICAL LINK PERMANENTLY LOCKED IN GOING FORWARD
 
 export default function Survey({ isLoggedIn, openModal }) {
-    // Independent states to track the user's active selections
-    const [trumpGrade, setTrumpGrade] = useState('');
-    const [congressGrade, setCongressGrade] = useState('');
-    const [gopGrade, setGopGrade] = useState('');
-    const [demGrade, setDemGrade] = useState('');
-    const [presidentMessage, setPresidentMessage] = useState('');
-    const [economyRating, setEconomyRating] = useState('');
-    const [selectedIssues, setSelectedIssues] = useState([]);
-    const [personalReason, setPersonalReason] = useState(''); // 📝 Tracks open-ended personal reasoning
+    // 🔌 LOCALSTORAGE STATE DETECTOR LANE: Pulls previous answers if they exist
+    const getSaved = (key, fallback = '') => localStorage.getItem(`survey_${key}`) || fallback;
+    const getSavedJson = (key, fallback = []) => {
+        const data = localStorage.getItem(`survey_${key}`);
+        return data ? JSON.parse(data) : fallback;
+    };
 
+    // Independent states to track the user's active selections
+    const [trumpGrade, setTrumpGrade] = useState(() => getSaved('trumpGrade'));
+    const [congressGrade, setCongressGrade] = useState(() => getSaved('congressGrade'));
+    const [gopGrade, setGopGrade] = useState(() => getSaved('gopGrade'));
+    const [demGrade, setDemGrade] = useState(() => getSaved('demGrade'));
+    const [presidentMessage, setPresidentMessage] = useState(() => getSaved('presidentMessage'));
+    const [economyRating, setEconomyRating] = useState(() => getSaved('economyRating'));
+    const [selectedIssues, setSelectedIssues] = useState(() => getSavedJson('selectedIssues'));
+    const [personalReason, setPersonalReason] = useState(() => getSaved('personalReason'));
+    const [politicalIdentity, setPoliticalIdentity] = useState(() => getSaved('politicalIdentity'));
+    const [politicalIdentityLabel, setPoliticalIdentityLabel] = useState(() => getSaved('politicalIdentityLabel'));
+    const [spendingCutOpinion, setSpendingCutOpinion] = useState(() => getSaved('spendingCutOpinion'));
+    const [foreignWarsOpinion, setForeignWarsOpinion] = useState(() => getSaved('foreignWarsOpinion'));
+    const [independentVoicesOpinion, setIndependentVoicesOpinion] = useState(() => getSaved('independentVoicesOpinion'));
+    const [twoPartySystemView, setTwoPartySystemView] = useState(() => getSaved('twoPartySystemView'));
+    const [politicsOutlook, setPoliticsOutlook] = useState(() => getSaved('politicsOutlook'));
+    const [trumpFrustrationReason, setTrumpFrustrationReason] = useState(() => getSaved('trumpFrustrationReason'));
+    const [partyLean, setPartyLean] = useState(() => getSaved('partyLean'));
+    const [candidateSupport2026, setCandidateSupport2026] = useState(() => getSaved('candidateSupport2026'));
+    const [nonMemberReason, setNonMemberReason] = useState(() => getSaved('nonMemberReason'));
+    const [additionalComments, setAdditionalComments] = useState(() => getSaved('additionalComments'));
+    
     const [isSubmitting, setIsLoading] = useState(false);
     const [surveyMessage, setSurveyMessage] = useState({ text: '', type: '' });
 
     const letterGrades = ['A', 'B', 'C', 'D', 'F'];
     const economyOptions = ['Excellent', 'Good', 'Fair', 'Poor'];
-
-    // 🚀 FIXED STATE ARCHITECTURE: Aligned to match your loop parameters exactly!
-    const [politicalIdentityLabel, setPoliticalIdentityLabel] = useState('');
-
-    // Archetype description string options array
     const identityArchetypes = [
-        "MAGA Republican", "Traditional Republican", "Conservative-leaning Independent",
-        "Centrist or Moderate", "Libertarian", "Conservative Democrat",
-        "Liberal or Progressive", "Something else"
+        "MAGA Republican", 
+        "Traditional Republican", 
+        "Conservative-leaning Independent",
+        "Centrist or Moderate", 
+        "Libertarian", 
+        "Conservative Democrat",
+        "Liberal or Progressive", 
+        "Something else"
     ];
-
+    const affiliationOptions = ['Republican', 'Democrat', 'Independent', 'Something else', 'Prefer not to say'];
+    const agreementScaleOptions = ['Strongly agree', 'Agree', 'Neither', 'Disagree', 'Strongly disagree'];
+    const systemViewOptions = ["It works well", "It's broken, but it can be fixed", "We need a new way"];
+    const outlookOptions = ["I've mostly given up on it", "I'm frustrated, but I think it can be fixed", "I'm hopeful about where things are going"];
+    const trumpFrustrationOptions = ["Too far", "Not far enough", "Both", "I'm not frustrated"];
+    const leanOptions = ["Lean Republican", "Lean Democrat", "No lean at all"];
+    const support2026Options = ["The Republican", "The Democrat", "I wouldn't vote", "Depends on the candidates"];
+    
     const civicIssuesOptions = [
-        "Economy", "Cost of Living", "Crime", "Immigration & Border",
-        "Election Integrity", "Energy", "Global Warming", "Spending & Debt",
+        "Economy", "Cost of Living", "Crime", "Immigration & Border", 
+        "Election Integrity", "Energy", "Global Warming", "Spending & Debt", 
         "National Security", "Education", "Healthcare", "Other"
     ];
 
-    // 🗳️ QUESTION 9 STATE TRACKER:
-    const [politicalIdentity, setPoliticalIdentity] = useState('');
-    // Affiliation string array tokens
-    const affiliationOptions = ['Republican', 'Democrat', 'Independent', 'Something else', 'Prefer not to say'];
+    // 🚀 AUTOMATIC REAL-TIME SAVING PIPELINE
+    useEffect(() => { localStorage.setItem('survey_trumpGrade', trumpGrade); }, [trumpGrade]);
+    useEffect(() => { localStorage.setItem('survey_congressGrade', congressGrade); }, [congressGrade]);
+    useEffect(() => { localStorage.setItem('survey_gopGrade', gopGrade); }, [gopGrade]);
+    useEffect(() => { localStorage.setItem('survey_demGrade', demGrade); }, [demGrade]);
+    useEffect(() => { localStorage.setItem('survey_presidentMessage', presidentMessage); }, [presidentMessage]);
+    useEffect(() => { localStorage.setItem('survey_economyRating', economyRating); }, [economyRating]);
+    useEffect(() => { localStorage.setItem('survey_selectedIssues', JSON.stringify(selectedIssues)); }, [selectedIssues]);
+    useEffect(() => { localStorage.setItem('survey_personalReason', personalReason); }, [personalReason]);
+    useEffect(() => { localStorage.setItem('survey_politicalIdentity', politicalIdentity); }, [politicalIdentity]);
+    useEffect(() => { localStorage.setItem('survey_politicalIdentityLabel', politicalIdentityLabel); }, [politicalIdentityLabel]);
+    useEffect(() => { localStorage.setItem('survey_spendingCutOpinion', spendingCutOpinion); }, [spendingCutOpinion]);
+    useEffect(() => { localStorage.setItem('survey_foreignWarsOpinion', foreignWarsOpinion); }, [foreignWarsOpinion]);
+    useEffect(() => { localStorage.setItem('survey_independentVoicesOpinion', independentVoicesOpinion); }, [independentVoicesOpinion]);
+    useEffect(() => { localStorage.setItem('survey_twoPartySystemView', twoPartySystemView); }, [twoPartySystemView]);
+    useEffect(() => { localStorage.setItem('survey_politicsOutlook', politicsOutlook); }, [politicsOutlook]);
+    useEffect(() => { localStorage.setItem('survey_trumpFrustrationReason', trumpFrustrationReason); }, [trumpFrustrationReason]);
+    useEffect(() => { localStorage.setItem('survey_partyLean', partyLean); }, [partyLean]);
+    useEffect(() => { localStorage.setItem('survey_candidateSupport2026', candidateSupport2026); }, [candidateSupport2026]);
+    useEffect(() => { localStorage.setItem('survey_nonMemberReason', nonMemberReason); }, [nonMemberReason]);
+    useEffect(() => { localStorage.setItem('survey_additionalComments', additionalComments); }, [additionalComments]);
 
-    // 🗳️ QUESTION 11 STATE TRACKER:
-    const [spendingCutOpinion, setSpendingCutOpinion] = useState('');
+    // Determines if any single input field contains data to validate partial updates
+    const hasAnyResponse = trumpGrade || congressGrade || gopGrade || demGrade || presidentMessage.trim() || 
+                           economyRating || selectedIssues.length > 0 || personalReason.trim() || politicalIdentity || 
+                           politicalIdentityLabel || spendingCutOpinion || foreignWarsOpinion || independentVoicesOpinion || 
+                           twoPartySystemView || politicsOutlook || trumpFrustrationReason || partyLean || 
+                           candidateSupport2026 || nonMemberReason.trim() || additionalComments.trim();
 
-    // Scale tracking options array
-    const agreementScaleOptions = ['Strongly agree', 'Agree', 'Neither', 'Disagree', 'Strongly disagree'];
-
-    const [foreignWarsOpinion, setForeignWarsOpinion] = useState('');
-    // 🗳️ QUESTION 13 STATE TRACKER:
-    const [independentVoicesOpinion, setIndependentVoicesOpinion] = useState('');
-
-    // 🗳️ QUESTION 14 STATE TRACKER:
-    const [twoPartySystemView, setTwoPartySystemView] = useState('');
-
-    // 🗳️ QUESTION 15 STATE TRACKER:
-    const [politicsOutlook, setPoliticsOutlook] = useState('');
-
-    // Outlook selection options array
-    const outlookOptions = [
-        "I've mostly given up on it",
-        "I'm frustrated, but I think it can be fixed",
-        "I'm hopeful about where things are going"
-    ];
-    // 🗳️ QUESTION 16 STATE TRACKER:
-    const [trumpFrustrationReason, setTrumpFrustrationReason] = useState('');
-
-    // Frustration selection options array
-    const trumpFrustrationOptions = ["Too far", "Not far enough", "Both", "I'm not frustrated"];
-
-    // 🗳️ QUESTION 17 STATE TRACKER:
-    const [partyLean, setPartyLean] = useState('');
-
-    // Lean selection options array
-    const leanOptions = ["Lean Republican", "Lean Democrat", "No lean at all"];
-
-    // 🗳️ QUESTION 18 STATE TRACKER:
-    const [candidateSupport2026, setCandidateSupport2026] = useState('');
-
-    // Selection choices array
-    const support2026Options = ["The Republican", "The Democrat", "I wouldn't vote", "Depends on the candidates"];
-
-    // 🗳️ QUESTION 19 STATE TRACKER:
-    const [nonMemberReason, setNonMemberReason] = useState('');
-
-    // 🗳️ QUESTION 20 STATE TRACKER:
-    const [additionalComments, setAdditionalComments] = useState('');
-
-    // View rating options array
-    const systemViewOptions = ["It works well", "It's broken, but it can be fixed", "We need a new way"];
     const handleIssueToggleClick = (issue) => {
         if (isSubmitting) return;
-
         setSelectedIssues((prevChoices) => {
-            if (prevChoices.includes(issue)) {
-                return prevChoices.filter(item => item !== issue);
-            }
-            if (prevChoices.length >= 3) {
-                return prevChoices;
-            }
+            if (prevChoices.includes(issue)) return prevChoices.filter(item => item !== issue);
+            if (prevChoices.length >= 3) return prevChoices; 
             return [...prevChoices, issue];
         });
     };
@@ -110,71 +107,76 @@ export default function Survey({ isLoggedIn, openModal }) {
             return;
         }
 
-        // 🔒 CHECK VALIDATION: Ensures all 10 fields are evaluated completely
-        if (!trumpGrade || !congressGrade || !gopGrade || !demGrade || !presidentMessage.trim() || !economyRating || selectedIssues.length !== 3 || !personalReason.trim() || !politicalIdentity || !politicalIdentityLabel) {
-            return setSurveyMessage({ text: '❌ Please complete all questions and fill out both text comments to cast your vote.', type: 'error' });
+        // 🔒 LIBERATED VALIDATION CHECK: Only rejects if the form is completely empty
+        if (!hasAnyResponse) {
+            return setSurveyMessage({ text: '❌ Please complete at least one question before submitting your partial response.', type: 'error' });
         }
 
         setIsLoading(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
+        // Filters out empty answers dynamically so your database rows don't get junk entries
+        const activeVotes = [
+            { issueId: 101, val: trumpGrade }, { issueId: 102, val: congressGrade },
+            { issueId: 103, val: gopGrade }, { issueId: 104, val: demGrade },
+            { issueId: 105, val: presidentMessage.trim() }, { issueId: 106, val: economyRating },
+            { issueId: 107, val: selectedIssues.join(', ') }, { issueId: 108, val: personalReason.trim() },
+            { issueId: 109, val: politicalIdentity }, { issueId: 110, val: politicalIdentityLabel },
+            { issueId: 111, val: spendingCutOpinion }, { issueId: 112, val: foreignWarsOpinion },
+            { issueId: 113, val: independentVoicesOpinion }, { issueId: 114, val: twoPartySystemView },
+            { issueId: 115, val: politicsOutlook }, { issueId: 116, val: trumpFrustrationReason },
+            { issueId: 117, val: partyLean }, { issueId: 118, val: candidateSupport2026 },
+            { issueId: 119, val: nonMemberReason.trim() }, { issueId: 120, val: additionalComments.trim() }
+        ].filter(item => item.val !== '' && item.val !== '[]');
+
         try {
-            const res = await fetch(`${baseUrl}/api/vote/cast-ballot-multi`, {
+            const res = await fetch(`${baseUrl}/api/cast-ballot-multi`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: JSON.stringify({ 
                     userId: sessionStorage.getItem('currentUserId'),
-                    votes: [
-                        { issueId: 101, voteChoice: trumpGrade },
-                        { issueId: 102, voteChoice: congressGrade },
-                        { issueId: 103, voteChoice: gopGrade },
-                        { issueId: 104, voteChoice: demGrade },
-                        { issueId: 105, voteChoice: presidentMessage.trim() },
-                        { issueId: 106, voteChoice: economyRating },
-                        { issueId: 107, voteChoice: selectedIssues.join(', ') },
-                        { issueId: 108, voteChoice: personalReason.trim() },
-                        { issueId: 109, voteChoice: politicalIdentity },
-                        { issueId: 110, voteChoice: politicalIdentityLabel },
-                        { issueId: 111, voteChoice: spendingCutOpinion },
-                        { issueId: 112, voteChoice: foreignWarsOpinion },
-                        { issueId: 113, voteChoice: independentVoicesOpinion },
-                        { issueId: 115, voteChoice: politicsOutlook },
-                        { issueId: 106, voteChoice: trumpFrustrationReason },
-                        { issueId: 117, voteChoice: partyLean },
-                        { issueId: 118, voteChoice: candidateSupport2026 },
-                        { issueId: 119, voteChoice: nonMemberReason.trim() },
-                        { issueId: 120, voteChoice: additionalComments.trim() }
-                    ]
+                    userChoices: activeVotes.map(v => ({ issueId: v.issueId, userChoices: v.val }))
                 })
             });
             const data = await res.json();
+            if (!res.ok) return setSurveyMessage({ text: data.error || '❌ Ballot submission failure.', type: 'error' });
 
-            if (!res.ok) {
-                return setSurveyMessage({ text: data.error || '❌ Ballot ledger submission failure.', type: 'error' });
-            }
-
-            setSurveyMessage({ text: '🎉 Secure ballots recorded successfully! Thank you for participating.', type: 'success' });
+            setSurveyMessage({ text: '🎉 Survey response recorded successfully! Thank you for participating.', type: 'success' });
+            
+            // Clear local cache cleanly after successful submission
+            localStorage.clear();
         } catch (error) {
             console.error('Survey transmission failure:', error);
-            setSurveyMessage({ text: '❌ Local pipeline error. Ensure backend server is operational on port 5000.', type: 'error' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+setSurveyMessage({ text: '❌ Local pipeline error. Ensure backend server is operational on port 5000.', type: 'error' });} finally {setIsLoading(false);}};
 
-    return (
-        <div className="survey-container">
+ return (
+        <div className="survey-page-container">
+            {/* 🚀 FIXED INTRO NOTICE CARD CONTAINER: Positioned cleanly before all questions */}
+            <div className="survey-card-notice">
+                <p className="survey-notice-text">
+                    All questions are optional. You may submit a partial response.
+                </p>
+            </div>
+
             <div className="survey-wrapper">
                 <h1>Power to the People Survey</h1>
+                
+                {surveyMessage.text && (
+                    <div className={`auth-alert-banner ${surveyMessage.type}`} style={{ textAlign: 'center' }}>
+                        {surveyMessage.text}
+                    </div>
+                )}
+
                 <form onSubmit={handleCastBallotSubmit}>
+                    
                     {/* ==========================================
-                       📝 QUESTION 1-4: GRADE SELECTIONS
+                       🗳️ QUESTION 1: PRESIDENT TRUMP EVALUATION CARD
                        ========================================== */}
-                    <div className="survey-card" style={{ marginBottom: '24px' }}>
+                    <div className="survey-card" style={{ marginBottom: '28px' }}>
                         <h4 className="survey-question-prompt">
                             <strong>What grade would you give President Trump's job performance?</strong>
                         </h4>
-                        <div className="survey-grades-row">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
                             {letterGrades.map((grade) => (
                                 <div key={`trump-${grade}`} onClick={() => !isSubmitting && setTrumpGrade(grade)} className={`survey-box-option ${trumpGrade === grade ? 'selected-box' : ''}`}>{grade}</div>
                             ))}
@@ -182,7 +184,7 @@ export default function Survey({ isLoggedIn, openModal }) {
                         <div className="unsure-wrapper-row">
                             <div onClick={() => !isSubmitting && setTrumpGrade('Unsure')} className={`survey-box-option ${trumpGrade === 'Unsure' ? 'selected-box' : ''}`}>Unsure</div>
                         </div>
-                    </div>                    
+                    </div>                   
                     {/* ==========================================
                        🗳️ QUESTION 2: US CONGRESS CARD
                        ========================================== */}
@@ -337,14 +339,19 @@ export default function Survey({ isLoggedIn, openModal }) {
                             <strong>Which of these best describes you?</strong>
                         </h4>
                         <div className="survey-issues-wrap-panel" style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
+                            {/* 🚀 FIXED: Array tracking name synced to match identityArchetypes precisely! */}
                             {identityArchetypes.map((archetype) => (
-                                <div key={`archetype-${archetype}`} onClick={() => !isSubmitting && setPoliticalIdentityLabel(archetype)} className={`survey-box-option survey-issue-flex-box ${politicalIdentityLabel === archetype ? 'selected-box' : ''}`} style={{ display: 'inline-flex', width: 'auto', minWidth: 'max-content', flex: '0 1 auto', padding: '10px 18px', fontSize: '14.5px', whiteSpace: 'nowrap', boxSizing: 'border-box' }}>
+                                <div 
+                                    key={`archetype-${archetype}`} 
+                                    onClick={() => !isSubmitting && setPoliticalIdentityLabel(archetype)} 
+                                    className={`survey-box-option survey-issue-flex-box ${politicalIdentityLabel === archetype ? 'selected-box' : ''}`}
+                                    style={{ display: 'inline-flex', width: 'auto', minWidth: 'max-content', flex: '0 1 auto', padding: '10px 18px', fontSize: '14.5px', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
+                                >
                                     {archetype}
                                 </div>
                             ))}
                         </div>
                     </div>
-
                     {/* ==========================================
                        🗳️ QUESTION 11: GOVERNMENT SPENDING CUT OPINION CARD
                        ========================================== */}
@@ -562,17 +569,18 @@ export default function Survey({ isLoggedIn, openModal }) {
                             />
                         </div>
                     </div>
-                    <button
-                        type="submit"
-                        className="survey-submit-btn"
-                        disabled={isSubmitting}
-                        style={{ marginTop: '10px' }}
+                    <button 
+                        type="submit" 
+                        className="btn-survey-submit" 
+                        /* 🚀 UNLOCKED: Submission stays active as long as the form isn't completely blank */
+                        disabled={isSubmitting || !hasAnyResponse}
                     >
-                        {isSubmitting ? 'Recording Ballots...' : 'Submit Secure Votes'}
+                        {isSubmitting ? 'Recording Ballots...' : 'Submit Response'}
                     </button>
                 </form>
             </div>
         </div>
     );
 }
+
 

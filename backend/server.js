@@ -800,3 +800,37 @@ app.post('/api/cast-ballot-multi', async (req, res) => {
         connection.release(); // Return active socket connection back to pool
     }
 });
+
+/**
+ * Downloads a voter's previously submitted survey options to auto-fill the frontend on login.
+ */
+app.get('/api/survey/my-ballot', async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ error: '❌ Verification failure. Missing target user identifier token.' });
+    }
+
+    try {
+        // Queries your tall table directly using optimized database index lookup tracks
+        // Adjust table name ('survey_answers' / 'secure_ballot_ledger') to match your schema setup
+        const lookupQuery = `
+            SELECT issue_id, user_choices 
+            FROM survey_answers 
+            WHERE user_id = ?
+        `;
+
+        const [rows] = await db.query(lookupQuery, [userId]);
+
+        return res.status(200).json({
+            success: true,
+            votes: rows // Sends back an array containing only their answered question rows
+        });
+
+    } catch (error) {
+        console.error('💥 Failed to read voter data off storage disks:', error);
+        return res.status(500).json({ 
+            error: '❌ Internal database server lookup engine error.' 
+        });
+    }
+});

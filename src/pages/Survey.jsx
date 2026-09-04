@@ -60,6 +60,67 @@ export default function Survey({ isLoggedIn, openModal }) {
         "National Security", "Education", "Healthcare", "Other"
     ];
 
+    //downloads and populates answers on successful login
+    useEffect(() => {
+        // Only trigger when the user is authenticated and active
+        if (!isLoggedIn) return;
+
+        const loadSavedChoicesFromDatabase = async () => {
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const userId = sessionStorage.getItem('currentUserId');
+
+            if (!userId) return;
+
+            try {
+                // Hits your secure transaction ledger database port
+                const res = await fetch(`${baseUrl}/api/survey/my-ballot?userId=${userId}`);
+                if (!res.ok) throw new Error('Failed to retrieve survey data.');
+                
+                const data = await res.json();
+                if (!data.success || !data.votes) return;
+console.log('Retrieved survey data from database:', data.votes);
+                // 🔄 MAP DATABASE COLUMNS DIRECTLY BACK TO STATE PATHS:
+                data.votes.forEach(vote => {
+                    const id = parseInt(vote.issue_id, 10);
+                    const val = vote.user_choices;
+
+                    switch(id) {
+                        case 101: setTrumpGrade(val); break;
+                        case 102: setCongressGrade(val); break;
+                        case 103: setGopGrade(val); break;
+                        case 104: setDemGrade(val); break;
+                        case 105: setPresidentMessage(val); break;
+                        case 106: setEconomyRating(val); break;
+                        case 108: setPersonalReason(val); break;
+                        case 109: setPoliticalIdentity(val); break;
+                        case 110: setPoliticalIdentityLabel(val); break;
+                        case 111: setSpendingCutOpinion(val); break;
+                        case 112: setForeignWarsOpinion(val); break;
+                        case 113: setIndependentVoicesOpinion(val); break;
+                        case 114: setTwoPartySystemView(val); break;
+                        case 115: setPoliticsOutlook(val); break;
+                        case 116: setTrumpFrustrationReason(val); break;
+                        case 117: setPartyLean(val); break;
+                        case 118: setCandidateSupport2026(val); break;
+                        case 119: setNonMemberReason(val); break;
+                        case 120: setAdditionalComments(val); break;
+                        case 107: 
+                            // Unpacks your comma-separated multi-select issues string cleanly back into an array
+                            if (val) setSelectedIssues(val.split(', ').filter(Boolean));
+                            break;
+                        default: break;
+                    }
+                });
+
+                console.log(`Retrieved ${data.votes.length} saved answers from the database.`);
+            } catch (error) {
+                console.error('💥 Critical sync failure during authentication loading:', error);
+            }
+        };
+
+        loadSavedChoicesFromDatabase();
+    }, [isLoggedIn]); // 🚀 TRIGGERS DYNAMICALLY THE SECOND ISLOGGEDIN FLIPS TRUE
+     
     // 🚀 AUTOMATIC REAL-TIME SAVING PIPELINE
     useEffect(() => { localStorage.setItem('survey_trumpGrade', trumpGrade); }, [trumpGrade]);
     useEffect(() => { localStorage.setItem('survey_congressGrade', congressGrade); }, [congressGrade]);
@@ -83,11 +144,11 @@ export default function Survey({ isLoggedIn, openModal }) {
     useEffect(() => { localStorage.setItem('survey_additionalComments', additionalComments); }, [additionalComments]);
 
     // Determines if any single input field contains data to validate partial updates
-    const hasAnyResponse = trumpGrade || congressGrade || gopGrade || demGrade || presidentMessage.trim() || 
-                           economyRating || selectedIssues.length > 0 || personalReason.trim() || politicalIdentity || 
+    const hasAnyResponse = trumpGrade || congressGrade || gopGrade || demGrade || presidentMessage || 
+                           economyRating || selectedIssues.length > 0 || personalReason || politicalIdentity || 
                            politicalIdentityLabel || spendingCutOpinion || foreignWarsOpinion || independentVoicesOpinion || 
                            twoPartySystemView || politicsOutlook || trumpFrustrationReason || partyLean || 
-                           candidateSupport2026 || nonMemberReason.trim() || additionalComments.trim();
+                           candidateSupport2026 || nonMemberReason || additionalComments;
 
     const handleIssueToggleClick = (issue) => {
         if (isSubmitting) return;
